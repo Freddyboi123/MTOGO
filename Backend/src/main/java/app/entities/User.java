@@ -4,6 +4,7 @@ import app.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -36,6 +37,13 @@ public class User {
     @Column(name = "roles")
     private Set<Role> roles = new HashSet<>();
 
+    @Builder.Default
+    private boolean verified = false;
+    private String verifyToken;
+    private LocalDateTime verifyTokenExpiresAt;
+
+    private String resetToken;
+    private LocalDateTime resetTokenExpiresAt;
 
 }
 

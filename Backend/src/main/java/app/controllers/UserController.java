@@ -9,6 +9,7 @@ import app.mappers.UserMapper;
 import app.server.Setup;
 import app.services.UserService;
 import io.javalin.apibuilder.EndpointGroup;
+import io.javalin.http.Context;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,8 +19,7 @@ import static io.javalin.apibuilder.ApiBuilder.*;
 public class UserController extends BaseController<User, UserDTO> {
 
     private final UserDAO userDAO = new UserDAO(Setup.em);
-    private final UserMapper userMapper = new UserMapper();
-    private final UserService userService = new UserService();
+    private final UserService userService = new UserService(userDAO);
 
     // ________________________________________________________
 
@@ -32,8 +32,14 @@ public class UserController extends BaseController<User, UserDTO> {
     public static EndpointGroup registerRoutes() {
         UserController controller = new UserController();
         return () -> {
-            get("/template", controller::getAll, Role.ADMIN);
-            get("/template/{id}", controller::getByID, Role.ADMIN);
+            get("/users", controller::getAll, Role.ADMIN);
+            get("/user/{id}", controller::getByID, Role.ADMIN);
+            post("users/auth/register", controller::registerUser, Role.ANYONE);
+            post("users/auth/login", controller::login, Role.ANYONE);
+            get("users/auth/verify", controller::verify, Role.ANYONE);
+            post("users/auth/resend-verify", controller::resendVerify, Role.ANYONE);
+            post("users/auth/forgot-password", controller::forgotPassword, Role.ANYONE);
+            post("users/auth/reset-password", controller::resetPassword, Role.ANYONE);
         };
     }
 
@@ -50,4 +56,42 @@ public class UserController extends BaseController<User, UserDTO> {
     protected User getEntityById(UUID id) {
         return userDAO.getById(id);
     }
+
+    // ________________________________________________________
+
+    private void registerUser(Context ctx) {
+        userService.register(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void login(Context ctx) {
+        userService.login(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void verify(Context ctx) {
+        userService.verify(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void resendVerify(Context ctx) {
+        userService.resendVerify(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void forgotPassword(Context ctx) {
+        userService.forgotPassword(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void resetPassword(Context ctx) {
+        userService.resetPassword(ctx);
+    }
+
+    // ________________________________________________________
 }
