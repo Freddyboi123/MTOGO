@@ -41,3 +41,4 @@ build/
 /target
 ### Local config with secrets (use config.properties.example as template) ###
 Backend/src/main/resources/config.properties
+Backend/src/main/resources/config.properties
