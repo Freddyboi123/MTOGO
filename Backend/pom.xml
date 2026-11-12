@@ -168,7 +168,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <phase>package</phase>      
                         <goals>
                             <goal>shade</goal>
                         </goals>
