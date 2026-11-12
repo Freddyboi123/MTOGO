@@ -37,6 +37,8 @@ public class DeliveryAgent {
     @OneToMany(mappedBy = "agent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bonus> bonuses = new ArrayList<>();
 
+    // ________________________________________________________
+
     public void addBonus(Bonus bonus) {
         bonuses.add(bonus);
         bonus.setAgent(this);

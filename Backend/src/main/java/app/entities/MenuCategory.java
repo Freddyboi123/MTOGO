@@ -33,10 +33,14 @@ public class MenuCategory {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MenuItem> items = new ArrayList<>();
 
+    // ________________________________________________________
+
     public void addItem(MenuItem item) {
         items.add(item);
         item.setCategory(this);
     }
+
+    // ________________________________________________________
 
     public void removeItem(MenuItem item) {
         items.remove(item);

@@ -24,7 +24,6 @@ public class MenuItem {
 
     private String description;
 
-    // Price including VAT (delivery is free)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
