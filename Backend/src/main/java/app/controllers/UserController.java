@@ -32,8 +32,8 @@ public class UserController extends BaseController<User, UserDTO> {
     public static EndpointGroup registerRoutes() {
         UserController controller = new UserController();
         return () -> {
-            get("/users", controller::getAll, Role.ADMIN);
-            get("/user/{id}", controller::getByID, Role.ADMIN);
+            get("/users", controller::getAll, Role.ADMIN, Role.OWNER);
+            get("/user/{id}", controller::getByID, Role.ADMIN, Role.OWNER);
             post("users/auth/register", controller::registerUser, Role.ANYONE);
             post("users/auth/login", controller::login, Role.ANYONE);
             get("users/auth/verify", controller::verify, Role.ANYONE);

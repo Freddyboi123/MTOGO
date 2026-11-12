@@ -55,7 +55,7 @@ public class UserService {
             return;
         }
 
-        Role role = Role.USER;
+        Role role = Role.CUSTOMER;
 
         if (userDAO.existByColumn(email, "email")) {
             String message = messageService.buildMessage(Notifications.EMAIL_EXISTS, email);
