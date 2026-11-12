@@ -22,4 +22,16 @@ public class UserDAO extends EntityManagerDAO<User> {
         );
     }
 
+    // ________________________________________________________
+
+    public User getByToken(String token, String column) {
+        String jpql = "SELECT u FROM User u WHERE u." + column + " = :token";
+
+        return executeQuery(() ->
+                em.createQuery(jpql, User.class)
+                        .setParameter("token", token)
+                        .getSingleResult()
+        );
+    }
+
 }
