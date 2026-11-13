@@ -40,6 +40,7 @@ public class UserController extends BaseController<User, UserDTO> {
             post("users/auth/resend-verify", controller::resendVerify, Role.ANYONE);
             post("users/auth/forgot-password", controller::forgotPassword, Role.ANYONE);
             post("users/auth/reset-password", controller::resetPassword, Role.ANYONE);
+            post("/user/{id}/roles", controller::assignRole, Role.ADMIN);
         };
     }
 
@@ -91,6 +92,12 @@ public class UserController extends BaseController<User, UserDTO> {
 
     private void resetPassword(Context ctx) {
         userService.resetPassword(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void assignRole(Context ctx) {
+        userService.assignRole(ctx);
     }
 
     // ________________________________________________________
