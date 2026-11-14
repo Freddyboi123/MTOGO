@@ -13,6 +13,7 @@ import app.utils.ErrorHandler;
 import io.javalin.http.Context;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -55,7 +56,7 @@ public class UserService {
             return;
         }
 
-        Role role = Role.USER;
+        Role role = Role.CUSTOMER;
 
         if (userDAO.existByColumn(email, "email")) {
             String message = messageService.buildMessage(Notifications.EMAIL_EXISTS, email);
@@ -223,6 +224,33 @@ public class UserService {
         userDAO.update(user);
 
         ctx.status(200).json(Map.of("message", Notifications.RESET_SUCCESS.getDisplayName()));
+    }
+
+    // ________________________________________________________
+
+    public void assignRole(Context ctx) {
+        Map<String, String> body = ErrorHandler.tryBodyMap(ctx, Notifications.BODY_EMPTY.getDisplayName());
+
+        UUID id = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.USER_NOT_FOUND.getDisplayName());
+        String roleName = ErrorHandler.tryString(body.get("role"), Notifications.ROLE_REQUIRED.getDisplayName());
+        Role role = ErrorHandler.tryParseEnum(Role.class, roleName, Notifications.ROLE_INVALID.getDisplayName());
+
+        User user = ErrorHandler.tryEntity(userDAO.getById(id), Notifications.USER_NOT_FOUND.getDisplayName());
+
+        Set<Role> roles = new HashSet<>(user.getRoles());
+        roles.add(role);
+        user.setRoles(roles);
+        userDAO.update(user);
+
+        UserDTO dto = userMapper.toDTO(user);
+        dto.setRoles(user.getRoles());
+
+        String message = messageService.buildMessage(Notifications.ROLE_ASSIGNED, role.name(), user.getEmail());
+
+        ctx.status(200).json(Map.of(
+                "message", message,
+                "data", dto
+        ));
     }
 
 }

@@ -32,14 +32,15 @@ public class UserController extends BaseController<User, UserDTO> {
     public static EndpointGroup registerRoutes() {
         UserController controller = new UserController();
         return () -> {
-            get("/users", controller::getAll, Role.ADMIN);
-            get("/user/{id}", controller::getByID, Role.ADMIN);
+            get("/users", controller::getAll, Role.ADMIN, Role.OWNER);
+            get("/user/{id}", controller::getByID, Role.ADMIN, Role.OWNER);
             post("users/auth/register", controller::registerUser, Role.ANYONE);
             post("users/auth/login", controller::login, Role.ANYONE);
             get("users/auth/verify", controller::verify, Role.ANYONE);
             post("users/auth/resend-verify", controller::resendVerify, Role.ANYONE);
             post("users/auth/forgot-password", controller::forgotPassword, Role.ANYONE);
             post("users/auth/reset-password", controller::resetPassword, Role.ANYONE);
+            post("/user/{id}/roles", controller::assignRole, Role.ADMIN);
         };
     }
 
@@ -91,6 +92,12 @@ public class UserController extends BaseController<User, UserDTO> {
 
     private void resetPassword(Context ctx) {
         userService.resetPassword(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void assignRole(Context ctx) {
+        userService.assignRole(ctx);
     }
 
     // ________________________________________________________
