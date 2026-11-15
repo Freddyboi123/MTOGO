@@ -1,0 +1,214 @@
+.head {
+  padding: 36px 0 32px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 44px;
+  margin-top: 14px;
+}
+
+.crumbs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.crumbsNote {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 456px;
+  gap: 32px;
+  align-items: start;
+  padding-bottom: 56px;
+}
+
+.customer {
+  margin-top: 24px;
+}
+
+.customerName {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.customerAddress {
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+.customerContact {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 20px;
+}
+
+.eta {
+  background: var(--mint);
+  border-radius: var(--radius-md);
+  padding: 17px 18px;
+  min-width: 263px;
+}
+
+.etaValue {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 28px;
+  margin-top: 10px;
+}
+
+.etaNote {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.payOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.payOption {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  background: var(--white);
+  text-align: left;
+}
+
+.payOptionActive {
+  composes: payOption;
+  border-color: var(--green);
+  background: var(--mint);
+}
+
+.payOption strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.payOption span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.noteHint {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.summaryTitle {
+  font-size: 24px;
+}
+
+.restaurant {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-top: 26px;
+}
+
+.restaurantPhoto {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--mint);
+}
+
+.restaurant strong {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.restaurant span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.orderLine {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  margin-top: 18px;
+}
+
+.editBasket {
+  margin-top: 20px;
+}
+
+.discount {
+  display: grid;
+  grid-template-columns: 1fr 118px;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.discount input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  height: 45px;
+  padding: 0 13px;
+  background: var(--white);
+  outline: none;
+}
+
+.apply {
+  border: 1px solid var(--border);
+  background: var(--mint);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payButton {
+  margin-top: 28px;
+}
+
+.terms {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+.helpTitle {
+  font-size: 26px;
+}
+
+.helpBody {
+  margin-top: 20px;
+}
+
+.helpLink {
+  margin-top: 16px;
+}
+
+@media (max-width: 1280px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .payOptions {
+    grid-template-columns: 1fr;
+  }
+}

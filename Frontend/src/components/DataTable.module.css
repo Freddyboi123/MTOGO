@@ -1,0 +1,39 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background: var(--mint);
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 13px 20px;
+}
+
+.table td {
+  padding: 15px 20px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.selectable {
+  cursor: pointer;
+}
+
+.selected td {
+  background: var(--mint);
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 20px;
+  font-size: 12px;
+  color: var(--muted);
+}
