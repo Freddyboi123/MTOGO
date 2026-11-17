@@ -1,22 +1,18 @@
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import styles from './Apply.module.css';
+import { applyCourierSteps } from '../data/mtogo';
 
-const steps = [
-  {
-    number: '01',
-    title: 'Udfyld din ansøgning',
-    body: 'Fortæl om dig selv og dit køretøj.'
-  },
-  {
-    number: '02',
-    title: 'Få dine dokumenter godkendt',
-    body: 'Du skal være fyldt 18 år og have ret til at arbejde i Danmark.'
-  },
-  {
-    number: '03',
-    title: 'Tag din første levering',
-    body: 'Gå online, og vælg en ledig tur.'
-  }
+const vehicles = ['Cykel', 'Elcykel', 'Scooter', 'Bil'];
+const areas = [
+  'København N',
+  'København K',
+  'København V',
+  'København Ø',
+  'København S',
+  'Frederiksberg'
 ];
 
 export default function ApplyCourier() {
@@ -24,32 +20,30 @@ export default function ApplyCourier() {
     <>
       <SiteHeader variant="app" />
 
-      <section className="page" style={{ paddingTop: 40 }}>
-        <p className="eyebrow">Bliv chaufførpartner</p>
-        <h1 className="display" style={{ fontSize: 44, marginTop: 14 }}>
-          Gode måltider. På din vej.
-        </h1>
-        <p className="lead" style={{ marginTop: 20 }}>
+      <section className={cx(ui.page, styles.intro)}>
+        <p className={ui.eyebrow}>Bliv chaufførpartner</p>
+        <h1 className={styles.title}>Gode måltider. På din vej.</h1>
+        <p className={cx(ui.lead, styles.lead)}>
           Ansøg som chauffør, og lever mad fra lokale køkkener til sultne naboer.
         </p>
       </section>
 
-      <section className="page apply-page" style={{ marginTop: 36 }}>
-        <aside className="apply-aside">
-          <h2>
+      <section className={cx(ui.page, styles.layout)}>
+        <aside className={styles.aside}>
+          <h2 className={styles.asideTitle}>
             Din by.
             <br />
             Dit næste stop.
           </h2>
-          <p className="sub">
+          <p className={styles.asideLead}>
             Tag leverancer, når det passer dig.
             <br />
             Se rute og betaling på forhånd.
           </p>
-          <div className="apply-steps">
-            {steps.map((step) => (
+          <div className={styles.steps}>
+            {applyCourierSteps.map((step) => (
               <div key={step.number}>
-                <div className="num">{step.number}</div>
+                <div className={styles.stepNumber}>{step.number}</div>
                 <h3>{step.title}</h3>
                 <p>{step.body}</p>
               </div>
@@ -57,27 +51,27 @@ export default function ApplyCourier() {
           </div>
         </aside>
 
-        <form className="apply-form" onSubmit={(event) => event.preventDefault()}>
-          <p className="required">Felter markeret med * skal udfyldes.</p>
+        <form className={styles.form} onSubmit={(event) => event.preventDefault()}>
+          <p className={styles.required}>Felter markeret med * skal udfyldes.</p>
 
           <h2>01  Dine oplysninger</h2>
-          <div className="stack">
-            <div className="field-row">
-              <div className="field">
+          <div className={ui.stack}>
+            <div className={ui.fieldRow}>
+              <div className={ui.field}>
                 <label htmlFor="courier-first">Fornavn *</label>
                 <input id="courier-first" placeholder="Sofie" />
               </div>
-              <div className="field">
+              <div className={ui.field}>
                 <label htmlFor="courier-last">Efternavn *</label>
                 <input id="courier-last" placeholder="Andersen" />
               </div>
             </div>
-            <div className="field-row">
-              <div className="field">
+            <div className={ui.fieldRow}>
+              <div className={ui.field}>
                 <label htmlFor="courier-email">E-mail *</label>
                 <input id="courier-email" type="email" placeholder="sofie.a@email.dk" />
               </div>
-              <div className="field">
+              <div className={ui.field}>
                 <label htmlFor="courier-phone">Telefonnummer *</label>
                 <input id="courier-phone" placeholder="+45 28 34 56 78" />
               </div>
@@ -85,61 +79,60 @@ export default function ApplyCourier() {
           </div>
 
           <h2>02  På vejen</h2>
-          <div className="stack">
-            <div className="field-row">
-              <div className="field">
+          <div className={ui.stack}>
+            <div className={ui.fieldRow}>
+              <div className={ui.field}>
                 <label htmlFor="vehicle">Køretøj *</label>
-                <select id="vehicle" defaultValue="Cykel">
-                  <option>Cykel</option>
-                  <option>Elcykel</option>
-                  <option>Scooter</option>
-                  <option>Bil</option>
+                <select id="vehicle" defaultValue={vehicles[0]}>
+                  {vehicles.map((vehicle) => (
+                    <option key={vehicle}>{vehicle}</option>
+                  ))}
                 </select>
               </div>
-              <div className="field">
+              <div className={ui.field}>
                 <label htmlFor="area">Leveringsområde *</label>
-                <select id="area" defaultValue="København N">
-                  <option>København N</option>
-                  <option>København K</option>
-                  <option>København V</option>
-                  <option>København Ø</option>
-                  <option>København S</option>
-                  <option>Frederiksberg</option>
+                <select id="area" defaultValue={areas[0]}>
+                  {areas.map((area) => (
+                    <option key={area}>{area}</option>
+                  ))}
                 </select>
               </div>
             </div>
-            <p className="field-hint">
+            <p className={ui.fieldHint}>
               Kørekort og relevant dokumentation kræves ved motoriseret køretøj.
             </p>
           </div>
 
           <h2>03  Dokumentation</h2>
-          <div className="upload-row">
-            <div className="upload">
+          <div className={styles.uploadRow}>
+            <div className={styles.upload}>
               <strong>Gyldig billedlegitimation *</strong>
               <span>PDF, JPG eller PNG · maks. 10 MB</span>
-              <span className="file">Vælg fil →</span>
+              <span className={styles.uploadFile}>Vælg fil →</span>
             </div>
-            <div className="upload">
+            <div className={styles.upload}>
               <strong>Dokumentation for arbejdsret *</strong>
               <span>PDF, JPG eller PNG · maks. 10 MB</span>
-              <span className="file">Arbejdstilladelse.pdf  ·  Skift fil</span>
+              <span className={styles.uploadFile}>Arbejdstilladelse.pdf  ·  Skift fil</span>
             </div>
           </div>
 
-          <label className="checkbox" style={{ marginTop: 28 }}>
+          <label className={cx(ui.checkbox, styles.consent)}>
             <input type="checkbox" />
             Jeg er fyldt 18 år og har ret til at arbejde i Danmark.
           </label>
-          <label className="checkbox" style={{ marginTop: 16 }}>
+          <label className={cx(ui.checkbox, styles.consent)}>
             <input type="checkbox" />
             Jeg accepterer partnervilkårene og har læst privatlivspolitikken.
           </label>
 
-          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 28 }}>
+          <button
+            type="submit"
+            className={cx(ui.btn, ui.btnPrimary, ui.btnBlock, styles.submit)}
+          >
             Send chaufføransøgning
           </button>
-          <p className="field-hint" style={{ marginTop: 20 }}>
+          <p className={cx(ui.fieldHint, styles.footnote)}>
             Upload begge dokumenter før indsendelse. Du følger din ansøgning på Min profil.
           </p>
         </form>

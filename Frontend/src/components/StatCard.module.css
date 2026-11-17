@@ -1,0 +1,24 @@
+.stat {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px 20px;
+}
+
+.label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.value {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 38px;
+  margin-top: 10px;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 14px;
+}

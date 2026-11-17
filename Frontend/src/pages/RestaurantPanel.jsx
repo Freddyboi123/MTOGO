@@ -1,6 +1,18 @@
 import DashboardLayout from '../components/DashboardLayout';
 import StatCard from '../components/StatCard';
-import { restaurant, restaurantMenuRows, restaurantOrders } from '../data/mtogo';
+import Panel from '../components/Panel';
+import DataTable from '../components/DataTable';
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import dash from '../components/DashboardLayout.module.css';
+import styles from './RestaurantPanel.module.css';
+import {
+  openingHours,
+  restaurant,
+  restaurantMenuRows,
+  restaurantOrders,
+  restaurantPanelStats
+} from '../data/mtogo';
 
 const items = [
   { to: '/restaurantpanel/overblik', label: 'Overblik' },
@@ -11,10 +23,20 @@ const items = [
   { to: '/restaurantpanel/udbetalinger', label: 'Udbetalinger' }
 ];
 
-const openingHours = [
-  { days: 'Mandag – torsdag', hours: '11.00 – 22.00' },
-  { days: 'Fredag – lørdag', hours: '11.00 – 23.00' },
-  { days: 'Søndag', hours: '12.00 – 22.00' }
+const menuColumns = [
+  { key: 'name', label: 'Vare' },
+  { key: 'price', label: 'Pris' },
+  { key: 'state', label: 'Tilgængelig', render: (row) => `${row.state} ▾` },
+  { key: 'actions', label: 'Handling', render: () => 'Rediger · Slet' }
+];
+
+const orderColumns = [
+  { key: 'id', label: 'Ordre' },
+  { key: 'customer', label: 'Kunde' },
+  { key: 'items', label: 'Indhold' },
+  { key: 'amount', label: 'Beløb' },
+  { key: 'status', label: 'Status' },
+  { key: 'action', label: 'Handling' }
 ];
 
 export default function RestaurantPanel() {
@@ -22,39 +44,51 @@ export default function RestaurantPanel() {
     <DashboardLayout
       role="Restaurantpartner"
       items={items}
-      breadcrumb="Osteria Nørrebro  /  Restaurantpanel"
+      breadcrumb={`${restaurant.name}  /  Restaurantpanel`}
       user="Luca Moretti"
     >
-      <div className="dash-head">
+      <div className={dash.head}>
         <div>
-          <p className="eyebrow">Dit køkken på MTOGO</p>
-          <h1>Min restaurant</h1>
-          <p className="lead">
+          <p className={ui.eyebrow}>Dit køkken på MTOGO</p>
+          <h1 className={dash.title}>Min restaurant</h1>
+          <p className={dash.subtitle}>
             Administrer din side, hold menuen frisk, og få overblik over dagens ordrer.
           </p>
         </div>
-        <div className="dash-actions">
-          <button className="btn btn-outline btn-sm">Se offentlig side ↗</button>
-          <button className="btn btn-dark btn-sm">Gem ændringer</button>
+        <div className={dash.actions}>
+          <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Se offentlig side ↗</button>
+          <button className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>Gem ændringer</button>
         </div>
       </div>
 
-      <div className="stat-grid">
-        <StatCard label="Ordrer i dag" value="12" note="3 aktive lige nu" />
-        <StatCard label="Omsætning i dag" value="2.486 kr." note="Før gebyrer og afregning" />
-        <StatCard label="Gæsternes bedømmelse" value="4,8 / 5" note="240+ anmeldelser" />
+      <div className={dash.statGrid}>
+        <StatCard
+          label="Ordrer i dag"
+          value={restaurantPanelStats.ordersToday}
+          note={`${restaurantPanelStats.activeOrders} aktive lige nu`}
+        />
+        <StatCard
+          label="Omsætning i dag"
+          value={restaurantPanelStats.revenueToday}
+          note="Før gebyrer og afregning"
+        />
+        <StatCard
+          label="Gæsternes bedømmelse"
+          value={restaurantPanelStats.rating}
+          note={`${restaurantPanelStats.reviews} anmeldelser`}
+        />
       </div>
 
-      <div className="split" style={{ gridTemplateColumns: '704px 1fr' }}>
-        <div className="block" style={{ marginBottom: 0 }}>
+      <div className={styles.split}>
+        <div className={cx(ui.block, styles.block)}>
           <h2>Restaurantoplysninger</h2>
-          <div className="stack">
-            <div className="field-row">
-              <div className="field">
+          <div className={ui.stack}>
+            <div className={ui.fieldRow}>
+              <div className={ui.field}>
                 <label htmlFor="panel-name">Navn</label>
                 <input id="panel-name" defaultValue={restaurant.name} />
               </div>
-              <div className="field">
+              <div className={ui.field}>
                 <label htmlFor="panel-cuisine">Køkken</label>
                 <select id="panel-cuisine" defaultValue="Italiensk">
                   <option>Italiensk</option>
@@ -63,145 +97,83 @@ export default function RestaurantPanel() {
                 </select>
               </div>
             </div>
-            <div className="field">
+            <div className={ui.field}>
               <label htmlFor="panel-address">Adresse</label>
               <input id="panel-address" defaultValue="Nørrebrogade 42, 2200 København N" />
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Beskrivelse</div>
-              <p className="muted" style={{ marginTop: 12, fontSize: 14 }}>
-                {restaurant.description} <span className="link-accent">Rediger →</span>
+              <div className={styles.descriptionLabel}>Beskrivelse</div>
+              <p className={styles.description}>
+                {restaurant.description} <span className={ui.linkAccent}>Rediger →</span>
               </p>
             </div>
           </div>
         </div>
 
-        <div className="block" style={{ marginBottom: 0, padding: 0, overflow: 'hidden' }}>
-          <div
-            className="photo"
-            style={{ height: 160, backgroundImage: `url(${restaurant.cover})` }}
-          />
-          <div style={{ padding: 20 }}>
-            <button className="btn btn-outline btn-sm" style={{ marginTop: -56, marginBottom: 20 }}>
+        <div className={styles.preview}>
+          <img className={styles.previewPhoto} src={restaurant.cover} alt="" />
+          <div className={styles.previewBody}>
+            <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall, styles.changeCover)}>
               Skift coverfoto
             </button>
-            <h3 style={{ fontSize: 22, fontWeight: 600 }}>{restaurant.name}</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 10 }}>
-              Italiensk · Pizza · Pasta
-            </p>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginTop: 20
-              }}
-            >
-              <span className="tag">Synlig og åben</span>
-              <span className="link-quiet">Pause bestillinger</span>
+            <h3 className={styles.previewName}>{restaurant.name}</h3>
+            <p className={styles.previewKind}>Italiensk · Pizza · Pasta</p>
+            <div className={styles.previewFooter}>
+              <span className={ui.tag}>Synlig og åben</span>
+              <span className={ui.linkQuiet}>Pause bestillinger</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="split" style={{ gridTemplateColumns: '704px 1fr' }}>
-        <div className="panel" style={{ marginTop: 0 }}>
-          <div className="panel-head">
-            <div>
-              <h2>Menu &amp; varer</h2>
-              <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-                Pizza · 4 af 12 varer
-              </p>
-            </div>
-            <button className="btn btn-dark btn-sm" style={{ marginLeft: 'auto' }}>
-              + Tilføj vare
-            </button>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Vare</th>
-                <th>Pris</th>
-                <th>Tilgængelig</th>
-                <th>Handling</th>
-              </tr>
-            </thead>
-            <tbody>
-              {restaurantMenuRows.map((row) => (
-                <tr key={row.name}>
-                  <td>{row.name}</td>
-                  <td>{row.price}</td>
-                  <td>{row.state} ▾</td>
-                  <td className="muted">Rediger · Slet</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="table-foot">
-            <span>Administrer kategorier →</span>
-            <span>Se alle 12 varer →</span>
-          </div>
+      <div className={styles.split}>
+        <div className={styles.panelFlat}>
+          <Panel
+            title="Menu & varer"
+            subtitle={`${restaurantPanelStats.menuCategory} · ${restaurantMenuRows.length} af ${restaurantPanelStats.menuItemsTotal} varer`}
+            controls={
+              <button className={cx(ui.btn, ui.btnDark, ui.btnSmall, styles.addItem)}>
+                + Tilføj vare
+              </button>
+            }
+          >
+            <DataTable
+              columns={menuColumns}
+              rows={restaurantMenuRows}
+              rowKey="name"
+              footLeft="Administrer kategorier →"
+              footRight={`Se alle ${restaurantPanelStats.menuItemsTotal} varer →`}
+            />
+          </Panel>
         </div>
 
-        <div className="block" style={{ marginTop: 0 }}>
+        <div className={cx(ui.block, styles.block)}>
           <h2>Åbning &amp; levering</h2>
-          <div style={{ marginTop: 24 }}>
+          <div className={styles.hours}>
             {openingHours.map((row) => (
-              <div
-                key={row.days}
-                style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}
-              >
-                <span style={{ fontSize: 14 }}>{row.days}</span>
-                <span style={{ fontSize: 14 }}>{row.hours}</span>
+              <div className={styles.hoursRow} key={row.days}>
+                <span>{row.days}</span>
+                <span>{row.hours}</span>
               </div>
             ))}
           </div>
-          <p className="link-quiet" style={{ marginTop: 20 }}>
-            Rediger åbningstider →
-          </p>
-          <div className="field-row" style={{ marginTop: 28 }}>
-            <div className="field">
+          <p className={cx(ui.linkQuiet, styles.editHours)}>Rediger åbningstider →</p>
+          <div className={cx(ui.fieldRow, styles.limits)}>
+            <div className={ui.field}>
               <label htmlFor="panel-min">Min. bestilling</label>
-              <input id="panel-min" defaultValue="99 kr." />
+              <input id="panel-min" defaultValue={restaurantPanelStats.minimumOrder} />
             </div>
-            <div className="field">
+            <div className={ui.field}>
               <label htmlFor="panel-radius">Leveringsradius</label>
-              <input id="panel-radius" defaultValue="4 km" />
+              <input id="panel-radius" defaultValue={restaurantPanelStats.deliveryRadius} />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="panel">
-        <div className="panel-head">
-          <h2>Aktive ordrer</h2>
-          <span className="right">3 ordrer</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Ordre</th>
-              <th>Kunde</th>
-              <th>Indhold</th>
-              <th>Beløb</th>
-              <th>Status</th>
-              <th>Handling</th>
-            </tr>
-          </thead>
-          <tbody>
-            {restaurantOrders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.id}</td>
-                <td>{order.customer}</td>
-                <td>{order.items}</td>
-                <td>{order.amount}</td>
-                <td>{order.status}</td>
-                <td className="link-accent">{order.action}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Panel title="Aktive ordrer" right={`${restaurantOrders.length} ordrer`}>
+        <DataTable columns={orderColumns} rows={restaurantOrders} rowKey="id" />
+      </Panel>
     </DashboardLayout>
   );
 }

@@ -326,3 +326,159 @@ export const openDeliveries = [
     pay: '38 kr.'
   }
 ];
+
+export const restaurantTotals = {
+  all: 24,
+  active: 21,
+  paused: 3,
+  area: 'På tværs af København'
+};
+
+export const courierTotals = {
+  approved: 18,
+  online: 12,
+  onTrip: 8,
+  available: 4
+};
+
+export const restaurantPanelStats = {
+  ordersToday: 12,
+  activeOrders: 3,
+  revenueToday: '2.486 kr.',
+  rating: '4,8 / 5',
+  reviews: '240+',
+  menuCategory: 'Pizza',
+  menuItemsTotal: 12,
+  minimumOrder: '99 kr.',
+  deliveryRadius: '4 km'
+};
+
+export const courierPanelStats = {
+  deliveriesToday: 6,
+  earningsToday: '224 kr.',
+  activeTrips: 1,
+  plannedTrips: 0,
+  area: 'København N',
+  vehicle: 'Cykel',
+  date: 'Onsdag den 11. november'
+};
+
+export const openingHours = [
+  { days: 'Mandag – torsdag', hours: '11.00 – 22.00' },
+  { days: 'Fredag – lørdag', hours: '11.00 – 23.00' },
+  { days: 'Søndag', hours: '12.00 – 22.00' }
+];
+
+export const activeDelivery = {
+  orderId: '#1042',
+  itemCount: 2,
+  status: 'På vej til afhentning · Maden er klar',
+  distance: '2,4 km · ca. 18 min',
+  pay: '38 kr.',
+  stops: [
+    {
+      label: 'Afhentning',
+      name: 'Osteria Nørrebro',
+      address: 'Nørrebrogade 42, 2200 København N',
+      note: 'Margherita + Burrata · 2 poser'
+    },
+    {
+      label: 'Levering',
+      name: 'Mikkel Hansen',
+      address: 'Tagensvej 12, 1. th., 2200 København N',
+      note: 'Ring på ved ankomst.'
+    }
+  ]
+};
+
+export const restaurantApplicationDetail = {
+  applicantEmail: 'sofie.a@email.dk',
+  applicantPhone: '+45 28 34 56 78',
+  address: 'Nørrebrogade 88, 2200 København N',
+  registration: 'CVR 12345678 · Italiensk · 11.00–22.00',
+  documents: [
+    { name: 'CVR-registrering.pdf', state: 'Kontrolleret  ·  Se →' },
+    { name: 'Fødevaregistrering.pdf', state: 'Vedhæftet  ·  Se →' }
+  ],
+  activity: [
+    { when: '10. nov. · 14.32', text: 'Ansøgning modtaget fra Sofie Andersen.' },
+    { when: '11. nov. · 09.10', text: 'CVR-oplysninger kontrolleret.' },
+    { when: '11. nov. · 09.15', text: 'Sagen er klar til din vurdering.' }
+  ]
+};
+
+export const courierApplicationDetail = {
+  applicantEmail: 'sofie.a@email.dk',
+  applicantPhone: '+45 28 34 56 78',
+  requirements: '18+ bekræftet · Ret til at arbejde i Danmark',
+  documents: [
+    { name: 'Arbejdstilladelse.pdf', state: 'Vedhæftet  ·  Se →' },
+    { name: 'Billedlegitimation', state: 'Mangler  ·  Påmind →' }
+  ],
+  activity: [
+    { when: '10. nov. · 15.04', text: 'Chaufføransøgning modtaget.' },
+    { when: '11. nov. · 09.20', text: 'Legitimation mangler i ansøgningen.' },
+    { when: '11. nov. · 09.25', text: 'Sofie er bedt om at uploade dokumentet.' }
+  ]
+};
+
+export const selectedAdminRestaurant = {
+  name: 'Osteria Nørrebro',
+  id: 'R-001',
+  address: 'Nørrebrogade 42, 2200 København N',
+  contact: 'luca@osteria.dk  ·  +45 22 34 56 78',
+  opening: 'Åbent i dag 11.00–22.00  ·  Leveringsområde: 4 km'
+};
+
+export const selectedAdminCourier = {
+  name: 'Jonas Nielsen',
+  id: 'D-014',
+  area: 'København N',
+  approved: 'Godkendt 2. november 2026',
+  contact: 'jonas.n@email.dk  ·  +45 23 45 67 89',
+  record: 'Dokumenter godkendt  ·  128 leverancer  ·  Bedømmelse 4,9 / 5'
+};
+
+export const applyRestaurantSteps = [
+  {
+    number: '01',
+    title: 'Fortæl os om restauranten',
+    body: 'Udfyld oplysninger og upload dine registreringsdokumenter.'
+  },
+  {
+    number: '02',
+    title: 'Vi gennemgår din ansøgning',
+    body: 'Følg status direkte på din profil.'
+  },
+  {
+    number: '03',
+    title: 'Gør klar til første ordre',
+    body: 'Tilføj menu, billeder og åbningstider i dit restaurantpanel.'
+  }
+];
+
+export const applyCourierSteps = [
+  {
+    number: '01',
+    title: 'Udfyld din ansøgning',
+    body: 'Fortæl om dig selv og dit køretøj.'
+  },
+  {
+    number: '02',
+    title: 'Få dine dokumenter godkendt',
+    body: 'Du skal være fyldt 18 år og have ret til at arbejde i Danmark.'
+  },
+  {
+    number: '03',
+    title: 'Tag din første levering',
+    body: 'Gå online, og vælg en ledig tur.'
+  }
+];
+
+export const profileSections = [
+  'Personlige oplysninger',
+  'Leveringsadresse',
+  'Mine ansøgninger',
+  'Ordrehistorik',
+  'Sikkerhed'
+];

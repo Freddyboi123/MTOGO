@@ -1,8 +1,12 @@
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import styles from './SiteFooter.module.css';
+
 export default function SiteFooter({ variant = 'full' }) {
   if (variant === 'slim') {
     return (
-      <footer className="site-footer site-footer-slim">
-        <div className="page">
+      <footer className={styles.footer}>
+        <div className={cx(ui.page, styles.slim)}>
           <span>© 2026 MTOGO</span>
           <span>Hjælp &amp; kontakt     Privatliv     Handelsbetingelser</span>
         </div>
@@ -11,20 +15,20 @@ export default function SiteFooter({ variant = 'full' }) {
   }
 
   return (
-    <footer className="site-footer">
-      <div className="page">
+    <footer className={styles.footer}>
+      <div className={cx(ui.page, styles.grid)}>
         <div>
-          <div className="brand">MTOGO</div>
-          <p className="footer-sub">Gode måltider. Tættere på.</p>
-          <p className="footer-sub">© 2026 MTOGO Alle rettigheder forbeholdes.</p>
+          <div className={styles.brand}>MTOGO</div>
+          <p className={styles.sub}>Gode måltider. Tættere på.</p>
+          <p className={styles.sub}>© 2026 MTOGO Alle rettigheder forbeholdes.</p>
         </div>
         <div>
-          <div className="footer-links">
+          <div className={styles.links}>
             <a href="#om">Om MTOGO</a>
             <a href="#hjaelp">Hjælp &amp; kontakt</a>
             <a href="#partner">Bliv partner</a>
           </div>
-          <div className="footer-links footer-sub" style={{ marginTop: 20 }}>
+          <div className={styles.linksSecondary}>
             <a href="#privatliv">Privatliv</a>
             <a href="#betingelser">Handelsbetingelser</a>
             <a href="#cookies">Cookies</a>

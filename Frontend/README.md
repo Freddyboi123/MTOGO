@@ -38,11 +38,20 @@ The app runs on http://localhost:5173
 
 ```
 src/
-  components/   Shared layout and UI parts
-  data/         Hardcoded content, replaced by the API later
-  pages/        One file per page in the design
-  styles.css    Design tokens and all styling
+  components/           Shared layout and UI parts, each with its own CSS module
+  data/mtogo.js         All content and numbers, replaced by the API later
+  pages/                One file per page in the design, each with its own CSS module
+  styles/global.css     Design tokens, reset and base element styles
+  styles/shared.module.css  Buttons, fields, cards and other shared classes
+  utils/cx.js           Joins class names
 ```
+
+All styling lives in `.css` files. Components and pages use CSS modules, so class
+names are scoped to the file that owns them, and the only global stylesheet is
+`styles/global.css`. There are no inline styles and no CSS framework.
+
+Numbers shown on the pages come from `data/mtogo.js`, not from the markup, so a
+count changes when the data changes.
 
 ## Images
 
