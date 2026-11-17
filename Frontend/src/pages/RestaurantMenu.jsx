@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import styles from './RestaurantMenu.module.css';
 import { basket, restaurant } from '../data/mtogo';
+
+const deliveryMethods = ['Levering', 'Afhentning'];
 
 export default function RestaurantMenu() {
   const [category, setCategory] = useState(restaurant.categories[0]);
-  const [method, setMethod] = useState('Levering');
+  const [method, setMethod] = useState(deliveryMethods[0]);
 
   const subtotal = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
   const total = subtotal + basket.deliveryFee;
@@ -15,34 +20,33 @@ export default function RestaurantMenu() {
     <>
       <SiteHeader />
 
-      <div className="cover" style={{ backgroundImage: `url(${restaurant.cover})` }}>
-        <Link to="/" className="back">
+      <div className={styles.cover}>
+        <img src={restaurant.cover} alt={restaurant.name} />
+        <Link to="/" className={styles.back}>
           ← Alle restauranter
         </Link>
       </div>
 
-      <section className="page restaurant-head">
+      <section className={cx(ui.page, styles.head)}>
         <div>
-          <p className="eyebrow">{restaurant.eyebrow}</p>
-          <h1>{restaurant.name}</h1>
-          <p className="lead" style={{ marginTop: 20 }}>
-            {restaurant.description}
-          </p>
-          <p className="meta">{restaurant.meta}</p>
+          <p className={ui.eyebrow}>{restaurant.eyebrow}</p>
+          <h1 className={styles.title}>{restaurant.name}</h1>
+          <p className={cx(ui.lead, styles.description)}>{restaurant.description}</p>
+          <p className={styles.meta}>{restaurant.meta}</p>
         </div>
-        <div className="aside">
-          <span className="pill pill-mint">{restaurant.openUntil}</span>
-          <span className="link-quiet">Se restaurantinfo →</span>
+        <div className={styles.headAside}>
+          <span className={ui.pillMint}>{restaurant.openUntil}</span>
+          <span className={ui.linkQuiet}>Se restaurantinfo →</span>
         </div>
       </section>
 
-      <section className="page menu-layout">
+      <section className={cx(ui.page, styles.layout)}>
         <div>
-          <div className="menu-tabs">
+          <div className={styles.tabs}>
             {restaurant.categories.map((name) => (
               <button
                 key={name}
-                className={name === category ? 'menu-tab menu-tab-active' : 'menu-tab'}
+                className={name === category ? styles.tabActive : styles.tab}
                 onClick={() => setCategory(name)}
               >
                 {name}
@@ -50,69 +54,69 @@ export default function RestaurantMenu() {
             ))}
           </div>
 
-          <div className="menu-intro">
+          <div className={styles.intro}>
             <h2>{restaurant.menuTitle}</h2>
             <p>{restaurant.menuIntro}</p>
           </div>
 
-          <div className="menu-grid">
+          <div className={styles.menuGrid}>
             {restaurant.items.map((item) => (
-              <article className="menu-item" key={item.name}>
+              <article className={styles.item} key={item.name}>
                 <div>
                   <h3>{item.name}</h3>
                   <p>{item.description}</p>
-                  {item.flag && <div className="flag">{item.flag.toUpperCase()}</div>}
-                  <div className="price">{item.price} kr.</div>
+                  {item.flag && <div className={styles.itemFlag}>{item.flag}</div>}
+                  <div className={styles.itemPrice}>{item.price} kr.</div>
                 </div>
-                <button className="add-btn" aria-label={`Tilføj ${item.name}`}>
+                <button className={styles.addButton} aria-label={`Tilføj ${item.name}`}>
                   +
                 </button>
               </article>
             ))}
           </div>
 
-          <h2 className="display" style={{ fontSize: 26, marginTop: 48 }}>
-            Noget koldt til?
-          </h2>
+          <h2 className={cx(ui.display, styles.drinksTitle)}>Noget koldt til?</h2>
           {restaurant.drinks.map((drink) => (
-            <div className="drink-row" key={drink.name}>
+            <div className={styles.drinkRow} key={drink.name}>
               <div>
                 <strong>{drink.name}</strong>
                 <span>{drink.description}</span>
               </div>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>{drink.price} kr.</div>
-              <button className="add-btn" aria-label={`Tilføj ${drink.name}`}>
+              <div className={styles.drinkPrice}>{drink.price} kr.</div>
+              <button className={styles.addButton} aria-label={`Tilføj ${drink.name}`}>
                 +
               </button>
             </div>
           ))}
         </div>
 
-        <aside className="basket">
+        <aside className={styles.basket}>
           <h2>Din bestilling</h2>
-          <div className="toggle">
-            {['Levering', 'Afhentning'].map((name) => (
+
+          <div className={styles.toggle}>
+            {deliveryMethods.map((name) => (
               <button
                 key={name}
-                className={name === method ? 'active' : undefined}
+                className={name === method ? styles.toggleButtonActive : styles.toggleButton}
                 onClick={() => setMethod(name)}
               >
                 {name}
               </button>
             ))}
           </div>
-          <p className="basket-address">{basket.address}</p>
-          <p className="basket-eta">{basket.eta}</p>
+
+          <p className={styles.address}>{basket.address}</p>
+          <p className={styles.eta}>{basket.eta}</p>
 
           {basket.lines.map((line) => (
-            <div className="basket-line" key={line.name}>
-              <div className="row">
+            <div className={styles.line} key={line.name}>
+              <div className={styles.lineRow}>
                 <span>
                   {line.quantity} × {line.name}
                 </span>
                 <span>{line.price} kr.</span>
               </div>
-              <div className="qty">
+              <div className={styles.quantity}>
                 <button aria-label="Færre">−</button>
                 <span>{line.quantity}</span>
                 <button aria-label="Flere">+</button>
@@ -120,23 +124,28 @@ export default function RestaurantMenu() {
             </div>
           ))}
 
-          <hr />
-          <div className="sum-row">
+          <hr className={ui.divider} />
+
+          <div className={ui.sumRow}>
             <span>Subtotal</span>
             <span>{subtotal} kr.</span>
           </div>
-          <div className="sum-row">
+          <div className={ui.sumRow}>
             <span>Levering</span>
             <span>{basket.deliveryFee} kr.</span>
           </div>
-          <div className="sum-total">
+          <div className={ui.sumTotal}>
             <span>I alt</span>
             <span>{total} kr.</span>
           </div>
-          <Link to="/betaling" className="btn btn-primary btn-block">
+
+          <Link
+            to="/betaling"
+            className={cx(ui.btn, ui.btnPrimary, ui.btnBlock, styles.checkoutButton)}
+          >
             Gå til betaling · {total} kr.
           </Link>
-          <p className="fine">Alle priser er inkl. moms.</p>
+          <p className={styles.fine}>Alle priser er inkl. moms.</p>
         </aside>
       </section>
 

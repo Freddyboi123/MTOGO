@@ -1,0 +1,109 @@
+.auth {
+  display: grid;
+  grid-template-columns: 600px 1fr;
+  min-height: 100vh;
+}
+
+.aside {
+  background: var(--green);
+  color: var(--cream);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.photo {
+  height: 615px;
+  background: var(--green) url('/images/auth-pizza.png') center / cover no-repeat;
+}
+
+.logo {
+  position: absolute;
+  top: 35px;
+  left: 40px;
+  background: var(--cream);
+  color: var(--green);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.asideText {
+  padding: 44px 48px 40px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.asideTitle {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 48px;
+  color: var(--cream);
+  margin-top: 28px;
+  line-height: 1.16;
+}
+
+.asideBody {
+  color: var(--pale);
+  margin-top: 22px;
+}
+
+.footnote {
+  color: var(--sage);
+  font-size: 12px;
+  margin-top: auto;
+}
+
+.main {
+  padding: 45px 60px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  width: 456px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+@media (max-width: 1280px) {
+  .auth {
+    grid-template-columns: minmax(300px, 520px) 1fr;
+  }
+
+  .photo {
+    height: 420px;
+  }
+
+  .form {
+    width: 100%;
+    max-width: 456px;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .photo {
+    height: 220px;
+  }
+
+  .asideText {
+    padding: 28px 32px 32px;
+  }
+
+  .asideTitle {
+    font-size: 34px;
+    margin-top: 16px;
+  }
+
+  .main {
+    padding: 28px 32px 48px;
+  }
+}

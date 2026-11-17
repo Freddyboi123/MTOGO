@@ -1,44 +1,45 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
-import { courierApplications } from '../data/mtogo';
-
-const activity = [
-  { when: '10. nov. · 15.04', text: 'Chaufføransøgning modtaget.' },
-  { when: '11. nov. · 09.20', text: 'Legitimation mangler i ansøgningen.' },
-  { when: '11. nov. · 09.25', text: 'Sofie er bedt om at uploade dokumentet.' }
-];
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import dash from '../components/DashboardLayout.module.css';
+import styles from './Admin.module.css';
+import {
+  courierApplicationDetail,
+  courierApplications,
+  restaurantApplications
+} from '../data/mtogo';
 
 export default function AdminCourierApplication() {
   const [selected, setSelected] = useState(courierApplications[0]);
+  const pending = restaurantApplications.length + courierApplications.length;
 
   return (
     <AdminLayout breadcrumb="Administration  /  Ansøgninger">
-      <div className="dash-head">
+      <div className={dash.head}>
         <div>
-          <p className="eyebrow">Partneradministration</p>
-          <h1>Ansøgninger</h1>
-          <p className="lead">
+          <p className={ui.eyebrow}>Partneradministration</p>
+          <h1 className={dash.title}>Ansøgninger</h1>
+          <p className={dash.subtitle}>
             Gennemgå oplysninger og dokumenter, før du giver adgang til MTOGO.
           </p>
         </div>
       </div>
 
-      <div className="tabs">
-        <Link to="/admin/ansoegninger/restaurant" className="tab">
-          Restauranter · 3
+      <div className={styles.tabs}>
+        <Link to="/admin/ansoegninger/restaurant" className={styles.tab}>
+          Restauranter · {restaurantApplications.length}
         </Link>
-        <button className="tab active">Chauffører · 3</button>
-        <span className="right">6 ansøgninger afventer handling</span>
+        <button className={styles.tabActive}>Chauffører · {courierApplications.length}</button>
+        <span className={styles.tabsRight}>{pending} ansøgninger afventer handling</span>
       </div>
 
-      <div className="split">
+      <div className={styles.split}>
         <div>
-          <div className="panel" style={{ marginTop: 20, padding: 20 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 22 }}>
-              Chaufføransøgninger
-            </h2>
-            <div className="list-head">
+          <div className={styles.listPanel}>
+            <h2 className={styles.listTitle}>Chaufføransøgninger</h2>
+            <div className={styles.listHead}>
               <span>Navn / ansøger</span>
               <span>Modtaget</span>
               <span>Status</span>
@@ -46,7 +47,7 @@ export default function AdminCourierApplication() {
             {courierApplications.map((application) => (
               <div
                 key={application.id}
-                className={application.id === selected.id ? 'list-row active' : 'list-row'}
+                className={application.id === selected.id ? styles.listRowActive : styles.listRow}
                 onClick={() => setSelected(application)}
               >
                 <div>
@@ -54,22 +55,24 @@ export default function AdminCourierApplication() {
                   <span>{application.detail}</span>
                 </div>
                 <span>{application.received}</span>
-                <span className={application.status === 'Ny' ? 'tag' : 'tag tag-warn'}>
-                  {application.status}
+                <span>
+                  <span className={application.status === 'Ny' ? ui.tag : ui.tagWarn}>
+                    {application.status}
+                  </span>
                 </span>
               </div>
             ))}
-            <p className="field-hint" style={{ marginTop: 22, paddingLeft: 20 }}>
-              Viser 3 ansøgninger  ·  Nyeste først
+            <p className={cx(ui.fieldHint, styles.listFoot)}>
+              Viser {courierApplications.length} ansøgninger  ·  Nyeste først
             </p>
           </div>
 
-          <div className="block">
+          <div className={ui.block}>
             <h2>Seneste aktivitet</h2>
-            <div className="timeline">
-              {activity.map((entry) => (
+            <div className={styles.timeline}>
+              {courierApplicationDetail.activity.map((entry) => (
                 <div key={entry.when}>
-                  <div className="when">{entry.when}</div>
+                  <div className={styles.timelineWhen}>{entry.when}</div>
                   <p>{entry.text}</p>
                 </div>
               ))}
@@ -77,52 +80,38 @@ export default function AdminCourierApplication() {
           </div>
         </div>
 
-        <div className="block" style={{ marginTop: 20 }}>
-          <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 26 }}>
-            {selected.name}
-          </h2>
-          <p className="muted" style={{ fontSize: 13, marginTop: 14 }}>
-            Chauffør · {selected.id}
-          </p>
-          <span className="tag tag-warn" style={{ marginTop: 16 }}>
-            {selected.status}
-          </span>
+        <div className={ui.block}>
+          <h2 className={styles.caseTitle}>{selected.name}</h2>
+          <p className={styles.caseId}>Chauffør · {selected.id}</p>
+          <div>
+            <span className={cx(ui.tagWarn, styles.caseTag)}>{selected.status}</span>
+          </div>
 
-          <div style={{ marginTop: 32 }}>
-            <div className="label" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
-              ANSØGER
-            </div>
-            <p style={{ marginTop: 12 }}>{selected.name} · sofie.a@email.dk</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              +45 28 34 56 78
+          <div className={styles.caseSection}>
+            <div className={ui.sectionLabel}>ANSØGER</div>
+            <p className={styles.caseValue}>
+              {selected.name} · {courierApplicationDetail.applicantEmail}
             </p>
+            <p className={styles.caseNote}>{courierApplicationDetail.applicantPhone}</p>
           </div>
 
-          <div style={{ marginTop: 28 }}>
-            <div className="label" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
-              LEVERINGSOPLYSNINGER
-            </div>
-            <p style={{ marginTop: 12 }}>{selected.detail}</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              18+ bekræftet · Ret til at arbejde i Danmark
-            </p>
+          <div className={styles.caseSection}>
+            <div className={ui.sectionLabel}>LEVERINGSOPLYSNINGER</div>
+            <p className={styles.caseValue}>{selected.detail}</p>
+            <p className={styles.caseNote}>{courierApplicationDetail.requirements}</p>
           </div>
 
-          <div style={{ marginTop: 28 }}>
-            <div className="label" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
-              DOKUMENTER
-            </div>
-            <div className="doc">
-              <span>Arbejdstilladelse.pdf</span>
-              <span className="state">Vedhæftet  ·  Se →</span>
-            </div>
-            <div className="doc">
-              <span>Billedlegitimation</span>
-              <span className="state">Mangler  ·  Påmind →</span>
-            </div>
+          <div className={styles.caseSection}>
+            <div className={ui.sectionLabel}>DOKUMENTER</div>
+            {courierApplicationDetail.documents.map((document) => (
+              <div className={styles.doc} key={document.name}>
+                <span>{document.name}</span>
+                <span className={styles.docState}>{document.state}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="field" style={{ marginTop: 28 }}>
+          <div className={cx(ui.field, styles.caseSection)}>
             <label htmlFor="courier-message">Efterspørg dokumentation</label>
             <textarea
               id="courier-message"
@@ -130,14 +119,17 @@ export default function AdminCourierApplication() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 144px', gap: 12, marginTop: 24 }}>
-            <button className="btn btn-primary btn-sm">Send påmindelse</button>
-            <button className="btn btn-outline btn-sm">Afvis</button>
+          <div className={styles.decision}>
+            <button className={cx(ui.btn, ui.btnPrimary, ui.btnSmall)}>Send påmindelse</button>
+            <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Afvis</button>
           </div>
-          <button className="btn btn-outline btn-sm btn-block" style={{ marginTop: 14 }} disabled>
+          <button
+            className={cx(ui.btn, ui.btnOutline, ui.btnSmall, ui.btnBlock, styles.secondaryAction)}
+            disabled
+          >
             Godkend · afventer dokument
           </button>
-          <p className="field-hint" style={{ marginTop: 20 }}>
+          <p className={cx(ui.fieldHint, styles.decisionNote)}>
             Godkendelse kræver den manglende legitimation.
           </p>
         </div>

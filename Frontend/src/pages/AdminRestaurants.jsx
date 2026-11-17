@@ -1,86 +1,109 @@
 import { useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import StatCard from '../components/StatCard';
-import { adminRestaurants } from '../data/mtogo';
+import Panel from '../components/Panel';
+import DataTable from '../components/DataTable';
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import dash from '../components/DashboardLayout.module.css';
+import styles from './Admin.module.css';
+import {
+  adminRestaurants,
+  restaurantApplications,
+  restaurantTotals,
+  selectedAdminRestaurant
+} from '../data/mtogo';
+
+const statuses = ['Alle statusser', 'Aktiv', 'Pauset'];
 
 export default function AdminRestaurants() {
-  const [selected, setSelected] = useState(adminRestaurants[0].name);
+  const [selected, setSelected] = useState(adminRestaurants[0]);
+
+  const columns = [
+    { key: 'name', label: 'Restaurant' },
+    { key: 'contact', label: 'Kontaktperson' },
+    { key: 'area', label: 'Område' },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (row) => (
+        <span className={row.status === 'Aktiv' ? ui.tag : ui.tagWarn}>{row.status}</span>
+      )
+    },
+    { key: 'action', label: 'Handling', render: () => 'Rediger →' }
+  ];
 
   return (
     <AdminLayout breadcrumb="Administration  /  Restauranter">
-      <div className="dash-head">
+      <div className={dash.head}>
         <div>
-          <p className="eyebrow">Partneradministration</p>
-          <h1>Restauranter</h1>
-          <p className="lead">
+          <p className={ui.eyebrow}>Partneradministration</p>
+          <h1 className={dash.title}>Restauranter</h1>
+          <p className={dash.subtitle}>
             Hold styr på dine restaurantpartnere, åbning og tilgængelighed.
           </p>
         </div>
-        <button className="btn btn-dark btn-sm">+ Tilføj restaurant</button>
+        <button className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>+ Tilføj restaurant</button>
       </div>
 
-      <div className="stat-grid">
-        <StatCard label="Restauranter i alt" value="24" note="På tværs af København" />
-        <StatCard label="Aktive partnere" value="21" note="3 restauranter er pauset" />
-        <StatCard label="Nye ansøgninger" value="3" note="Afventer behandling" />
+      <div className={dash.statGrid}>
+        <StatCard
+          label="Restauranter i alt"
+          value={restaurantTotals.all}
+          note={restaurantTotals.area}
+        />
+        <StatCard
+          label="Aktive partnere"
+          value={restaurantTotals.active}
+          note={`${restaurantTotals.paused} restauranter er pauset`}
+        />
+        <StatCard
+          label="Nye ansøgninger"
+          value={restaurantApplications.length}
+          note="Afventer behandling"
+        />
       </div>
 
-      <div className="panel">
-        <div className="panel-head">
-          <input className="search-input" placeholder="Søg efter navn eller e-mail…" />
-          <select className="select-input" defaultValue="Alle statusser">
-            <option>Alle statusser</option>
-            <option>Aktiv</option>
-            <option>Pauset</option>
-          </select>
-          <span className="right">6 af 24 restauranter</span>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Restaurant</th>
-              <th>Kontaktperson</th>
-              <th>Område</th>
-              <th>Status</th>
-              <th>Handling</th>
-            </tr>
-          </thead>
-          <tbody>
-            {adminRestaurants.map((row) => (
-              <tr
-                key={row.name}
-                className={row.name === selected ? 'selected' : undefined}
-                onClick={() => setSelected(row.name)}
-              >
-                <td>{row.name}</td>
-                <td>{row.contact}</td>
-                <td>{row.area}</td>
-                <td>
-                  <span className={row.status === 'Aktiv' ? 'tag' : 'tag tag-warn'}>
-                    {row.status}
-                  </span>
-                </td>
-                <td className="link-accent">Rediger →</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="table-foot">
-          <span>Viser 1–6 af 24 restauranter</span>
-          <span>←  Forrige     1   2   3     Næste →</span>
-        </div>
-      </div>
+      <Panel
+        controls={
+          <>
+            <input
+              className={styles.searchInput}
+              placeholder="Søg efter navn eller e-mail…"
+              aria-label="Søg"
+            />
+            <select className={styles.selectInput} defaultValue={statuses[0]} aria-label="Status">
+              {statuses.map((status) => (
+                <option key={status}>{status}</option>
+              ))}
+            </select>
+          </>
+        }
+        right={`${adminRestaurants.length} af ${restaurantTotals.all} restauranter`}
+      >
+        <DataTable
+          columns={columns}
+          rows={adminRestaurants}
+          rowKey="name"
+          selectedKey={selected.name}
+          onSelect={setSelected}
+          footLeft={`Viser 1–${adminRestaurants.length} af ${restaurantTotals.all} restauranter`}
+          footRight="←  Forrige     1   2   3     Næste →"
+        />
+      </Panel>
 
-      <div className="detail">
+      <div className={styles.detail}>
         <div>
-          <h3>Osteria Nørrebro</h3>
-          <p>Restaurant-ID R-001 · Nørrebrogade 42, 2200 København N</p>
-          <p>Kontakt: luca@osteria.dk  ·  +45 22 34 56 78</p>
-          <p>Åbent i dag 11.00–22.00  ·  Leveringsområde: 4 km</p>
+          <h3>{selectedAdminRestaurant.name}</h3>
+          <p>
+            Restaurant-ID {selectedAdminRestaurant.id} · {selectedAdminRestaurant.address}
+          </p>
+          <p>Kontakt: {selectedAdminRestaurant.contact}</p>
+          <p>{selectedAdminRestaurant.opening}</p>
         </div>
-        <div className="detail-actions">
-          <button className="btn btn-dark btn-sm">Rediger oplysninger</button>
-          <button className="btn btn-outline btn-sm">Pause restaurant</button>
+        <div className={styles.detailActions}>
+          <button className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>Rediger oplysninger</button>
+          <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Pause restaurant</button>
         </div>
       </div>
     </AdminLayout>

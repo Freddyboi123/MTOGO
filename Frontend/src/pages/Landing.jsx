@@ -1,115 +1,137 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import styles from './Landing.module.css';
 import { cuisines, howItWorks, restaurants } from '../data/mtogo';
 
 export default function Landing() {
+  const [activeCuisine, setActiveCuisine] = useState(cuisines[0]);
+
   return (
     <>
       <SiteHeader />
 
-      <section className="page hero">
+      <section className={cx(ui.page, styles.hero)}>
         <div>
-          <p className="eyebrow">God mad. Lige om hjørnet.</p>
-          <h1 className="display">
+          <p className={ui.eyebrow}>God mad. Lige om hjørnet.</p>
+          <h1 className={cx(ui.display, styles.heroTitle)}>
             Din næste favorit
             <br />
             er tættere på,
             <br />
             end du tror.
           </h1>
-          <p className="lead">
+          <p className={cx(ui.lead, styles.heroLead)}>
             Byens bedste køkkener. Friske favoritter.
             <br />
             Leveret til din dør eller klar til afhentning.
           </p>
-          <form className="searchbar" onSubmit={(event) => event.preventDefault()}>
+
+          <form className={styles.searchbar} onSubmit={(event) => event.preventDefault()}>
             <input placeholder="Indtast din leveringsadresse" aria-label="Leveringsadresse" />
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className={cx(ui.btn, ui.btnPrimary)}>
               Find mad i nærheden
             </button>
           </form>
-          <p className="hero-note">Fra lokale favoritter til din nye livret.</p>
+
+          <p className={styles.heroNote}>Fra lokale favoritter til din nye livret.</p>
         </div>
-        <div className="hero-media">
-          <div className="photo" style={{ backgroundImage: 'url(/images/hero-pizza.png)' }} />
-          <div className="hero-badge">
+
+        <div className={styles.heroMedia}>
+          <div className={styles.heroPhoto} />
+          <div className={styles.heroBadge}>
             <strong>Lavet lokalt. Nydt hjemme.</strong>
             <span>Smag på dit nabolag</span>
           </div>
         </div>
       </section>
 
-      <section className="page section">
-        <h2 style={{ fontSize: 24, fontWeight: 600 }}>Hvad har du lyst til?</h2>
-        <div className="chips">
-          {cuisines.map((cuisine, index) => (
-            <button key={cuisine} className={index === 0 ? 'chip chip-active' : 'chip'}>
+      <section className={cx(ui.page, styles.section)}>
+        <h2 className={styles.sectionTitleSmall}>Hvad har du lyst til?</h2>
+        <div className={styles.chips}>
+          {cuisines.map((cuisine) => (
+            <button
+              key={cuisine}
+              className={cuisine === activeCuisine ? styles.chipActive : styles.chip}
+              onClick={() => setActiveCuisine(cuisine)}
+            >
               {cuisine}
             </button>
           ))}
         </div>
       </section>
 
-      <section className="page section">
-        <div className="section-head">
+      <section className={cx(ui.page, styles.section)}>
+        <div className={styles.sectionHead}>
           <div>
-            <h2 className="display">Lokale favoritter</h2>
-            <p className="lead" style={{ fontSize: 15, marginTop: 16 }}>
+            <h2 className={cx(ui.display, styles.sectionTitle)}>Lokale favoritter</h2>
+            <p className={ui.lead}>
               De steder, du vender tilbage til. Og dem, du ikke har opdaget endnu.
             </p>
           </div>
-          <span className="link-accent">Se alle restauranter →</span>
+          <span className={ui.linkAccent}>Se alle restauranter →</span>
         </div>
-        <div className="restaurant-grid">
+
+        <div className={styles.grid}>
           {restaurants.map((item) => (
-            <Link key={item.id} to="/restaurant" className="restaurant-card">
-              <div className="photo" style={{ backgroundImage: `url(${item.image})` }}>
-                <span className="badge">{item.badge}</span>
+            <Link key={item.id} to="/restaurant" className={styles.card}>
+              <div className={styles.cardPhoto}>
+                <img src={item.image} alt={item.name} />
+                <span className={styles.cardBadge}>{item.badge}</span>
               </div>
-              <div className="body">
+              <div className={styles.cardBody}>
                 <h3>{item.name}</h3>
-                <p className="kind">{item.kind}</p>
-                <p className="rating">{item.rating}</p>
-                <p className="delivery">{item.delivery}</p>
+                <p className={styles.cardKind}>{item.kind}</p>
+                <p className={styles.cardRating}>{item.rating}</p>
+                <p className={styles.cardDelivery}>{item.delivery}</p>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className="page section">
-        <h2 className="display">Lidt inspiration til i aften</h2>
-        <div className="promo-grid">
-          <article className="promo">
-            <div className="text">
-              <p className="eyebrow">En lille bid af Italien</p>
+      <section className={cx(ui.page, styles.section)}>
+        <h2 className={cx(ui.display, styles.sectionTitle)}>Lidt inspiration til i aften</h2>
+        <div className={styles.promoGrid}>
+          <article className={styles.promo}>
+            <div className={styles.promoText}>
+              <p className={cx(ui.eyebrow, styles.promoEyebrow)}>En lille bid af Italien</p>
               <h3>Pizza, pasta og god stemning.</h3>
-              <span className="link-quiet">Find din italienske favorit →</span>
+              <span className={cx(ui.linkQuiet, styles.promoLink)}>
+                Find din italienske favorit →
+              </span>
             </div>
-            <div className="photo" style={{ backgroundImage: 'url(/images/restaurant-pizza.png)' }} />
+            <img className={styles.promoPhoto} src="/images/restaurant-pizza.png" alt="" />
           </article>
-          <article className="promo promo-sand">
-            <div className="text">
-              <p className="eyebrow">Friskt, grønt og fuldt af smag</p>
+
+          <article className={styles.promoSand}>
+            <div className={styles.promoText}>
+              <p className={cx(ui.eyebrow, styles.promoEyebrow)}>Friskt, grønt og fuldt af smag</p>
               <h3>
                 God energi.
                 <br />
                 Endnu bedre MTOGO
               </h3>
-              <span className="link-quiet">Udforsk bowls &amp; salater →</span>
+              <span className={cx(ui.linkQuiet, styles.promoLink)}>
+                Udforsk bowls &amp; salater →
+              </span>
             </div>
-            <div className="photo" style={{ backgroundImage: 'url(/images/restaurant-bowl.png)' }} />
+            <img className={styles.promoPhoto} src="/images/restaurant-bowl.png" alt="" />
           </article>
         </div>
       </section>
 
-      <section className="page section" id="saadan-fungerer-det">
-        <h2 className="display">Fra køkken til spisebord. Helt enkelt.</h2>
-        <div className="steps">
+      <section className={cx(ui.page, styles.section)} id="saadan-fungerer-det">
+        <h2 className={cx(ui.display, styles.sectionTitle)}>
+          Fra køkken til spisebord. Helt enkelt.
+        </h2>
+        <div className={styles.steps}>
           {howItWorks.map((step) => (
-            <div className="step" key={step.number}>
-              <div className="num">{step.number}</div>
+            <div className={styles.step} key={step.number}>
+              <div className={styles.stepNumber}>{step.number}</div>
               <h3>{step.title}</h3>
               <p>{step.body}</p>
             </div>
@@ -117,18 +139,18 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="page">
-        <div className="partner-band">
+      <section className={ui.page}>
+        <div className={styles.partnerBand}>
           <div>
-            <p className="eyebrow eyebrow-light">God mad fortjener godt selskab</p>
-            <h2>
+            <p className={ui.eyebrowLight}>God mad fortjener godt selskab</p>
+            <h2 className={styles.partnerTitle}>
               Har du en restaurant?
               <br />
               Lad os dele din gode MTOGO
             </h2>
-            <p className="note">Nå flere lokale gæster med MTOGO</p>
+            <p className={styles.partnerNote}>Nå flere lokale gæster med MTOGO</p>
           </div>
-          <Link to="/ansoeg/restaurant" className="btn btn-light">
+          <Link to="/ansoeg/restaurant" className={cx(ui.btn, ui.btnLight)}>
             Bliv restaurantpartner →
           </Link>
         </div>

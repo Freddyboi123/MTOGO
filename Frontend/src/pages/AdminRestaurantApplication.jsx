@@ -1,44 +1,45 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
-import { restaurantApplications } from '../data/mtogo';
-
-const activity = [
-  { when: '10. nov. · 14.32', text: 'Ansøgning modtaget fra Sofie Andersen.' },
-  { when: '11. nov. · 09.10', text: 'CVR-oplysninger kontrolleret.' },
-  { when: '11. nov. · 09.15', text: 'Sagen er klar til din vurdering.' }
-];
+import cx from '../utils/cx';
+import ui from '../styles/shared.module.css';
+import dash from '../components/DashboardLayout.module.css';
+import styles from './Admin.module.css';
+import {
+  courierApplications,
+  restaurantApplicationDetail,
+  restaurantApplications
+} from '../data/mtogo';
 
 export default function AdminRestaurantApplication() {
   const [selected, setSelected] = useState(restaurantApplications[0]);
+  const pending = restaurantApplications.length + courierApplications.length;
 
   return (
     <AdminLayout breadcrumb="Administration  /  Ansøgninger">
-      <div className="dash-head">
+      <div className={dash.head}>
         <div>
-          <p className="eyebrow">Partneradministration</p>
-          <h1>Ansøgninger</h1>
-          <p className="lead">
+          <p className={ui.eyebrow}>Partneradministration</p>
+          <h1 className={dash.title}>Ansøgninger</h1>
+          <p className={dash.subtitle}>
             Gennemgå oplysninger og dokumenter, før du giver adgang til MTOGO.
           </p>
         </div>
       </div>
 
-      <div className="tabs">
-        <button className="tab active">Restauranter · 3</button>
-        <Link to="/admin/ansoegninger/chauffoer" className="tab">
-          Chauffører · 3
+      <div className={styles.tabs}>
+        <button className={styles.tabActive}>Restauranter · {restaurantApplications.length}</button>
+        <Link to="/admin/ansoegninger/chauffoer" className={styles.tab}>
+          Chauffører · {courierApplications.length}
         </Link>
-        <span className="right">6 ansøgninger afventer handling</span>
+        <span className={styles.tabsRight}>{pending} ansøgninger afventer handling</span>
       </div>
 
-      <div className="split">
+      <div className={styles.split}>
         <div>
-          <div className="panel" style={{ marginTop: 20, padding: 20 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 22 }}>
-              Restaurantansøgninger
-            </h2>
-            <div className="list-head">
+          <div className={styles.listPanel}>
+            <h2 className={styles.listTitle}>Restaurantansøgninger</h2>
+            <div className={styles.listHead}>
               <span>Navn / ansøger</span>
               <span>Modtaget</span>
               <span>Status</span>
@@ -46,7 +47,7 @@ export default function AdminRestaurantApplication() {
             {restaurantApplications.map((application) => (
               <div
                 key={application.id}
-                className={application.id === selected.id ? 'list-row active' : 'list-row'}
+                className={application.id === selected.id ? styles.listRowActive : styles.listRow}
                 onClick={() => setSelected(application)}
               >
                 <div>
@@ -54,22 +55,24 @@ export default function AdminRestaurantApplication() {
                   <span>{application.applicant}</span>
                 </div>
                 <span>{application.received}</span>
-                <span className={application.status === 'Ny' ? 'tag' : 'tag tag-warn'}>
-                  {application.status}
+                <span>
+                  <span className={application.status === 'Ny' ? ui.tag : ui.tagWarn}>
+                    {application.status}
+                  </span>
                 </span>
               </div>
             ))}
-            <p className="field-hint" style={{ marginTop: 22, paddingLeft: 20 }}>
-              Viser 3 ansøgninger  ·  Nyeste først
+            <p className={cx(ui.fieldHint, styles.listFoot)}>
+              Viser {restaurantApplications.length} ansøgninger  ·  Nyeste først
             </p>
           </div>
 
-          <div className="block">
+          <div className={ui.block}>
             <h2>Seneste aktivitet</h2>
-            <div className="timeline">
-              {activity.map((entry) => (
+            <div className={styles.timeline}>
+              {restaurantApplicationDetail.activity.map((entry) => (
                 <div key={entry.when}>
-                  <div className="when">{entry.when}</div>
+                  <div className={styles.timelineWhen}>{entry.when}</div>
                   <p>{entry.text}</p>
                 </div>
               ))}
@@ -77,52 +80,38 @@ export default function AdminRestaurantApplication() {
           </div>
         </div>
 
-        <div className="block" style={{ marginTop: 20 }}>
-          <h2 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 26 }}>
-            {selected.name}
-          </h2>
-          <p className="muted" style={{ fontSize: 13, marginTop: 14 }}>
-            Restaurant · {selected.id}
-          </p>
-          <span className="tag tag-warn" style={{ marginTop: 16 }}>
-            {selected.status}
-          </span>
+        <div className={ui.block}>
+          <h2 className={styles.caseTitle}>{selected.name}</h2>
+          <p className={styles.caseId}>Restaurant · {selected.id}</p>
+          <div>
+            <span className={cx(ui.tagWarn, styles.caseTag)}>{selected.status}</span>
+          </div>
 
-          <div style={{ marginTop: 32 }}>
-            <div className="label" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
-              ANSØGER
-            </div>
-            <p style={{ marginTop: 12 }}>{selected.applicant} · sofie.a@email.dk</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              +45 28 34 56 78
+          <div className={styles.caseSection}>
+            <div className={ui.sectionLabel}>ANSØGER</div>
+            <p className={styles.caseValue}>
+              {selected.applicant} · {restaurantApplicationDetail.applicantEmail}
             </p>
+            <p className={styles.caseNote}>{restaurantApplicationDetail.applicantPhone}</p>
           </div>
 
-          <div style={{ marginTop: 28 }}>
-            <div className="label" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
-              RESTAURANTOPLYSNINGER
-            </div>
-            <p style={{ marginTop: 12 }}>Nørrebrogade 88, 2200 København N</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              CVR 12345678 · Italiensk · 11.00–22.00
-            </p>
+          <div className={styles.caseSection}>
+            <div className={ui.sectionLabel}>RESTAURANTOPLYSNINGER</div>
+            <p className={styles.caseValue}>{restaurantApplicationDetail.address}</p>
+            <p className={styles.caseNote}>{restaurantApplicationDetail.registration}</p>
           </div>
 
-          <div style={{ marginTop: 28 }}>
-            <div className="label" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)' }}>
-              DOKUMENTER
-            </div>
-            <div className="doc">
-              <span>CVR-registrering.pdf</span>
-              <span className="state">Kontrolleret  ·  Se →</span>
-            </div>
-            <div className="doc">
-              <span>Fødevaregistrering.pdf</span>
-              <span className="state">Vedhæftet  ·  Se →</span>
-            </div>
+          <div className={styles.caseSection}>
+            <div className={ui.sectionLabel}>DOKUMENTER</div>
+            {restaurantApplicationDetail.documents.map((document) => (
+              <div className={styles.doc} key={document.name}>
+                <span>{document.name}</span>
+                <span className={styles.docState}>{document.state}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="field" style={{ marginTop: 28 }}>
+          <div className={cx(ui.field, styles.caseSection)}>
             <label htmlFor="applicant-message">Besked til ansøger</label>
             <textarea
               id="applicant-message"
@@ -130,14 +119,16 @@ export default function AdminRestaurantApplication() {
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 144px', gap: 12, marginTop: 24 }}>
-            <button className="btn btn-primary btn-sm">Godkend restaurant</button>
-            <button className="btn btn-outline btn-sm">Afvis</button>
+          <div className={styles.decision}>
+            <button className={cx(ui.btn, ui.btnPrimary, ui.btnSmall)}>Godkend restaurant</button>
+            <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Afvis</button>
           </div>
-          <button className="btn btn-outline btn-sm btn-block" style={{ marginTop: 14 }}>
+          <button
+            className={cx(ui.btn, ui.btnOutline, ui.btnSmall, ui.btnBlock, styles.secondaryAction)}
+          >
             Bed om oplysninger
           </button>
-          <p className="field-hint" style={{ marginTop: 20 }}>
+          <p className={cx(ui.fieldHint, styles.decisionNote)}>
             Ansøger får besked om din afgørelse på e-mail.
           </p>
         </div>
