@@ -1,0 +1,484 @@
+export const cuisines = [
+  'Alle køkkener',
+  'Pizza',
+  'Burger',
+  'Sushi',
+  'Asiatisk',
+  'Grønt & sundt',
+  'Italiensk',
+  'Indisk'
+];
+
+export const restaurants = [
+  {
+    id: 'osteria-noerrebro',
+    name: 'Osteria Nørrebro',
+    badge: 'Populær',
+    kind: 'Italiensk · Pizza · Pasta',
+    rating: '★ 4,8 (240+)',
+    delivery: '20–30 min  ·  Levering 19 kr.',
+    image: '/images/restaurant-pizza.png'
+  },
+  {
+    id: 'buns-and-friends',
+    name: 'Buns & Friends',
+    badge: 'Lokal favorit',
+    kind: 'Burger · Amerikansk',
+    rating: '★ 4,7 (180+)',
+    delivery: '15–25 min  ·  Levering 15 kr.',
+    image: '/images/restaurant-burger.png'
+  },
+  {
+    id: 'green-kitchen',
+    name: 'Green Kitchen',
+    badge: 'Frisk & grønt',
+    kind: 'Bowls · Grønt · Frisk',
+    rating: '★ 4,9 (120+)',
+    delivery: '20–35 min  ·  Levering 19 kr.',
+    image: '/images/restaurant-bowl.png'
+  }
+];
+
+export const howItWorks = [
+  {
+    number: '01',
+    title: 'Find dit næste måltid',
+    body: 'Indtast din adresse, og udforsk de bedste køkkener i nærheden.'
+  },
+  {
+    number: '02',
+    title: 'Vælg dine favoritter',
+    body: 'Sammensæt din bestilling. Vi giver dine ønsker videre til køkkenet.'
+  },
+  {
+    number: '03',
+    title: 'Nyd den gode smag',
+    body: 'Få maden leveret til døren, eller hent den selv på vejen.'
+  }
+];
+
+export const restaurant = {
+  name: 'Osteria Nørrebro',
+  eyebrow: 'Italiensk håndværk · København N',
+  description: 'Napolitansk pizza, gode råvarer og lidt italiensk kærlighed.',
+  meta: '★ 4,8 (240+)     ·     20–30 min     ·     Levering 19 kr.     ·     Min. 99 kr.',
+  openUntil: 'Åbent til 22.00',
+  cover: '/images/restaurant-cover.png',
+  categories: ['Populært', 'Pizza', 'Pasta', 'Tilbehør', 'Drikkevarer'],
+  menuTitle: 'Pizza, som den skal være',
+  menuIntro: 'Langtidshævet dej. Bagt ved 450°. Altid frisk fra ovnen.',
+  items: [
+    {
+      name: 'Margherita',
+      description: 'Tomat, fior di latte, frisk basilikum og ekstra jomfruolivenolie.',
+      price: 119,
+      flag: 'Gæsternes favorit'
+    },
+    {
+      name: 'Burrata',
+      description: 'Tomat, cremet burrata, cherrytomat og frisk basilikum.',
+      price: 129,
+      flag: null
+    },
+    {
+      name: 'Diavola',
+      description: 'Tomat, mozzarella, stærk salami og et strejf af chili.',
+      price: 139,
+      flag: null
+    },
+    {
+      name: 'Funghi',
+      description: 'Mozzarella, blandede svampe, timian og parmesan.',
+      price: 129,
+      flag: 'Vegetarisk'
+    }
+  ],
+  drinks: [
+    {
+      name: 'San Pellegrino · 33 cl',
+      description: 'Danskvand fra Italien',
+      price: 29
+    }
+  ]
+};
+
+export const basket = {
+  address: 'Til Nørrebrogade 18, København N',
+  eta: 'Forventet levering 20–30 min',
+  lines: [
+    { name: 'Margherita', quantity: 1, price: 119 },
+    { name: 'Burrata', quantity: 1, price: 129 }
+  ],
+  deliveryFee: 19
+};
+
+export const customer = {
+  firstName: 'Sofie',
+  lastName: 'Andersen',
+  email: 'sofie.a@email.dk',
+  phone: '+45 28 34 56 78',
+  street: 'Nørrebrogade 18',
+  postalCode: '2200',
+  city: 'København N',
+  floor: '2. tv.',
+  since: 'Kunde · siden november 2026'
+};
+
+export const applications = [
+  {
+    type: 'Restaurantpartner · A-026',
+    title: 'Nabo Trattoria',
+    status: 'Under behandling',
+    submitted: 'Indsendt 10. november 2026',
+    message: 'Vi har modtaget dine dokumenter og er i gang med at gennemgå dem.',
+    action: 'Se restaurantansøgning →'
+  },
+  {
+    type: 'Chaufførpartner · A-027',
+    title: 'Levering med cykel',
+    status: 'Mangler dokument',
+    submitted: 'Indsendt 10. november 2026',
+    message: 'Upload gyldig billedlegitimation, så vi kan behandle din ansøgning.',
+    action: 'Upload legitimation'
+  }
+];
+
+export const adminRestaurants = [
+  {
+    name: 'Osteria Nørrebro',
+    contact: 'Luca Moretti',
+    area: 'København N',
+    status: 'Aktiv'
+  },
+  {
+    name: 'Buns & Friends',
+    contact: 'Emma Larsen',
+    area: 'København V',
+    status: 'Aktiv'
+  },
+  {
+    name: 'Green Kitchen',
+    contact: 'Oliver Holm',
+    area: 'København K',
+    status: 'Aktiv'
+  },
+  {
+    name: 'Sakura Sushi',
+    contact: 'Mei Tanaka',
+    area: 'Frederiksberg',
+    status: 'Pauset'
+  },
+  {
+    name: 'Spice House',
+    contact: 'Arjun Patel',
+    area: 'København Ø',
+    status: 'Aktiv'
+  },
+  {
+    name: 'Pasta & Co.',
+    contact: 'Mads Jensen',
+    area: 'København S',
+    status: 'Aktiv'
+  }
+];
+
+export const adminCouriers = [
+  {
+    name: 'Jonas Nielsen',
+    email: 'jonas.n@email.dk',
+    vehicle: 'Cykel',
+    status: 'På levering'
+  },
+  {
+    name: 'Freja Møller',
+    email: 'freja.m@email.dk',
+    vehicle: 'Elcykel',
+    status: 'Tilgængelig'
+  },
+  {
+    name: 'Noah Hansen',
+    email: 'noah.h@email.dk',
+    vehicle: 'Bil',
+    status: 'Offline'
+  },
+  {
+    name: 'Ida Petersen',
+    email: 'ida.p@email.dk',
+    vehicle: 'Cykel',
+    status: 'Tilgængelig'
+  },
+  {
+    name: 'Oscar Lund',
+    email: 'oscar.l@email.dk',
+    vehicle: 'Scooter',
+    status: 'Pauset'
+  },
+  {
+    name: 'Clara Berg',
+    email: 'clara.b@email.dk',
+    vehicle: 'Elcykel',
+    status: 'På levering'
+  }
+];
+
+export const restaurantApplications = [
+  {
+    id: 'A-026',
+    name: 'Nabo Trattoria',
+    applicant: 'Sofie Andersen',
+    received: '10. nov.',
+    status: 'Under behandling'
+  },
+  {
+    id: 'A-028',
+    name: 'Seoul Table',
+    applicant: 'Min Park',
+    received: '11. nov.',
+    status: 'Ny'
+  },
+  {
+    id: 'A-029',
+    name: 'Café Morgen',
+    applicant: 'Anna Dahl',
+    received: '11. nov.',
+    status: 'Ny'
+  }
+];
+
+export const courierApplications = [
+  {
+    id: 'A-027',
+    name: 'Sofie Andersen',
+    detail: 'Cykel · København N',
+    received: '10. nov.',
+    status: 'Mangler dokument'
+  },
+  {
+    id: 'A-030',
+    name: 'Amalie Sørensen',
+    detail: 'Elcykel · København K',
+    received: '11. nov.',
+    status: 'Ny'
+  },
+  {
+    id: 'A-031',
+    name: 'Ali Hassan',
+    detail: 'Bil · Frederiksberg',
+    received: '11. nov.',
+    status: 'Ny'
+  }
+];
+
+export const restaurantMenuRows = [
+  { name: 'Margherita', price: '119 kr.', state: 'Aktiv' },
+  { name: 'Burrata', price: '129 kr.', state: 'Aktiv' },
+  { name: 'Diavola', price: '139 kr.', state: 'Aktiv' },
+  { name: 'Funghi', price: '129 kr.', state: 'Aktiv' }
+];
+
+export const restaurantOrders = [
+  {
+    id: '#1043',
+    customer: 'Emma Larsen',
+    items: '1 × Diavola',
+    amount: '158 kr.',
+    status: 'Ny ordre',
+    action: 'Accepter · Afvis'
+  },
+  {
+    id: '#1042',
+    customer: 'Mikkel Hansen',
+    items: 'Margherita + Burrata',
+    amount: '267 kr.',
+    status: 'Klar til afhentning',
+    action: 'Se ordre →'
+  },
+  {
+    id: '#1041',
+    customer: 'Clara Berg',
+    items: '2 × Margherita',
+    amount: '257 kr.',
+    status: 'Tilberedes',
+    action: 'Markér klar →'
+  }
+];
+
+export const openDeliveries = [
+  {
+    id: '#1044',
+    restaurant: 'Green Kitchen',
+    route: 'Frederiksborggade 16 → Ravnsborggade 8',
+    distance: '2,1 km · ca. 16 min',
+    pay: '35 kr.'
+  },
+  {
+    id: '#1045',
+    restaurant: 'Buns & Friends',
+    route: 'Istedgade 28 → Vesterbrogade 62',
+    distance: '3,0 km · ca. 22 min',
+    pay: '42 kr.'
+  },
+  {
+    id: '#1046',
+    restaurant: 'Spice House',
+    route: 'Østerbrogade 65 → Blegdamsvej 24',
+    distance: '2,4 km · ca. 18 min',
+    pay: '38 kr.'
+  }
+];
+
+export const restaurantTotals = {
+  all: 24,
+  active: 21,
+  paused: 3,
+  area: 'På tværs af København'
+};
+
+export const courierTotals = {
+  approved: 18,
+  online: 12,
+  onTrip: 8,
+  available: 4
+};
+
+export const restaurantPanelStats = {
+  ordersToday: 12,
+  activeOrders: 3,
+  revenueToday: '2.486 kr.',
+  rating: '4,8 / 5',
+  reviews: '240+',
+  menuCategory: 'Pizza',
+  menuItemsTotal: 12,
+  minimumOrder: '99 kr.',
+  deliveryRadius: '4 km'
+};
+
+export const courierPanelStats = {
+  deliveriesToday: 6,
+  earningsToday: '224 kr.',
+  activeTrips: 1,
+  plannedTrips: 0,
+  area: 'København N',
+  vehicle: 'Cykel',
+  date: 'Onsdag den 11. november'
+};
+
+export const openingHours = [
+  { days: 'Mandag – torsdag', hours: '11.00 – 22.00' },
+  { days: 'Fredag – lørdag', hours: '11.00 – 23.00' },
+  { days: 'Søndag', hours: '12.00 – 22.00' }
+];
+
+export const activeDelivery = {
+  orderId: '#1042',
+  itemCount: 2,
+  status: 'På vej til afhentning · Maden er klar',
+  distance: '2,4 km · ca. 18 min',
+  pay: '38 kr.',
+  stops: [
+    {
+      label: 'Afhentning',
+      name: 'Osteria Nørrebro',
+      address: 'Nørrebrogade 42, 2200 København N',
+      note: 'Margherita + Burrata · 2 poser'
+    },
+    {
+      label: 'Levering',
+      name: 'Mikkel Hansen',
+      address: 'Tagensvej 12, 1. th., 2200 København N',
+      note: 'Ring på ved ankomst.'
+    }
+  ]
+};
+
+export const restaurantApplicationDetail = {
+  applicantEmail: 'sofie.a@email.dk',
+  applicantPhone: '+45 28 34 56 78',
+  address: 'Nørrebrogade 88, 2200 København N',
+  registration: 'CVR 12345678 · Italiensk · 11.00–22.00',
+  documents: [
+    { name: 'CVR-registrering.pdf', state: 'Kontrolleret  ·  Se →' },
+    { name: 'Fødevaregistrering.pdf', state: 'Vedhæftet  ·  Se →' }
+  ],
+  activity: [
+    { when: '10. nov. · 14.32', text: 'Ansøgning modtaget fra Sofie Andersen.' },
+    { when: '11. nov. · 09.10', text: 'CVR-oplysninger kontrolleret.' },
+    { when: '11. nov. · 09.15', text: 'Sagen er klar til din vurdering.' }
+  ]
+};
+
+export const courierApplicationDetail = {
+  applicantEmail: 'sofie.a@email.dk',
+  applicantPhone: '+45 28 34 56 78',
+  requirements: '18+ bekræftet · Ret til at arbejde i Danmark',
+  documents: [
+    { name: 'Arbejdstilladelse.pdf', state: 'Vedhæftet  ·  Se →' },
+    { name: 'Billedlegitimation', state: 'Mangler  ·  Påmind →' }
+  ],
+  activity: [
+    { when: '10. nov. · 15.04', text: 'Chaufføransøgning modtaget.' },
+    { when: '11. nov. · 09.20', text: 'Legitimation mangler i ansøgningen.' },
+    { when: '11. nov. · 09.25', text: 'Sofie er bedt om at uploade dokumentet.' }
+  ]
+};
+
+export const selectedAdminRestaurant = {
+  name: 'Osteria Nørrebro',
+  id: 'R-001',
+  address: 'Nørrebrogade 42, 2200 København N',
+  contact: 'luca@osteria.dk  ·  +45 22 34 56 78',
+  opening: 'Åbent i dag 11.00–22.00  ·  Leveringsområde: 4 km'
+};
+
+export const selectedAdminCourier = {
+  name: 'Jonas Nielsen',
+  id: 'D-014',
+  area: 'København N',
+  approved: 'Godkendt 2. november 2026',
+  contact: 'jonas.n@email.dk  ·  +45 23 45 67 89',
+  record: 'Dokumenter godkendt  ·  128 leverancer  ·  Bedømmelse 4,9 / 5'
+};
+
+export const applyRestaurantSteps = [
+  {
+    number: '01',
+    title: 'Fortæl os om restauranten',
+    body: 'Udfyld oplysninger og upload dine registreringsdokumenter.'
+  },
+  {
+    number: '02',
+    title: 'Vi gennemgår din ansøgning',
+    body: 'Følg status direkte på din profil.'
+  },
+  {
+    number: '03',
+    title: 'Gør klar til første ordre',
+    body: 'Tilføj menu, billeder og åbningstider i dit restaurantpanel.'
+  }
+];
+
+export const applyCourierSteps = [
+  {
+    number: '01',
+    title: 'Udfyld din ansøgning',
+    body: 'Fortæl om dig selv og dit køretøj.'
+  },
+  {
+    number: '02',
+    title: 'Få dine dokumenter godkendt',
+    body: 'Du skal være fyldt 18 år og have ret til at arbejde i Danmark.'
+  },
+  {
+    number: '03',
+    title: 'Tag din første levering',
+    body: 'Gå online, og vælg en ledig tur.'
+  }
+];
+
+export const profileSections = [
+  'Personlige oplysninger',
+  'Leveringsadresse',
+  'Mine ansøgninger',
+  'Ordrehistorik',
+  'Sikkerhed'
+];

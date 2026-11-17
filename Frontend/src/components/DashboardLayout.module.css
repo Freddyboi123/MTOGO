@@ -1,0 +1,141 @@
+.dash {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.side {
+  background: var(--green);
+  color: var(--pale);
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  color: var(--cream);
+  font-size: 28px;
+  font-weight: 700;
+  padding: 0 12px;
+}
+
+.role {
+  padding: 0 12px;
+  margin-top: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sage);
+}
+
+.nav {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.navLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-size: 14px;
+  color: var(--pale);
+}
+
+.navLinkActive {
+  composes: navLink;
+  background: rgba(250, 248, 242, 0.1);
+  color: var(--cream);
+  font-weight: 600;
+}
+
+.bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.main {
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.body {
+  padding: 36px 48px 56px;
+}
+
+.head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 24px;
+}
+
+.title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 40px;
+  margin-top: 12px;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 36px;
+}
+
+@media (max-width: 1280px) {
+  .statGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .dash {
+    grid-template-columns: 1fr;
+  }
+
+  .statGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .head {
+    grid-template-columns: 1fr;
+  }
+
+  .body,
+  .top {
+    padding-inline: 24px;
+  }
+}

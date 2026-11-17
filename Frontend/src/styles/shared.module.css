@@ -1,0 +1,283 @@
+.page {
+  width: min(100% - 48px, var(--page-width));
+  margin-inline: auto;
+}
+
+.display {
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.12;
+  color: var(--green);
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.eyebrowLight {
+  composes: eyebrow;
+  color: var(--sage);
+}
+
+.eyebrowMuted {
+  composes: eyebrow;
+  color: var(--muted);
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.fine {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 0 22px;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  background: var(--orange);
+  color: var(--white);
+}
+
+.btnDark {
+  background: var(--green);
+  color: var(--cream);
+}
+
+.btnLight {
+  background: var(--cream);
+  color: var(--green);
+}
+
+.btnOutline {
+  background: var(--white);
+  border-color: var(--border);
+  color: var(--green);
+}
+
+.btnBlock {
+  width: 100%;
+}
+
+.btnSmall {
+  height: 42px;
+  font-size: 14px;
+  border-radius: var(--radius-sm);
+}
+
+.linkAccent {
+  color: var(--orange);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linkQuiet {
+  color: var(--green);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  height: 52px;
+  padding: 0 15px;
+  outline: none;
+}
+
+.field textarea {
+  height: auto;
+  min-height: 90px;
+  padding: 14px 15px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--green);
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.fieldRowThree {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.checkbox input {
+  width: 17px;
+  height: 17px;
+  margin: 2px 0 0;
+  accent-color: var(--green);
+}
+
+.block {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.block h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.blockHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 28px 0 20px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pillMint {
+  composes: pill;
+  background: var(--mint);
+  color: var(--green);
+  font-size: 12px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--mint);
+  color: var(--green);
+}
+
+.tagWarn {
+  composes: tag;
+  background: var(--sand);
+}
+
+.photo {
+  background: var(--mint) center / cover no-repeat;
+  display: block;
+}
+
+.sumRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.sumRow span:last-child {
+  color: var(--green);
+}
+
+.sumTotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .fieldRow,
+  .fieldRowThree {
+    grid-template-columns: 1fr;
+  }
+}

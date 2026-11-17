@@ -1,0 +1,169 @@
+.split {
+  display: grid;
+  grid-template-columns: 624px 1fr;
+  gap: 24px;
+  margin-top: 28px;
+  align-items: start;
+}
+
+.onlinePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--mint);
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+.listHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.listTitle {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.listNote {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.delivery {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+}
+
+.deliveryLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.deliveryName {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 25px;
+  margin-top: 10px;
+}
+
+.deliveryRoute {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+.deliveryPay {
+  font-family: var(--serif);
+  font-size: 26px;
+  text-align: right;
+}
+
+.takeButton {
+  margin-top: 28px;
+}
+
+.footnote {
+  margin-top: 24px;
+}
+
+.activeTitle {
+  font-size: 24px;
+}
+
+.activeMeta {
+  margin-top: 14px;
+}
+
+.statusStrip {
+  background: var(--mint);
+  border-radius: var(--radius-sm);
+  padding: 11px 15px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 18px;
+}
+
+.stop {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.stopDot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--mint);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stopName {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.stopLine {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.routeButton {
+  margin-top: 24px;
+}
+
+.confirmButton {
+  margin-top: 16px;
+}
+
+.helpTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.helpLink {
+  margin-top: 16px;
+}
+
+@media (max-width: 1280px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
