@@ -13,8 +13,7 @@ export default function RestaurantMenu() {
   const [category, setCategory] = useState(restaurant.categories[0]);
   const [method, setMethod] = useState(deliveryMethods[0]);
 
-  const subtotal = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
-  const total = subtotal + basket.deliveryFee;
+  const total = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
 
   return (
     <>
@@ -125,15 +124,6 @@ export default function RestaurantMenu() {
           ))}
 
           <hr className={ui.divider} />
-
-          <div className={ui.sumRow}>
-            <span>Subtotal</span>
-            <span>{subtotal} kr.</span>
-          </div>
-          <div className={ui.sumRow}>
-            <span>Levering</span>
-            <span>{basket.deliveryFee} kr.</span>
-          </div>
           <div className={ui.sumTotal}>
             <span>I alt</span>
             <span>{total} kr.</span>

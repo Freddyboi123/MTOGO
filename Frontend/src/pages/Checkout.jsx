@@ -15,8 +15,7 @@ const paymentMethods = [
 export default function Checkout() {
   const [method, setMethod] = useState(paymentMethods[0].id);
 
-  const subtotal = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
-  const total = subtotal + basket.deliveryFee;
+  const total = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
 
   return (
     <>
@@ -136,7 +135,7 @@ export default function Checkout() {
                 <span>
                   {line.quantity} × {line.name}
                 </span>
-                <span>{line.price} kr.</span>
+                <span>{line.price * line.quantity} kr.</span>
               </div>
             ))}
 
@@ -148,15 +147,6 @@ export default function Checkout() {
             </div>
 
             <hr className={ui.divider} />
-
-            <div className={ui.sumRow}>
-              <span>Subtotal</span>
-              <span>{subtotal} kr.</span>
-            </div>
-            <div className={ui.sumRow}>
-              <span>Levering</span>
-              <span>{basket.deliveryFee} kr.</span>
-            </div>
             <div className={ui.sumTotal}>
               <span>I alt</span>
               <span>{total} kr.</span>
@@ -170,7 +160,7 @@ export default function Checkout() {
               <br />
               Betalingen gennemføres sikkert.
             </p>
-            <p className={ui.fieldHint}>Inkl. moms · Ingen ekstra gebyrer</p>
+            <p className={ui.fieldHint}>Inkl. levering og moms · Ingen ekstra gebyrer</p>
           </div>
 
           <div className={ui.block}>
