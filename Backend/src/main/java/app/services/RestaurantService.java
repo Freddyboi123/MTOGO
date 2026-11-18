@@ -19,6 +19,7 @@ import app.mappers.RestaurantMapper;
 import app.server.Setup;
 import app.utils.ErrorHandler;
 
+import java.util.List;
 import java.util.UUID;
 
 public class RestaurantService {
@@ -53,6 +54,12 @@ public class RestaurantService {
                 restaurantDAO.getById(id),
                 Notifications.RESTAURANT_NOT_FOUND.getDisplayName()
         );
+    }
+
+    // ________________________________________________________
+
+    public List<Restaurant> getActiveRestaurants() {
+        return restaurantDAO.getAllActive();
     }
 
     // ________________________________________________________
@@ -112,5 +119,11 @@ public class RestaurantService {
         if (!restaurant.getOwner().getId().equals(userId)) {
             throw new ApiException(403, Notifications.NOT_RESTAURANT_OWNER.getDisplayName());
         }
+    }
+
+    // ________________________________________________________
+
+    public List<MenuCategory> getMenu(UUID restaurantId) {
+        return getRestaurant(restaurantId).getCategories();
     }
 }

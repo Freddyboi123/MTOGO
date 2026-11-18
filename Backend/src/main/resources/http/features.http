@@ -1,0 +1,5 @@
+@url = http://localhost:6969
+
+### Get all feature flags
+# Shows which features are turned on. The frontend loads this once at startup.
+GET {{url}}/api/features
