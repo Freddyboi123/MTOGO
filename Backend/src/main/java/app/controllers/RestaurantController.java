@@ -54,9 +54,11 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
         return () -> {
             get("/restaurants", controller::getAll, Role.ANYONE);
             get("/restaurant/{id}", controller::getByID, Role.ANYONE);
+            get("/restaurant/menu/{id}",controller::getMenu, Role.ANYONE);
             post("/restaurants", controller::createRestaurant, Role.RESTAURANT_OWNER);
             post("/restaurant/{id}/categories", controller::addCategory, Role.RESTAURANT_OWNER);
             post("/category/{id}/items", controller::addItem, Role.RESTAURANT_OWNER);
+
         };
     }
 
@@ -64,7 +66,7 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
     @Override
     protected List<Restaurant> getAllEntities() {
-        return restaurantDAO.getAll();
+        return restaurantService.getActiveRestaurants();
     }
 
     // ________________________________________________________
@@ -110,5 +112,17 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
         String message = messageService.buildMessage(Notifications.MENU_ITEM_ADDED, item.getName());
         respond(ctx, 201, message, itemMapper.toDTO(item));
+    }
+
+    // ________________________________________________________
+
+    private void getMenu(Context ctx) {
+        UUID restaurantId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
+
+        List<MenuCategoryDTO> menu = restaurantService.getMenu(restaurantId).stream()
+                .map(categoryMapper::toDTO)
+                .toList();
+
+        respond(ctx, 200, messageService.buildMessage(Notifications.MENU_FETCHED), menu);
     }
 }

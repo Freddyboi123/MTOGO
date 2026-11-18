@@ -1,92 +1,136 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './RestaurantMenu.module.css';
-import { basket, restaurant } from '../data/mtogo';
+import { basket, restaurantMenu } from '../data/mtogo';
+import { fetchMenu, fetchRestaurant } from '../api/restaurants';
 
 const deliveryMethods = ['Levering', 'Afhentning'];
 
+function formatPrice(price) {
+  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
+}
+
 export default function RestaurantMenu() {
-  const [category, setCategory] = useState(restaurant.categories[0]);
+  const { id } = useParams();
+  const [restaurant, setRestaurant] = useState(null);
+  const [menu, setMenu] = useState([]);
+  const [status, setStatus] = useState('loading');
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [method, setMethod] = useState(deliveryMethods[0]);
 
+  useEffect(() => {
+    setStatus('loading');
+    Promise.all([fetchRestaurant(id), fetchMenu(id)])
+      .then(([restaurantData, menuData]) => {
+        setRestaurant(restaurantData);
+        setMenu(menuData);
+        setSelectedCategoryId(menuData[0]?.id ?? null);
+        setStatus('ready');
+      })
+      .catch(() => setStatus('error'));
+  }, [id]);
+
   const total = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
+
+  const selectedCategory = menu.find((category) => category.id === selectedCategoryId);
+  const address = restaurant
+    ? [restaurant.street, [restaurant.postalCode, restaurant.city].filter(Boolean).join(' ')]
+        .filter(Boolean)
+        .join(', ')
+    : '';
 
   return (
     <>
       <SiteHeader />
 
       <div className={styles.cover}>
-        <img src={restaurant.cover} alt={restaurant.name} />
-        <Link to="/" className={styles.back}>
-          ← Alle restauranter
+        <img src={restaurantMenu.cover} alt={restaurant?.name ?? ''} />
+        <Link to="/restauranter" className={styles.back}>
+          {restaurantMenu.back}
         </Link>
       </div>
 
-      <section className={cx(ui.page, styles.head)}>
-        <div>
-          <p className={ui.eyebrow}>{restaurant.eyebrow}</p>
-          <h1 className={styles.title}>{restaurant.name}</h1>
-          <p className={cx(ui.lead, styles.description)}>{restaurant.description}</p>
-          <p className={styles.meta}>{restaurant.meta}</p>
-        </div>
-        <div className={styles.headAside}>
-          <span className={ui.pillMint}>{restaurant.openUntil}</span>
-          <span className={ui.linkQuiet}>Se restaurantinfo →</span>
-        </div>
-      </section>
+      {status !== 'ready' && (
+        <section className={cx(ui.page, styles.head)}>
+          <p className={styles.state}>
+            {status === 'loading' ? restaurantMenu.loading : restaurantMenu.error}
+          </p>
+        </section>
+      )}
+
+      {status === 'ready' && (
+        <section className={cx(ui.page, styles.head)}>
+          <div>
+            {restaurant.city && <p className={ui.eyebrow}>{restaurant.city}</p>}
+            <h1 className={styles.title}>{restaurant.name}</h1>
+            {restaurant.description && (
+              <p className={cx(ui.lead, styles.description)}>{restaurant.description}</p>
+            )}
+            <p className={styles.meta}>
+              {[address, restaurant.phoneNumber].filter(Boolean).join('     ·     ')}
+            </p>
+          </div>
+        </section>
+      )}
 
       <section className={cx(ui.page, styles.layout)}>
         <div>
-          <div className={styles.tabs}>
-            {restaurant.categories.map((name) => (
-              <button
-                key={name}
-                className={name === category ? styles.tabActive : styles.tab}
-                onClick={() => setCategory(name)}
-              >
-                {name}
-              </button>
-            ))}
-          </div>
+          {status === 'ready' && menu.length === 0 && (
+            <p className={styles.state}>{restaurantMenu.emptyMenu}</p>
+          )}
 
-          <div className={styles.intro}>
-            <h2>{restaurant.menuTitle}</h2>
-            <p>{restaurant.menuIntro}</p>
-          </div>
-
-          <div className={styles.menuGrid}>
-            {restaurant.items.map((item) => (
-              <article className={styles.item} key={item.name}>
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>{item.description}</p>
-                  {item.flag && <div className={styles.itemFlag}>{item.flag}</div>}
-                  <div className={styles.itemPrice}>{item.price} kr.</div>
-                </div>
-                <button className={styles.addButton} aria-label={`Tilføj ${item.name}`}>
-                  +
-                </button>
-              </article>
-            ))}
-          </div>
-
-          <h2 className={cx(ui.display, styles.drinksTitle)}>Noget koldt til?</h2>
-          {restaurant.drinks.map((drink) => (
-            <div className={styles.drinkRow} key={drink.name}>
-              <div>
-                <strong>{drink.name}</strong>
-                <span>{drink.description}</span>
+          {status === 'ready' && menu.length > 0 && (
+            <>
+              <div className={styles.tabs}>
+                {menu.map((category) => (
+                  <button
+                    key={category.id}
+                    className={category.id === selectedCategoryId ? styles.tabActive : styles.tab}
+                    onClick={() => setSelectedCategoryId(category.id)}
+                  >
+                    {category.name}
+                  </button>
+                ))}
               </div>
-              <div className={styles.drinkPrice}>{drink.price} kr.</div>
-              <button className={styles.addButton} aria-label={`Tilføj ${drink.name}`}>
-                +
-              </button>
-            </div>
-          ))}
+
+              <div className={styles.intro}>
+                <h2>{selectedCategory.name}</h2>
+              </div>
+
+              {selectedCategory.items.length === 0 && (
+                <p className={styles.state}>{restaurantMenu.emptyCategory}</p>
+              )}
+
+              <div className={styles.menuGrid}>
+                {selectedCategory.items.map((item) => (
+                  <article
+                    className={item.available === false ? styles.itemUnavailable : styles.item}
+                    key={item.id}
+                  >
+                    <div>
+                      <h3>{item.name}</h3>
+                      {item.description && <p>{item.description}</p>}
+                      {item.available === false && (
+                        <div className={styles.itemFlag}>{restaurantMenu.unavailable}</div>
+                      )}
+                      <div className={styles.itemPrice}>{formatPrice(item.price)}</div>
+                    </div>
+                    <button
+                      className={styles.addButton}
+                      aria-label={`Tilføj ${item.name}`}
+                      disabled={item.available === false}
+                    >
+                      +
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <aside className={styles.basket}>
@@ -124,6 +168,7 @@ export default function RestaurantMenu() {
           ))}
 
           <hr className={ui.divider} />
+
           <div className={ui.sumTotal}>
             <span>I alt</span>
             <span>{total} kr.</span>

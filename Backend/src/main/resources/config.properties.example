@@ -17,3 +17,6 @@ DB_PASSWORD=change-me
 ISSUER=MTOGO
 TOKEN_EXPIRE_TIME=86400000
 SECRET_KEY=change-me-to-a-long-random-string-of-at-least-32-characters
+
+# Feature flags (true/false). A flag that is missing counts as false.
+FEATURE_RESTAURANT_OVERVIEW=true
