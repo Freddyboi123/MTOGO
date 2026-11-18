@@ -1,6 +1,7 @@
 package app.server;
 
 import app.controllers.FeatureFlagController;
+import app.controllers.OrderController;
 import app.controllers.RestaurantController;
 import app.controllers.UserController;
 import io.javalin.apibuilder.EndpointGroup;
@@ -16,6 +17,7 @@ public class Routing {
                 UserController.registerRoutes().addEndpoints();
                 RestaurantController.registerRoutes().addEndpoints();
                 FeatureFlagController.registerRoutes().addEndpoints();
+                OrderController.registerRoutes().addEndpoints();
 
                 get("/health", ctx -> ctx.result("Health OK"));
             });

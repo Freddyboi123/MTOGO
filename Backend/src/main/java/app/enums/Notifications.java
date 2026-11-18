@@ -59,6 +59,18 @@ public enum Notifications {
     ROLE_INVALID("The role does not exist"),
     ROLE_ASSIGNED("The role %s was given to %s"),
 
+    // ORDERS
+    ORDER_PLACED("Order %s was placed"),
+    ORDER_NOT_FOUND("The order was not found"),
+    ORDER_RESTAURANT_REQUIRED("You must choose a restaurant for the order"),
+    ORDER_ADDRESS_REQUIRED("You must enter a delivery address with street, postal code and city"),
+    ORDER_LINES_REQUIRED("The basket is empty"),
+    ORDER_QUANTITY_INVALID("The quantity must be at least 1"),
+    ORDER_ONE_RESTAURANT("All items in an order must be from the same restaurant"),
+    MENU_ITEM_NOT_FOUND("The menu item was not found"),
+    MENU_ITEM_UNAVAILABLE("The menu item is not available"),
+    PAYMENT_FAILED("The payment failed. No order was created"),
+
     // RESTAURANTS AND MENUS
     RESTAURANT_CREATED("Restaurant %s was created"),
     RESTAURANT_NOT_FOUND("The restaurant was not found"),
