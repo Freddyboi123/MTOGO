@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isLoggedIn } from '../utils/api';
 import cx from '../utils/cx';
 import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import ui from '../styles/shared.module.css';
@@ -6,6 +7,7 @@ import styles from './SiteHeader.module.css';
 
 export default function SiteHeader({ variant = 'marketing' }) {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
+  const loggedIn = isLoggedIn();
 
   return (
     <header className={styles.header}>
@@ -22,12 +24,20 @@ export default function SiteHeader({ variant = 'marketing' }) {
           {variant === 'marketing' ? (
             <>
               <a href="#saadan-fungerer-det">Sådan fungerer det</a>
-              <Link to="/login" className={styles.strong}>
-                Log ind
-              </Link>
-              <Link to="/opret-konto" className={cx(ui.btn, ui.btnPrimary)}>
-                Opret konto
-              </Link>
+              {loggedIn ? (
+                <Link to="/min-profil" className={cx(ui.btn, ui.btnPrimary)}>
+                  Profil
+                </Link>
+              ) : (
+                <div>
+                  <Link to="/login" className={styles.strong}>
+                    Log ind
+                  </Link>
+                  <Link to="/opret-konto" className={cx(ui.btn, ui.btnPrimary)}>
+                    Opret konto
+                  </Link>
+                </div>
+              )}
             </>
           ) : (
             <>

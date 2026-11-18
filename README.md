@@ -92,7 +92,7 @@ When code is pushed to `main`, the CD pipeline builds Docker images for the back
 ## How we work
 
 - We use a Kanban board in GitHub Projects with a prioritized backlog: https://github.com/users/Freddyboi123/projects/1
-- We never work directly on `main`. Branches are short lived, created from `review` and merged back into `review` through a pull request
+- We never work directly on `main`. Branches are short lived, created from `main` and merged back into `main` through a pull request after another team member has reviewed it
 - `main` must always be stable and ready to deploy
 - Every pull request needs a review and a passing automated build
 - Each person works on one issue at a time. If you take an issue, you finish it within a reasonable time, otherwise it is released

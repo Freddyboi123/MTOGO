@@ -135,7 +135,7 @@ export default function Checkout() {
                 <span>
                   {line.quantity} × {line.name}
                 </span>
-                <span>{line.price} kr.</span>
+                <span>{line.price * line.quantity} kr.</span>
               </div>
             ))}
 
@@ -147,7 +147,6 @@ export default function Checkout() {
             </div>
 
             <hr className={ui.divider} />
-
             <div className={ui.sumTotal}>
               <span>I alt</span>
               <span>{total} kr.</span>
@@ -161,7 +160,7 @@ export default function Checkout() {
               <br />
               Betalingen gennemføres sikkert.
             </p>
-            <p className={ui.fieldHint}>Inkl. moms · Ingen ekstra gebyrer</p>
+            <p className={ui.fieldHint}>Inkl. levering og moms · Ingen ekstra gebyrer</p>
           </div>
 
           <div className={ui.block}>

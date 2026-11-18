@@ -29,7 +29,7 @@ A task is considered done when the following criteria are met.
 - There are no known critical errors.
 - The CI build passes.
 - The pull request has been reviewed and approved by at least one other group member.
-- The pull request is merged into the review branch and the issue is closed as completed.
+- The pull request is merged into main and the issue is closed as completed.
 - Documentation affected by the change is updated, in English.
 
 ## Done for a user story

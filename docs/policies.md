@@ -45,15 +45,26 @@ The Definition of Done is maintained in this repository. An issue may only be mo
 
 ## Quality
 
-- The CI pipeline builds and tests the backend on every pull request and every push to review and main
+- The CI pipeline builds and tests the backend on every pull request and every push to main
 - A failing build or failing tests must be fixed before a pull request is merged
 - Code follows the team code standards, which are maintained in this repository
 
-Static analysis and code coverage are planned additions to the pipeline.
+### Test coverage
+
+- CI measures backend test coverage with JaCoCo and shows a summary on every run. The full report is uploaded as the build artifact backend-reports
+- The build fails if line coverage of the backend is below the required minimum
+- The required minimum is 25% line coverage. It is set just below the coverage we had when the requirement was introduced (28.7%), so coverage can not fall
+- We raise the minimum as tests are added. The minimum is reviewed at the weekly flow review and is never lowered. It is set by `coverage.line.minimum` in `Backend/pom.xml`
+
+### Static analysis
+
+- CI runs SpotBugs on the backend and shows the findings in the summary of every run
+- The build fails on high priority findings. Lower priority findings are reported but do not fail the build
+- Known findings that we accept for now are listed in `Backend/spotbugs-exclude.xml` with a reason. New findings are fixed, not excluded, unless the team agrees otherwise in the review
 
 ## Collaboration
 
-- We never work directly on main. Branches are short lived, created from review and merged back into review through a pull request
+- We never work directly on main. Branches are short lived, created from main and merged back into main through a pull request
 - Every pull request is reviewed by another team member, as soon as possible so that work does not wait
 - main must always be stable and ready to deploy
 - Releases follow Semantic Versioning
