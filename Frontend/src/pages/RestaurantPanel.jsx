@@ -51,7 +51,7 @@ export default function RestaurantPanel() {
   async function loadMenu() {
     try {
       const res = await getMyRestaurants();
-      setCategories(res.data[0]?.categories ?? []);
+      setCategories(res.data.data[0]?.categories ?? []);
     } catch (err) {
       setError(err.message);
     }

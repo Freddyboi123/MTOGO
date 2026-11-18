@@ -42,6 +42,12 @@ export const getMyRestaurants = () => api('/my-restaurants');
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
 
+export const getMyRestaurantApplications = () => api('/my-restaurant-applications');
+export const submitRestaurantApplication = (body) =>
+  api('/restaurant-applications', { method: 'POST', body });
+export const resubmitRestaurantApplication = (id, body) =>
+  api(`/restaurant-application/${id}`, { method: 'PUT', body });
+
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));
 
 export function logout() {
