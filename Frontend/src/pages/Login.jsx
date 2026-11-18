@@ -1,17 +1,47 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
+import { login, resendVerify, saveSession } from '../utils/api';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Auth.module.css';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [notVerified, setNotVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    navigate('/');
+    setError('');
+    setInfo('');
+    setNotVerified(false);
+    setLoading(true);
+    try {
+      saveSession(await login({ email, password }));
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+      setNotVerified(err.status === 403);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    try {
+      const res = await resendVerify(email);
+      setError('');
+      setInfo(res.message);
+      setNotVerified(false);
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   return (
@@ -25,7 +55,14 @@ export default function Login() {
       <form onSubmit={handleSubmit} className={styles.fields}>
         <div className={ui.field}>
           <label htmlFor="login-email">E-mail</label>
-          <input id="login-email" type="email" placeholder="din@email.dk" />
+          <input
+            id="login-email"
+            type="email"
+            placeholder="din@email.dk"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
 
         <div className={ui.field}>
@@ -35,6 +72,9 @@ export default function Login() {
               id="login-password"
               type={showPassword ? 'text' : 'password'}
               placeholder="Indtast din adgangskode"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? 'Skjul' : 'Vis'}
@@ -52,7 +92,19 @@ export default function Login() {
           </Link>
         </div>
 
-        <button type="submit" className={cx(ui.btn, ui.btnPrimary, ui.btnBlock)}>
+        {error && <p className={ui.fieldHint}>{error}</p>}
+        {info && <p className={ui.fieldHint}>{info}</p>}
+        {notVerified && (
+          <button type="button" className={ui.linkAccent} onClick={handleResend}>
+            Send bekræftelsesmail igen
+          </button>
+        )}
+
+        <button
+          type="submit"
+          className={cx(ui.btn, ui.btnPrimary, ui.btnBlock)}
+          disabled={loading}
+        >
           Log ind
         </button>
       </form>

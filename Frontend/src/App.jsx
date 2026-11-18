@@ -4,6 +4,7 @@ import RestaurantMenu from './pages/RestaurantMenu';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Checkout from './pages/Checkout';
 import ApplyRestaurant from './pages/ApplyRestaurant';
 import ApplyCourier from './pages/ApplyCourier';
@@ -22,7 +23,8 @@ export default function App() {
       <Route path="/restaurant" element={<RestaurantMenu />} />
       <Route path="/login" element={<Login />} />
       <Route path="/opret-konto" element={<SignUp />} />
-      <Route path="/glemt-adgangskode" element={<ForgotPassword />} />
+      <Route path="/glemt-adgangskode" element={<ResetPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/betaling" element={<Checkout />} />
       <Route path="/ansoeg/restaurant" element={<ApplyRestaurant />} />
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
