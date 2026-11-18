@@ -18,6 +18,7 @@ export default function SignUp() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    navigate('/login');
     setError('');
     const parts = name.trim().split(/\s+/);
     if (parts.length < 2) {
