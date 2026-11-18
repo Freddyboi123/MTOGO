@@ -16,7 +16,7 @@ export const restaurants = [
     badge: 'Populær',
     kind: 'Italiensk · Pizza · Pasta',
     rating: '★ 4,8 (240+)',
-    delivery: '20–30 min  ·  Levering 19 kr.',
+    delivery: '20–30 min',
     image: '/images/restaurant-pizza.png'
   },
   {
@@ -25,7 +25,7 @@ export const restaurants = [
     badge: 'Lokal favorit',
     kind: 'Burger · Amerikansk',
     rating: '★ 4,7 (180+)',
-    delivery: '15–25 min  ·  Levering 15 kr.',
+    delivery: '15–25 min',
     image: '/images/restaurant-burger.png'
   },
   {
@@ -34,7 +34,7 @@ export const restaurants = [
     badge: 'Frisk & grønt',
     kind: 'Bowls · Grønt · Frisk',
     rating: '★ 4,9 (120+)',
-    delivery: '20–35 min  ·  Levering 19 kr.',
+    delivery: '20–35 min',
     image: '/images/restaurant-bowl.png'
   }
 ];
@@ -61,7 +61,7 @@ export const restaurant = {
   name: 'Osteria Nørrebro',
   eyebrow: 'Italiensk håndværk · København N',
   description: 'Napolitansk pizza, gode råvarer og lidt italiensk kærlighed.',
-  meta: '★ 4,8 (240+)     ·     20–30 min     ·     Levering 19 kr.     ·     Min. 99 kr.',
+  meta: '★ 4,8 (240+)     ·     20–30 min     ·     Min. 99 kr.',
   openUntil: 'Åbent til 22.00',
   cover: '/images/restaurant-cover.png',
   categories: ['Populært', 'Pizza', 'Pasta', 'Tilbehør', 'Drikkevarer'],
@@ -109,7 +109,6 @@ export const basket = {
     { name: 'Margherita', quantity: 1, price: 119 },
     { name: 'Burrata', quantity: 1, price: 129 }
   ],
-  deliveryFee: 19
 };
 
 export const customer = {
