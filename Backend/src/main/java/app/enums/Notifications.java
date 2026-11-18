@@ -67,7 +67,7 @@ public enum Notifications {
     CATEGORY_NAME_REQUIRED("You must enter a name for the category"),
     MENU_ITEM_ADDED("Menu item %s was added"),
     MENU_ITEM_NAME_REQUIRED("You must enter a name for the menu item"),
-    MENU_ITEM_PRICE_INVALID("The price must be a number that is zero or more")
+    MENU_ITEM_PRICE_INVALID("The price must be a number greater than zero")
 
     ;
 

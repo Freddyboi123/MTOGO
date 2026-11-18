@@ -96,7 +96,7 @@ public class RestaurantService {
 
         ErrorHandler.tryString(dto.getName(), Notifications.MENU_ITEM_NAME_REQUIRED.getDisplayName());
 
-        if (dto.getPrice() == null || dto.getPrice().signum() < 0) {
+        if (dto.getPrice() == null || dto.getPrice().signum() <= 0) {
             throw new ApiException(400, Notifications.MENU_ITEM_PRICE_INVALID.getDisplayName());
         }
 
