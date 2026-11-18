@@ -57,10 +57,19 @@ Flow:
 ## 6. Git, language and secrets
 
 - Branch names follow the pattern type/issue-number-short-description, for example docs/6-workflow-policies.
-- Pull requests reference their issue with Refs #N.
+- Pull requests reference their issue with Closes #N, so the issue is closed when the pull request is merged.
 - Commit messages are written in English and describe what was changed.
 - Code, comments and documentation are written in English.
 - Secrets such as passwords and keys, for example SMTP_PASSWORD, are never committed to the repository.
+
+## 7. Frontend
+
+- The frontend uses React and Vite.
+- Components and pages are function components, one per file, named in PascalCase.
+- All styling lives in .css files. Each component and page has its own CSS module, for example Checkout.jsx and Checkout.module.css. Pages that share a layout can share a module, for example Admin.module.css.
+- Inline styles and CSS frameworks are not used.
+- Design tokens such as colours, fonts and radii live in styles/global.css, and shared classes live in styles/shared.module.css.
+- Text and numbers shown on the pages come from data or the API, not hardcoded in the markup.
 
 ## Shared agreement
 

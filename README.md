@@ -18,7 +18,8 @@ MTOGO is a food delivery platform built as a group project for the Kanban and De
 
 ```
 Backend/    Java API
-Frontend/   Not started yet
+Frontend/   React and Vite web app
+docs/       Policies, Definition of Done, code standards and flow reviews
 ```
 
 ## Tech stack
@@ -32,6 +33,12 @@ Backend:
 - Jackson for JSON, Lombok, Jakarta Mail
 - JUnit 5 and H2 for tests
 
+Frontend:
+
+- React 18 and Vite 5
+- React Router
+- CSS modules
+
 ## Getting started
 
 Prerequisites:
@@ -40,7 +47,7 @@ Prerequisites:
 - Maven
 - A running PostgreSQL database
 
-Configuration is read from `Backend/src/main/resources/config.properties`. The following keys must be set:
+Configuration is read from `Backend/src/main/resources/config.properties`. The file is not in git because it contains secrets. Copy `config.properties.example` to `config.properties` in the same folder and fill in the following keys:
 
 | Key | Purpose |
 | --- | --- |
@@ -65,17 +72,36 @@ mvn verify
 
 Run the API by starting `app.Main` from your IDE. When it is running, `GET /api/health` returns `Health OK`.
 
+Run the frontend:
+
+```
+cd Frontend
+npm install
+npm run dev
+```
+
+See `Frontend/README.md` for more about the frontend.
+
+## Deployment
+
+When code is pushed to `main`, the CD pipeline builds Docker images for the backend and the frontend and pushes them to Docker Hub. The frontend image is built with `VITE_API_URL` pointing at the backend.
+
+- Backend: https://mtogo.api.roneu.dk
+- Frontend: https://mtogo.roneu.dk
+
 ## How we work
 
 - We use a Kanban board in GitHub Projects with a prioritized backlog: https://github.com/users/Freddyboi123/projects/1
-- We never work directly on `main`. Branches are short lived, created from `review` and merged back into `review` through a pull request
+- We never work directly on `main`. Branches are short lived, created from `main` and merged back into `main` through a pull request after another team member has reviewed it
 - `main` must always be stable and ready to deploy
 - Every pull request needs a review and a passing automated build
 - Each person works on one issue at a time. If you take an issue, you finish it within a reasonable time, otherwise it is released
 - Issues and sub issues are the unit of work. Cycle time is measured on issues and sub issues, lead time is measured on user stories from the start of development until they are visible in production
 - Not every issue is a user story. Technical work is tracked as tech stories
+- We work feature driven. Each epic is a feature with its user stories as sub issues, and a feature is done when it is in production
+- Unfinished features are kept behind feature flags
 - We review our flow every week and note decisions and experiments
 - Releases follow Semantic Versioning
 - Documentation is written in English
 
-Our Definition of Done and code standards are maintained by the team in this repository.
+Our policies, Definition of Done and code standards are maintained by the team in the `docs` folder.

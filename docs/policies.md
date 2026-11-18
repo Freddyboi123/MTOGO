@@ -6,17 +6,19 @@ These policies describe how we work. They are explicit so that every team member
 | --- | --- | --- |
 | Workflow | When can an issue move between workflow stages? | See Workflow below |
 | WIP | How are WIP limits and blocked work handled? | See WIP below |
+| Feature driven work | How is work split and when is a feature finished? | See Feature driven work below |
 | Definition of Done | When is a feature considered complete? | See Definition of Done below |
 | Quality | Which automated checks must pass? | See Quality below |
 | Collaboration | How are pull requests, code reviews and integration handled? | See Collaboration below |
 
 ## Workflow
 
-Issues move through Backlog, Ready, In Progress and Done on the Kanban board.
+Issues move through Backlog, Ready, In Progress, In Review and Done on the Kanban board.
 
 - Backlog to Ready: the issue is understandable, delimited and has acceptance criteria
 - Ready to In Progress: there is free WIP capacity, a team member takes the issue, and the Started date is registered
-- In Progress to Done: the Definition of Done is met, the pull request is merged and the issue is closed as completed
+- In Progress to In Review: the work is finished and a pull request is opened
+- In Review to Done: the Definition of Done is met, the pull request is merged and the issue is closed as completed
 
 Not every issue is a user story. Technical work is tracked as tech stories.
 
@@ -24,8 +26,18 @@ Not every issue is a user story. Technical work is tracked as tech stories.
 
 - Each person works on one issue at a time, so at most four issues are in progress at once
 - If you take an issue, you finish it within a reasonable time. Otherwise it is released so it does not block others
+- At most two user stories are in progress at once
 - We finish what is started before we start something new
 - Old or blocked issues are discussed at the weekly flow review
+
+## Feature driven work
+
+- Work is organised as epics, user stories and tasks. An epic is a feature, its user stories are sub issues of the epic, and tasks are sub issues of a user story
+- A user story is cut so it can be finished from database to screen and put in production within a few days
+- We build the features in the order of the backlog and finish a feature before we start the next one
+- A feature is done when all its user stories are done and the feature is in production
+- Unfinished work can be merged and deployed behind a feature flag. The flag is turned off in production until the whole feature is done
+- In the backend feature flags are read from configuration, and in the frontend from Vite environment variables named `VITE_FEATURE_*`
 
 ## Definition of Done
 
@@ -33,7 +45,7 @@ The Definition of Done is maintained in this repository. An issue may only be mo
 
 ## Quality
 
-- The CI pipeline builds and tests the backend on every pull request and every push to review and main
+- The CI pipeline builds and tests the backend on every pull request and every push to main
 - A failing build or failing tests must be fixed before a pull request is merged
 - Code follows the team code standards, which are maintained in this repository
 
@@ -41,7 +53,7 @@ Static analysis and code coverage are planned additions to the pipeline.
 
 ## Collaboration
 
-- We never work directly on main. Branches are short lived, created from review and merged back into review through a pull request
+- We never work directly on main. Branches are short lived, created from main and merged back into main through a pull request
 - Every pull request is reviewed by another team member, as soon as possible so that work does not wait
 - main must always be stable and ready to deploy
 - Releases follow Semantic Versioning
@@ -50,8 +62,8 @@ Static analysis and code coverage are planned additions to the pipeline.
 ## Flow measurements
 
 - Cycle time is the time from In Progress to Done, measured as Closed minus Started, on issues and sub issues
-- Lead time is measured on user stories, from the start of development until they are visible in production
-- Throughput is the number of finished issues and sub issues per week. Parent issues are not counted, to avoid counting the same work twice
+- Lead time is measured on user stories, from when the first sub issue is started until the story is visible in production
+- Throughput is the number of finished issues and sub issues per week. Parent issues, such as epics, are not counted, to avoid counting the same work twice
 - WIP is the number of issues in progress
 
 ## Weekly flow review

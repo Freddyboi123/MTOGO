@@ -55,20 +55,25 @@ count changes when the data changes.
 
 ## Images
 
-Export these from the Figma file and place them in `public/images/`.
-Until then the pages render with the green placeholder colour.
+The images from the Figma file are in `public/images/`.
 
 | File | Figma layer |
 | --- | --- |
-| `hero-pizza.jpg` | Landingpage · Frisk pizza · Hero |
-| `restaurant-pizza.jpg` | Landingpage · Pizza · Restaurantfoto |
-| `restaurant-burger.jpg` | Landingpage · Burger · Restaurantfoto |
-| `restaurant-bowl.jpg` | Landingpage · Bowl · Restaurantfoto |
-| `restaurant-cover.jpg` | Restaurant menu eksempel · Restaurant cover |
-| `auth-pizza.jpg` | Login · Friskbagt pizza |
+| `hero-pizza.png` | Landingpage · Frisk pizza · Hero |
+| `restaurant-pizza.png` | Landingpage · Pizza · Restaurantfoto |
+| `restaurant-burger.png` | Landingpage · Burger · Restaurantfoto |
+| `restaurant-bowl.png` | Landingpage · Bowl · Restaurantfoto |
+| `restaurant-cover.png` | Restaurant menu eksempel · Restaurant cover |
+| `auth-pizza.png` | Login · Friskbagt pizza |
 
 ## Design
 
-Colours, type and spacing come from the Figma file and live as variables at the
-top of `src/styles.css`. Inter and Playfair Display are loaded from Google Fonts
+Colours, type and spacing come from the Figma file and live as variables in
+`src/styles/global.css`. Inter and Playfair Display are loaded from Google Fonts
 in `index.html`.
+
+## Docker
+
+The `Dockerfile` builds the app with Node and serves it with nginx. The address of
+the backend is passed as the build argument `VITE_API_URL`. The CD pipeline builds
+the image when code is pushed to `main`.
