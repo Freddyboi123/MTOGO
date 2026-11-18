@@ -1,11 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969/api';
 
 export async function api(path, { method = 'GET', body } = {}) {
+  const token = localStorage.getItem('token');
   let res;
   try {
     res = await fetch(`${API_URL}${path}`, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      headers: {
+        ...(body && { 'Content-Type': 'application/json' }),
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
       body: body ? JSON.stringify(body) : undefined
     });
   } catch {
@@ -33,6 +37,10 @@ export const verifyEmail = (token) => api(`/users/auth/verify?token=${encodeURIC
 export const resendVerify = (email) => api('/users/auth/resend-verify', { method: 'POST', body: { email } });
 export const forgotPassword = (email) => api('/users/auth/forgot-password', { method: 'POST', body: { email } });
 export const resetPassword = (body) => api('/users/auth/reset-password', { method: 'POST', body });
+
+export const getMyRestaurants = () => api('/my-restaurants');
+export const addMenuItem = (categoryId, body) =>
+  api(`/category/${categoryId}/items`, { method: 'POST', body });
 
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));
 

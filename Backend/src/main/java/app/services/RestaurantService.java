@@ -19,6 +19,7 @@ import app.mappers.RestaurantMapper;
 import app.server.Setup;
 import app.utils.ErrorHandler;
 
+import java.util.List;
 import java.util.UUID;
 
 public class RestaurantService {
@@ -53,6 +54,12 @@ public class RestaurantService {
                 restaurantDAO.getById(id),
                 Notifications.RESTAURANT_NOT_FOUND.getDisplayName()
         );
+    }
+
+    // ________________________________________________________
+
+    public List<Restaurant> getMyRestaurants(UUID ownerId) {
+        return restaurantDAO.getByOwnerId(ownerId);
     }
 
     // ________________________________________________________
