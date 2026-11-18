@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Known findings that are accepted for now, so that CI only fails on new high priority findings.
+    Remove an entry when the code it covers is fixed.
+-->
+<FindBugsFilter>
+
+    <!-- Setup writes the static field em from its constructor. Tracked as technical debt. -->
+    <Match>
+        <Class name="app.server.Setup"/>
+        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
+    </Match>
+
+</FindBugsFilter>
