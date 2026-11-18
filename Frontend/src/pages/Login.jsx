@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import { login, resendVerify, saveSession } from '../utils/api';
+import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Auth.module.css';
 
@@ -49,7 +50,7 @@ export default function Login() {
         <p className={ui.eyebrow}>Velkommen tilbage</p>
         <h1 className={styles.title}>Godt at se dig igen.</h1>
       </div>
-      <p className={ui.lead, styles.lead}>Log ind, og find noget, du har lyst til.</p>
+      <p className={cx(ui.lead, styles.lead)}>Log ind, og find noget, du har lyst til.</p>
 
       <form onSubmit={handleSubmit} className={styles.fields}>
         <div className={ui.field}>
@@ -86,7 +87,7 @@ export default function Login() {
             <input type="checkbox" />
             Husk mig
           </label>
-          <Link to="/glemt-adgangskode" className={ui.linkAccent, styles.forgot}>
+          <Link to="/glemt-adgangskode" className={cx(ui.linkAccent, styles.forgot)}>
             Glemt adgangskode?
           </Link>
         </div>
@@ -101,7 +102,7 @@ export default function Login() {
 
         <button
           type="submit"
-          className={ui.btn, ui.btnPrimary, ui.btnBlock}
+          className={cx(ui.btn, ui.btnPrimary, ui.btnBlock)}
           disabled={loading}
         >
           Log ind

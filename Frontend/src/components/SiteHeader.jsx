@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { isLoggedIn } from '../utils/api';
+import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './SiteHeader.module.css';
 
@@ -8,7 +9,7 @@ export default function SiteHeader({ variant = 'marketing' }) {
 
   return (
     <header className={styles.header}>
-      <div className={ui.page, styles.inner}>
+      <div className={cx(ui.page, styles.inner)}>
         <Link to="/" className={styles.brand}>
           MTOGO
         </Link>
@@ -22,7 +23,7 @@ export default function SiteHeader({ variant = 'marketing' }) {
             <>
               <a href="#saadan-fungerer-det">Sådan fungerer det</a>
               {loggedIn ? (
-                <Link to="/min-profil" className={ui.btn, ui.btnPrimary}>
+                <Link to="/min-profil" className={cx(ui.btn, ui.btnPrimary)}>
                   Profil
                 </Link>
               ) : (
@@ -30,7 +31,7 @@ export default function SiteHeader({ variant = 'marketing' }) {
                   <Link to="/login" className={styles.strong}>
                     Log ind
                   </Link>
-                  <Link to="/opret-konto" className={ui.btn, ui.btnPrimary}>
+                  <Link to="/opret-konto" className={cx(ui.btn, ui.btnPrimary)}>
                     Opret konto
                   </Link>
                 </div>

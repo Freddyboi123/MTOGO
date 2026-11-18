@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import { resetPassword } from '../utils/api';
+import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Auth.module.css';
 
@@ -65,7 +66,7 @@ export default function ResetPassword() {
 
         <button
           type="submit"
-          className={ui.btn, ui.btnPrimary, ui.btnBlock}
+          className={cx(ui.btn, ui.btnPrimary, ui.btnBlock)}
           disabled={loading}
         >
           Gem adgangskode
