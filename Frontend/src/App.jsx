@@ -23,7 +23,7 @@ export default function App() {
       <Route path="/restaurant" element={<RestaurantMenu />} />
       <Route path="/login" element={<Login />} />
       <Route path="/opret-konto" element={<SignUp />} />
-      <Route path="/glemt-adgangskode" element={<ResetPassword />} />
+      <Route path="/glemt-adgangskode" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/betaling" element={<Checkout />} />
       <Route path="/ansoeg/restaurant" element={<ApplyRestaurant />} />
