@@ -45,7 +45,7 @@ The Definition of Done is maintained in this repository. An issue may only be mo
 
 ## Quality
 
-- The CI pipeline builds and tests the backend on every pull request and every push to review and main
+- The CI pipeline builds and tests the backend on every pull request and every push to main
 - A failing build or failing tests must be fixed before a pull request is merged
 - Code follows the team code standards, which are maintained in this repository
 
@@ -53,7 +53,7 @@ Static analysis and code coverage are planned additions to the pipeline.
 
 ## Collaboration
 
-- We never work directly on main. Branches are short lived, created from review and merged back into review through a pull request
+- We never work directly on main. Branches are short lived, created from main and merged back into main through a pull request
 - Every pull request is reviewed by another team member, as soon as possible so that work does not wait
 - main must always be stable and ready to deploy
 - Releases follow Semantic Versioning
