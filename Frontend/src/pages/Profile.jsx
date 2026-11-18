@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../utils/api';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
@@ -8,6 +10,12 @@ import { applications, customer, profileSections } from '../data/mtogo';
 
 export default function Profile() {
   const [section, setSection] = useState(profileSections[0]);
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate('/');
+  }
 
   return (
     <>
@@ -38,7 +46,9 @@ export default function Profile() {
               {name}
             </button>
           ))}
-          <button className={styles.logout}>Log ud</button>
+          <button className={styles.logout} onClick={handleLogout}>
+            Log ud
+          </button>
         </nav>
 
         <div>
