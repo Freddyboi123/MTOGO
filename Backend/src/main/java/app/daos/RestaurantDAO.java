@@ -25,4 +25,18 @@ public class RestaurantDAO extends EntityManagerDAO<Restaurant> {
         );
     }
 
+    // ________________________________________________________
+
+    public boolean existsByNameAndCity(String name, String city) {
+        String jpql = "SELECT COUNT(r) FROM Restaurant r WHERE LOWER(r.name) = LOWER(:name) AND LOWER(r.address.city) = LOWER(:city)";
+
+        Long count = executeQuery(() ->
+            em.createQuery(jpql, Long.class)
+                .setParameter("name", name)
+                .setParameter("city", city)
+                .getSingleResult()
+        );
+        return count != null && count > 0;
+    }
+
 }
