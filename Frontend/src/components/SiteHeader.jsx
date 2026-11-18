@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 import cx from '../utils/cx';
+import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import ui from '../styles/shared.module.css';
 import styles from './SiteHeader.module.css';
 
 export default function SiteHeader({ variant = 'marketing' }) {
+  const restaurantOverview = useFeatureFlag('restaurantOverview');
+
   return (
     <header className={styles.header}>
       <div className={cx(ui.page, styles.inner)}>
@@ -14,7 +17,7 @@ export default function SiteHeader({ variant = 'marketing' }) {
         {variant === 'marketing' && <span className={ui.linkQuiet}>København K ▾</span>}
 
         <nav className={styles.nav}>
-          <Link to="/">Restauranter</Link>
+          <Link to={restaurantOverview ? '/restauranter' : '/'}>Restauranter</Link>
 
           {variant === 'marketing' ? (
             <>

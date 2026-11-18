@@ -19,7 +19,8 @@ The app runs on http://localhost:5173
 | Route | Page |
 | --- | --- |
 | `/` | Landing page |
-| `/restaurant` | Restaurant page with menu and basket |
+| `/restauranter` | Restaurant overview, loaded from the API (flag `restaurantOverview`) |
+| `/restaurant/:id` | Restaurant page with the menu from the API, split into categories (flag `restaurantOverview`). The basket is still template data |
 | `/betaling` | Checkout |
 | `/login` | Log in |
 | `/opret-konto` | Sign up |
@@ -52,6 +53,24 @@ names are scoped to the file that owns them, and the only global stylesheet is
 
 Numbers shown on the pages come from `data/mtogo.js`, not from the markup, so a
 count changes when the data changes.
+
+## Feature flags
+
+Unfinished features are hidden behind feature flags, as required by the Definition of Done.
+The backend owns the flags and serves them at `GET /api/features`. The frontend loads them
+once at startup in `featureFlags/FeatureFlagProvider.jsx`, and pages read a flag with
+`useFeatureFlag('flagName')`. If the flags cannot be fetched, every flag counts as off.
+
+To add a flag:
+
+1. Add it to the `FeatureFlag` enum in the backend, with the name the frontend uses.
+2. Add `FEATURE_<NAME>=true` (or `false`) to `Backend/src/main/resources/feature-flags.properties`.
+   The file is committed, so the whole team gets the flag when they pull. A flag that is not set counts as off.
+   An environment variable with the same name overrides the file, which is how a feature is switched off
+   on the server without a deploy.
+3. Hide the route, link or component with `useFeatureFlag('flagName')`.
+
+When the feature is done and turned on in production, remove the flag again.
 
 ## Images
 

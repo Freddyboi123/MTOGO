@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
+import useFeatureFlag from './featureFlags/useFeatureFlag';
+import Restaurants from './pages/Restaurants';
 import RestaurantMenu from './pages/RestaurantMenu';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
@@ -16,10 +18,14 @@ import AdminRestaurantApplication from './pages/AdminRestaurantApplication';
 import AdminCourierApplication from './pages/AdminCourierApplication';
 
 export default function App() {
+  const restaurantOverview = useFeatureFlag('restaurantOverview');
+
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/restaurant" element={<RestaurantMenu />} />
+      {restaurantOverview && <Route path="/restauranter" element={<Restaurants />} />}
+      {restaurantOverview && <Route path="/restaurant/:id" element={<RestaurantMenu />} />}
+      <Route path="/restaurant" element={<Navigate to="/restauranter" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/opret-konto" element={<SignUp />} />
       <Route path="/glemt-adgangskode" element={<ForgotPassword />} />

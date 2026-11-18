@@ -15,8 +15,7 @@ const paymentMethods = [
 export default function Checkout() {
   const [method, setMethod] = useState(paymentMethods[0].id);
 
-  const subtotal = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
-  const total = subtotal + basket.deliveryFee;
+  const total = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
 
   return (
     <>
@@ -149,14 +148,6 @@ export default function Checkout() {
 
             <hr className={ui.divider} />
 
-            <div className={ui.sumRow}>
-              <span>Subtotal</span>
-              <span>{subtotal} kr.</span>
-            </div>
-            <div className={ui.sumRow}>
-              <span>Levering</span>
-              <span>{basket.deliveryFee} kr.</span>
-            </div>
             <div className={ui.sumTotal}>
               <span>I alt</span>
               <span>{total} kr.</span>

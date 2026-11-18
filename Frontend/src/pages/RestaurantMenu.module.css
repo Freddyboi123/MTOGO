@@ -134,6 +134,11 @@
   margin-top: 12px;
 }
 
+.itemUnavailable {
+  composes: item;
+  opacity: 0.6;
+}
+
 .itemFlag {
   color: var(--orange);
   font-size: 9px;
@@ -149,6 +154,11 @@
   margin-top: 8px;
 }
 
+.state {
+  color: var(--muted);
+  font-size: 15px;
+}
+
 .addButton {
   align-self: end;
   width: 42px;
@@ -162,37 +172,8 @@
   cursor: pointer;
 }
 
-.drinksTitle {
-  font-size: 26px;
-  margin-top: 48px;
-}
-
-.drinkRow {
-  background: var(--white);
-  border-radius: 10px;
-  padding: 17px 20px;
-  margin-top: 24px;
-  display: grid;
-  grid-template-columns: 1fr auto 42px;
-  align-items: center;
-  gap: 24px;
-}
-
-.drinkRow strong {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.drinkRow span {
-  color: var(--muted);
-  font-size: 12px;
-  display: block;
-  margin-top: 6px;
-}
-
-.drinkPrice {
-  font-weight: 600;
-  font-size: 14px;
+.addButton:disabled {
+  cursor: not-allowed;
 }
 
 .basket {

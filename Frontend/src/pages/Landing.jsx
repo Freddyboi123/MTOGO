@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
+import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import ui from '../styles/shared.module.css';
 import styles from './Landing.module.css';
 import { cuisines, howItWorks, restaurants } from '../data/mtogo';
 
 export default function Landing() {
   const [activeCuisine, setActiveCuisine] = useState(cuisines[0]);
+  const restaurantOverview = useFeatureFlag('restaurantOverview');
 
   return (
     <>
@@ -72,7 +74,11 @@ export default function Landing() {
               De steder, du vender tilbage til. Og dem, du ikke har opdaget endnu.
             </p>
           </div>
-          <span className={ui.linkAccent}>Se alle restauranter →</span>
+          {restaurantOverview && (
+            <Link to="/restauranter" className={ui.linkAccent}>
+              Se alle restauranter →
+            </Link>
+          )}
         </div>
 
         <div className={styles.grid}>
