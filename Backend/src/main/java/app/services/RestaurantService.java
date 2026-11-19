@@ -60,7 +60,7 @@ public class RestaurantService {
 
     public List<Restaurant> getMyRestaurants(UUID ownerId) {
         return restaurantDAO.getByOwnerId(ownerId);
-      
+    }
     // ________________________________________________________
       
     public List<Restaurant> getActiveRestaurants() {
