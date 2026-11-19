@@ -42,6 +42,7 @@ export const getMyRestaurants = () => api('/my-restaurants');
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
 
+export const getRestaurantApplications = () => api('/restaurant-applications');
 export const getMyRestaurantApplications = () => api('/my-restaurant-applications');
 export const submitRestaurantApplication = (body) =>
   api('/restaurant-applications', { method: 'POST', body });

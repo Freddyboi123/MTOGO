@@ -45,6 +45,7 @@ public class RestaurantApplicationController extends BaseController<RestaurantAp
         RestaurantApplicationController controller = new RestaurantApplicationController();
         return () -> {
             post("/restaurant-applications", controller::submitApplication, Role.CUSTOMER, Role.RESTAURANT_OWNER);
+            get("/restaurant-applications", controller::getAllApplications, Role.ADMIN);
             get("/my-restaurant-applications", controller::getMyApplications, Role.CUSTOMER, Role.RESTAURANT_OWNER);
             put("/restaurant-application/{id}", controller::resubmitApplication, Role.CUSTOMER, Role.RESTAURANT_OWNER);
         };
@@ -74,6 +75,25 @@ public class RestaurantApplicationController extends BaseController<RestaurantAp
 
         String message = messageService.buildMessage(Notifications.APPLICATION_SUBMITTED, application.getRestaurantName());
         respond(ctx, 201, message, mapper.toDTO(application));
+    }
+
+    // ________________________________________________________
+
+    private void getAllApplications(Context ctx) {
+        List<RestaurantApplicationDTO> list = applicationService.getAllApplications()
+            .stream()
+            .map(application -> {
+                RestaurantApplicationDTO dto = mapper.toDTO(application);
+                dto.setAddressInUse(applicationService.isAddressInUse(application));
+                return dto;
+            }).toList();
+
+        String message = messageService.buildMessage(
+            Notifications.GET_ALL,
+            String.valueOf(list.size()),
+            entityClass.getName().toLowerCase()
+        );
+        respond(ctx, 200, message, Map.of("data", list));
     }
 
     // ________________________________________________________

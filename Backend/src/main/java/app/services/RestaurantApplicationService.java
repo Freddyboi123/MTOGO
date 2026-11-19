@@ -14,6 +14,7 @@ import app.mappers.RestaurantApplicationMapper;
 import app.server.Setup;
 import app.utils.ErrorHandler;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,6 +52,24 @@ public class RestaurantApplicationService {
 
     public List<RestaurantApplication> getMyApplications(UUID applicantId) {
         return applicationDAO.getByApplicantId(applicantId);
+    }
+
+    // ________________________________________________________
+
+    public List<RestaurantApplication> getAllApplications() {
+        return applicationDAO.getAll()
+            .stream()
+            .sorted(Comparator.comparing(RestaurantApplication::getCreatedAt).reversed())
+            .toList();
+    }
+
+    // ________________________________________________________
+
+    public boolean isAddressInUse(RestaurantApplication application) {
+        Address address = application.getAddress();
+
+        return application.getStatus() != ApplicationStatus.APPROVED
+            && restaurantDAO.existsByAddress(address.getStreet(), address.getPostalCode(), address.getCity());
     }
 
     // ________________________________________________________

@@ -24,5 +24,7 @@ public class RestaurantApplicationDTO {
     private ApplicationStatus status;
     private String adminMessage;
     private String createdAt;
+    private String applicantName;
+    private boolean addressInUse;
 
 }

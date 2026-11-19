@@ -46,6 +46,7 @@ public class RestaurantApplicationMapper implements IMapper<RestaurantApplicatio
             .status(entity.getStatus())
             .adminMessage(entity.getAdminMessage())
             .createdAt(entity.getCreatedAt().toString())
+            .applicantName(entity.getApplicant().getFirstname() + " " + entity.getApplicant().getLastname())
             .build();
     }
 }
