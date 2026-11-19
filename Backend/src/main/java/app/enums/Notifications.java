@@ -18,6 +18,9 @@ public enum Notifications {
     BODY_EMPTY("Body is empty or invalid!"),
     MUST_BE_FLOAT("The entered must be a decimal number!"),
 
+    // FEATURE FLAGS
+    FEATURE_FLAGS_FETCHED("You fetched the feature flags"),
+
     // VALIDATE PASSWORD
     PASSWORD_LENGTH_INVALID("The password must be between 8 and 30 characters"),
     PASSWORD_LOWERCASE_MISSING("The password must contain a lowercase letter"),
@@ -56,6 +59,18 @@ public enum Notifications {
     ROLE_INVALID("The role does not exist"),
     ROLE_ASSIGNED("The role %s was given to %s"),
 
+    // ORDERS
+    ORDER_PLACED("Order %s was placed"),
+    ORDER_NOT_FOUND("The order was not found"),
+    ORDER_RESTAURANT_REQUIRED("You must choose a restaurant for the order"),
+    ORDER_ADDRESS_REQUIRED("You must enter a delivery address with street, postal code and city"),
+    ORDER_LINES_REQUIRED("The basket is empty"),
+    ORDER_QUANTITY_INVALID("The quantity must be at least 1"),
+    ORDER_ONE_RESTAURANT("All items in an order must be from the same restaurant"),
+    MENU_ITEM_NOT_FOUND("The menu item was not found"),
+    MENU_ITEM_UNAVAILABLE("The menu item is not available"),
+    PAYMENT_FAILED("The payment failed. No order was created"),
+
     // RESTAURANTS AND MENUS
     RESTAURANT_CREATED("Restaurant %s was created"),
     RESTAURANT_NOT_FOUND("The restaurant was not found"),
@@ -66,6 +81,7 @@ public enum Notifications {
     CATEGORY_NOT_FOUND("The menu category was not found"),
     CATEGORY_NAME_REQUIRED("You must enter a name for the category"),
     MENU_ITEM_ADDED("Menu item %s was added"),
+    MENU_FETCHED("You fetched the menu"),
     MENU_ITEM_NAME_REQUIRED("You must enter a name for the menu item"),
     MENU_ITEM_PRICE_INVALID("The price must be a number greater than zero"),
 

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -87,6 +88,12 @@ class RestaurantServiceTest {
                 .postalCode("2800")
                 .city("Kongens Lyngby")
                 .build();
+    }
+
+    // ________________________________________________________
+
+    private MenuCategory findCategory(List<MenuCategory> menu, String name) {
+        return menu.stream().filter(category -> category.getName().equals(name)).findFirst().orElseThrow();
     }
 
     // ________________________________________________________
@@ -262,5 +269,69 @@ class RestaurantServiceTest {
         MenuItemDTO item = dto.getCategories().get(0).getItems().get(0);
         assertEquals("Margherita", item.getName());
         assertEquals(0, new BigDecimal("89.00").compareTo(item.getPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getMenuReturnsCategoriesWithTheirItems() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+        MenuCategory pizzas = service.addCategory(owner.getId(), restaurant.getId(), categoryDTO("Pizza"));
+        MenuCategory drinks = service.addCategory(owner.getId(), restaurant.getId(), categoryDTO("Drinks"));
+        service.addItem(owner.getId(), pizzas.getId(), itemDTO("Margherita", new BigDecimal("89.00")));
+        service.addItem(owner.getId(), drinks.getId(), itemDTO("Cola", new BigDecimal("25.00")));
+
+        List<MenuCategory> menu = service.getMenu(restaurant.getId());
+
+        assertEquals(2, menu.size());
+        assertEquals("Margherita", findCategory(menu, "Pizza").getItems().get(0).getName());
+        assertEquals("Cola", findCategory(menu, "Drinks").getItems().get(0).getName());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getMenuForUnknownRestaurantThrows404() {
+        ApiException exception = assertThrows(ApiException.class, () -> service.getMenu(UUID.randomUUID()));
+
+        assertEquals(404, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getActiveRestaurantsListsCreatedRestaurants() {
+        Restaurant first = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+        Restaurant second = service.createRestaurant(owner.getId(), restaurantDTO("Sushi Bar"));
+
+        List<UUID> ids = service.getActiveRestaurants().stream().map(Restaurant::getId).toList();
+
+        assertTrue(ids.contains(first.getId()));
+        assertTrue(ids.contains(second.getId()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getActiveRestaurantsAreSortedByName() {
+        Restaurant zeta = service.createRestaurant(owner.getId(), restaurantDTO("Zeta Kitchen"));
+        Restaurant alpha = service.createRestaurant(owner.getId(), restaurantDTO("Alpha Kitchen"));
+
+        List<UUID> ids = service.getActiveRestaurants().stream().map(Restaurant::getId).toList();
+
+        assertTrue(ids.indexOf(alpha.getId()) < ids.indexOf(zeta.getId()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getActiveRestaurantsHidesInactiveRestaurants() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Closed Pizzeria"));
+        restaurant.setActive(false);
+        new RestaurantDAO(em).update(restaurant);
+
+        List<UUID> ids = service.getActiveRestaurants().stream().map(Restaurant::getId).toList();
+
+        assertFalse(ids.contains(restaurant.getId()));
     }
 }

@@ -108,7 +108,7 @@ export const basket = {
   lines: [
     { name: 'Margherita', quantity: 1, price: 119 },
     { name: 'Burrata', quantity: 1, price: 129 }
-  ],
+  ]
 };
 
 export const customer = {
@@ -481,3 +481,24 @@ export const profileSections = [
   'Ordrehistorik',
   'Sikkerhed'
 ];
+
+export const restaurantOverview = {
+  eyebrow: 'Alle restauranter',
+  title: 'Find dit næste måltid',
+  lead: 'Udforsk restauranterne på MTOGO, og vælg hvor du vil bestille fra.',
+  loading: 'Henter restauranter…',
+  error: 'Restauranterne kunne ikke hentes. Prøv igen om lidt.',
+  empty: 'Der er ingen restauranter endnu.',
+  placeholderImage: '/images/restaurant-cover.png'
+};
+
+export const restaurantMenu = {
+  back: '← Alle restauranter',
+  loading: 'Henter menuen…',
+  error: 'Restauranten kunne ikke findes. Prøv igen om lidt.',
+  emptyMenu: 'Restauranten har ikke tilføjet en menu endnu.',
+  emptyCategory: 'Der er ingen retter i denne kategori endnu.',
+  unavailable: 'Udsolgt',
+  currency: 'kr.',
+  cover: '/images/restaurant-cover.png'
+};

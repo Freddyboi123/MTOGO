@@ -60,6 +60,11 @@ public class RestaurantService {
 
     public List<Restaurant> getMyRestaurants(UUID ownerId) {
         return restaurantDAO.getByOwnerId(ownerId);
+      
+    // ________________________________________________________
+      
+    public List<Restaurant> getActiveRestaurants() {
+        return restaurantDAO.getAllActive();
     }
 
     // ________________________________________________________
@@ -119,5 +124,11 @@ public class RestaurantService {
         if (!restaurant.getOwner().getId().equals(userId)) {
             throw new ApiException(403, Notifications.NOT_RESTAURANT_OWNER.getDisplayName());
         }
+    }
+
+    // ________________________________________________________
+
+    public List<MenuCategory> getMenu(UUID restaurantId) {
+        return getRestaurant(restaurantId).getCategories();
     }
 }

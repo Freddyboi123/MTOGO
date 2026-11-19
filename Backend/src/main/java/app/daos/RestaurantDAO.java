@@ -5,7 +5,6 @@ import app.entities.Restaurant;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
-import java.util.UUID;
 
 public class RestaurantDAO extends EntityManagerDAO<Restaurant> {
 
@@ -70,4 +69,9 @@ public class RestaurantDAO extends EntityManagerDAO<Restaurant> {
         return value.toLowerCase().replaceAll("[\\s,.\\-]", "");
     }
 
+    public List<Restaurant> getAllActive() {
+        return executeQuery(() -> em.createQuery(
+                        "SELECT r FROM Restaurant r WHERE r.active = true ORDER BY r.name", Restaurant.class)
+                .getResultList());
+    }
 }

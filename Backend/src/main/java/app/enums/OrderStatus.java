@@ -1,6 +1,7 @@
 package app.enums;
 
 public enum OrderStatus {
+    RECEIVED,
     PENDING,
     ACCEPTED,
     PREPARING,

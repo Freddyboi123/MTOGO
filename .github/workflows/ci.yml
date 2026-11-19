@@ -19,4 +19,52 @@ jobs:
           distribution: temurin
           java-version: '27'
           cache: maven
-      - run: mvn -B verify
+
+      - name: Build, test, coverage and static analysis
+        run: mvn -B verify
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          csv=target/site/jacoco/jacoco.csv
+          if [ ! -f "$csv" ]; then
+            echo "No coverage report was produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          awk -F, 'NR > 1 { li += $8; lc += $9; bi += $6; bc += $7 }
+            END {
+              print "## Backend test coverage"
+              print ""
+              print "| Counter | Covered | Total | Coverage |"
+              print "| --- | --- | --- | --- |"
+              printf "| Lines | %d | %d | %.1f%% |\n", lc, li + lc, (li + lc) ? 100 * lc / (li + lc) : 0
+              printf "| Branches | %d | %d | %.1f%% |\n", bc, bi + bc, (bi + bc) ? 100 * bc / (bi + bc) : 0
+            }' "$csv" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Required line coverage: $(mvn -B -q help:evaluate -Dexpression=coverage.line.minimum -DforceStdout)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Static analysis summary
+        if: always()
+        run: |
+          xml=target/spotbugsXml.xml
+          if [ ! -f "$xml" ]; then
+            echo "No SpotBugs report was produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "## SpotBugs findings"
+            echo ""
+            echo "| Count | Bug pattern |"
+            echo "| --- | --- |"
+            grep -oE "type=['\"][A-Z0-9_]+['\"]" "$xml" | tr -d "'\"" | cut -d= -f2 | sort | uniq -c | sort -rn | awk '{ printf "| %s | %s |\n", $1, $2 }'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: |
+            Backend/target/site/jacoco/
+            Backend/target/spotbugsXml.xml
+          if-no-files-found: ignore

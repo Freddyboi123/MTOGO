@@ -37,7 +37,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private OrderStatus status = OrderStatus.PENDING;
+    private OrderStatus status = OrderStatus.RECEIVED;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

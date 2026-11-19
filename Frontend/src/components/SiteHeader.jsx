@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { isLoggedIn } from '../utils/api';
 import cx from '../utils/cx';
+import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import ui from '../styles/shared.module.css';
 import styles from './SiteHeader.module.css';
 
 export default function SiteHeader({ variant = 'marketing' }) {
+  const restaurantOverview = useFeatureFlag('restaurantOverview');
   const loggedIn = isLoggedIn();
 
   return (
@@ -17,7 +19,7 @@ export default function SiteHeader({ variant = 'marketing' }) {
         {variant === 'marketing' && <span className={ui.linkQuiet}>København K ▾</span>}
 
         <nav className={styles.nav}>
-          <Link to="/">Restauranter</Link>
+          <Link to={restaurantOverview ? '/restauranter' : '/'}>Restauranter</Link>
 
           {variant === 'marketing' ? (
             <>
