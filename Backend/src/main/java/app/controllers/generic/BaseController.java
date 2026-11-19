@@ -1,6 +1,8 @@
 package app.controllers.generic;
 
+import app.dtos.UserDTO;
 import app.enums.Notifications;
+import app.exceptions.ApiException;
 import io.javalin.http.Context;
 import app.mappers.generic.IMapper;
 import app.services.MessageService;
@@ -84,5 +86,20 @@ public abstract class BaseController<E, D> implements IController {
             ));
         }
     }
+
+
+    // ________________________________________________________
+
+    protected UserDTO getUser(Context ctx) {
+        UserDTO user = ctx.attribute("user");
+
+        if (user == null) {
+            throw new ApiException(401, Notifications.USER_NOT_FOUND.getDisplayName());
+        }
+
+        return user;
+    }
+
+
 
 }

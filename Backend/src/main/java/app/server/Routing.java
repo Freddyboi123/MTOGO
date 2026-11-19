@@ -1,5 +1,6 @@
 package app.server;
 
+import app.controllers.RestaurantApplicationController;
 import app.controllers.FeatureFlagController;
 import app.controllers.OrderController;
 import app.controllers.RestaurantController;
@@ -16,6 +17,7 @@ public class Routing {
             path("/api", () -> {
                 UserController.registerRoutes().addEndpoints();
                 RestaurantController.registerRoutes().addEndpoints();
+                RestaurantApplicationController.registerRoutes().addEndpoints();
                 FeatureFlagController.registerRoutes().addEndpoints();
                 OrderController.registerRoutes().addEndpoints();
 

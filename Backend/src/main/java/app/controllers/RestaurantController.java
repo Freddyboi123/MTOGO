@@ -24,6 +24,7 @@ import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
@@ -78,8 +79,26 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
     // ________________________________________________________
 
+    private void getMyRestaurants(Context ctx) {
+        UserDTO user = getUser(ctx);
+
+        List<RestaurantDTO> list = restaurantService.getMyRestaurants(user.getId())
+                .stream()
+                .map(mapper::toDTO)
+                .toList();
+
+        String message = messageService.buildMessage(
+                Notifications.GET_ALL,
+                String.valueOf(list.size()),
+                entityClass.getSimpleName().toLowerCase()
+        );
+        respond(ctx, 200, message, Map.of("data", list));
+    }
+
+    // ________________________________________________________
+
     private void createRestaurant(Context ctx) {
-        UserDTO user = ctx.attribute("user");
+        UserDTO user = getUser(ctx);
         RestaurantDTO body = ErrorHandler.tryBody(ctx, RestaurantDTO.class, Notifications.BODY_EMPTY.getDisplayName());
 
         Restaurant restaurant = restaurantService.createRestaurant(user.getId(), body);
@@ -91,7 +110,7 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
     // ________________________________________________________
 
     private void addCategory(Context ctx) {
-        UserDTO user = ctx.attribute("user");
+        UserDTO user = getUser(ctx);
         UUID restaurantId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
         MenuCategoryDTO body = ErrorHandler.tryBody(ctx, MenuCategoryDTO.class, Notifications.BODY_EMPTY.getDisplayName());
 
@@ -104,7 +123,7 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
     // ________________________________________________________
 
     private void addItem(Context ctx) {
-        UserDTO user = ctx.attribute("user");
+        UserDTO user = getUser(ctx);
         UUID categoryId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.CATEGORY_NOT_FOUND.getDisplayName());
         MenuItemDTO body = ErrorHandler.tryBody(ctx, MenuItemDTO.class, Notifications.BODY_EMPTY.getDisplayName());
 

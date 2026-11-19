@@ -83,7 +83,20 @@ public enum Notifications {
     MENU_ITEM_ADDED("Menu item %s was added"),
     MENU_FETCHED("You fetched the menu"),
     MENU_ITEM_NAME_REQUIRED("You must enter a name for the menu item"),
-    MENU_ITEM_PRICE_INVALID("The price must be a number that is zero or more")
+    MENU_ITEM_PRICE_INVALID("The price must be a number greater than zero"),
+
+    // RESTAURANT APPLICATIONS
+    APPLICATION_SUBMITTED("Your application for %s was submitted"),
+    APPLICATION_UPDATED("Your application for %s was sent in again"),
+    APPLICATION_NOT_FOUND("The application was not found"),
+    APPLICATION_NAME_REQUIRED("You must enter a name for the restaurant"),
+    APPLICATION_CVR_INVALID("The CVR number must be 8 digits"),
+    APPLICATION_ADDRESS_REQUIRED("You must enter the street, postal code and city of the restaurant"),
+    APPLICATION_EMAIL_INVALID("The email address is not valid"),
+    APPLICATION_PHONE_INVALID("The phone number is not valid"),
+    APPLICATION_NAME_TAKEN("A restaurant with this name already exists in this city. Choose another name"),
+    APPLICATION_NOT_EDITABLE("The application can only be changed when more information is requested"),
+    NOT_APPLICANT("Only the applicant can change the application")
 
     ;
 

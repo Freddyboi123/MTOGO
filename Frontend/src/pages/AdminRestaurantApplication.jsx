@@ -1,19 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
+import { getRestaurantApplications } from '../utils/api';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import dash from '../components/DashboardLayout.module.css';
 import styles from './Admin.module.css';
-import {
-  courierApplications,
-  restaurantApplicationDetail,
-  restaurantApplications
-} from '../data/mtogo';
+import { courierApplications } from '../data/mtogo';
+
+const statusLabels = {
+  PENDING: 'Ny',
+  APPROVED: 'Godkendt',
+  REJECTED: 'Afvist',
+  MORE_INFORMATION_NEEDED: 'Mangler oplysninger'
+};
 
 export default function AdminRestaurantApplication() {
-  const [selected, setSelected] = useState(restaurantApplications[0]);
-  const pending = restaurantApplications.length + courierApplications.length;
+  const [applications, setApplications] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function loadApplications() {
+      try {
+        const res = await getRestaurantApplications();
+        setApplications(res.data.data);
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+    loadApplications();
+  }, []);
+
+  const selected = applications.find((application) => application.id === selectedId) ?? applications[0];
+  const pending = applications.length + courierApplications.length;
 
   return (
     <AdminLayout breadcrumb="Administration  /  Ansøgninger">
@@ -28,12 +48,14 @@ export default function AdminRestaurantApplication() {
       </div>
 
       <div className={styles.tabs}>
-        <button className={styles.tabActive}>Restauranter · {restaurantApplications.length}</button>
+        <button className={styles.tabActive}>Restauranter · {applications.length}</button>
         <Link to="/admin/ansoegninger/chauffoer" className={styles.tab}>
           Chauffører · {courierApplications.length}
         </Link>
         <span className={styles.tabsRight}>{pending} ansøgninger afventer handling</span>
       </div>
+
+      {error && <p className={ui.fieldHint}>{error}</p>}
 
       <div className={styles.split}>
         <div>
@@ -44,94 +66,84 @@ export default function AdminRestaurantApplication() {
               <span>Modtaget</span>
               <span>Status</span>
             </div>
-            {restaurantApplications.map((application) => (
+            {applications.map((application) => (
               <div
                 key={application.id}
                 className={application.id === selected.id ? styles.listRowActive : styles.listRow}
-                onClick={() => setSelected(application)}
+                onClick={() => setSelectedId(application.id)}
               >
                 <div>
-                  <strong>{application.name}</strong>
-                  <span>{application.applicant}</span>
+                  <strong>{application.restaurantName}</strong>
+                  <span>{application.applicantName}</span>
                 </div>
-                <span>{application.received}</span>
+                <span>{new Date(application.createdAt).toLocaleDateString('da-DK')}</span>
                 <span>
-                  <span className={application.status === 'Ny' ? ui.tag : ui.tagWarn}>
-                    {application.status}
+                  <span className={application.status === 'PENDING' ? ui.tag : ui.tagWarn}>
+                    {statusLabels[application.status]}
                   </span>
                 </span>
               </div>
             ))}
             <p className={cx(ui.fieldHint, styles.listFoot)}>
-              Viser {restaurantApplications.length} ansøgninger  ·  Nyeste først
+              Viser {applications.length} ansøgninger  ·  Nyeste først
             </p>
           </div>
+        </div>
 
+        {selected && (
           <div className={ui.block}>
-            <h2>Seneste aktivitet</h2>
-            <div className={styles.timeline}>
-              {restaurantApplicationDetail.activity.map((entry) => (
-                <div key={entry.when}>
-                  <div className={styles.timelineWhen}>{entry.when}</div>
-                  <p>{entry.text}</p>
-                </div>
-              ))}
+            <h2 className={styles.caseTitle}>{selected.restaurantName}</h2>
+            <p className={styles.caseId}>Restaurant · {selected.id}</p>
+            <div>
+              <span className={cx(ui.tagWarn, styles.caseTag)}>
+                {statusLabels[selected.status]}
+              </span>
             </div>
-          </div>
-        </div>
 
-        <div className={ui.block}>
-          <h2 className={styles.caseTitle}>{selected.name}</h2>
-          <p className={styles.caseId}>Restaurant · {selected.id}</p>
-          <div>
-            <span className={cx(ui.tagWarn, styles.caseTag)}>{selected.status}</span>
-          </div>
+            <div className={styles.caseSection}>
+              <div className={ui.sectionLabel}>ANSØGER</div>
+              <p className={styles.caseValue}>
+                {selected.applicantName} · {selected.email}
+              </p>
+              <p className={styles.caseNote}>{selected.phoneNumber}</p>
+            </div>
 
-          <div className={styles.caseSection}>
-            <div className={ui.sectionLabel}>ANSØGER</div>
-            <p className={styles.caseValue}>
-              {selected.applicant} · {restaurantApplicationDetail.applicantEmail}
+            <div className={styles.caseSection}>
+              <div className={ui.sectionLabel}>RESTAURANTOPLYSNINGER</div>
+              <p className={selected.addressInUse ? styles.addressWarning : styles.caseValue}>
+                {selected.street}, {selected.postalCode} {selected.city}
+              </p>
+              {selected.addressInUse && (
+                <p className={styles.addressWarning}>
+                  Der findes allerede en restaurant på denne adresse. Undersøg det nærmere.
+                </p>
+              )}
+              <p className={styles.caseNote}>CVR {selected.cvr}</p>
+              {selected.description && <p className={styles.caseNote}>{selected.description}</p>}
+            </div>
+
+            <div className={cx(ui.field, styles.caseSection)}>
+              <label htmlFor="applicant-message">Besked til ansøger</label>
+              <textarea
+                id="applicant-message"
+                placeholder="Skriv en begrundelse ved afvisning, eller bed om yderligere oplysninger…"
+              />
+            </div>
+
+            <div className={styles.decision}>
+              <button className={cx(ui.btn, ui.btnPrimary, ui.btnSmall)}>Godkend restaurant</button>
+              <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Afvis</button>
+            </div>
+            <button
+              className={cx(ui.btn, ui.btnOutline, ui.btnSmall, ui.btnBlock, styles.secondaryAction)}
+            >
+              Bed om oplysninger
+            </button>
+            <p className={cx(ui.fieldHint, styles.decisionNote)}>
+              Ansøger får besked om din afgørelse på e-mail.
             </p>
-            <p className={styles.caseNote}>{restaurantApplicationDetail.applicantPhone}</p>
           </div>
-
-          <div className={styles.caseSection}>
-            <div className={ui.sectionLabel}>RESTAURANTOPLYSNINGER</div>
-            <p className={styles.caseValue}>{restaurantApplicationDetail.address}</p>
-            <p className={styles.caseNote}>{restaurantApplicationDetail.registration}</p>
-          </div>
-
-          <div className={styles.caseSection}>
-            <div className={ui.sectionLabel}>DOKUMENTER</div>
-            {restaurantApplicationDetail.documents.map((document) => (
-              <div className={styles.doc} key={document.name}>
-                <span>{document.name}</span>
-                <span className={styles.docState}>{document.state}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className={cx(ui.field, styles.caseSection)}>
-            <label htmlFor="applicant-message">Besked til ansøger</label>
-            <textarea
-              id="applicant-message"
-              placeholder="Skriv en begrundelse ved afvisning, eller bed om yderligere oplysninger…"
-            />
-          </div>
-
-          <div className={styles.decision}>
-            <button className={cx(ui.btn, ui.btnPrimary, ui.btnSmall)}>Godkend restaurant</button>
-            <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Afvis</button>
-          </div>
-          <button
-            className={cx(ui.btn, ui.btnOutline, ui.btnSmall, ui.btnBlock, styles.secondaryAction)}
-          >
-            Bed om oplysninger
-          </button>
-          <p className={cx(ui.fieldHint, styles.decisionNote)}>
-            Ansøger får besked om din afgørelse på e-mail.
-          </p>
-        </div>
+        )}
       </div>
     </AdminLayout>
   );
