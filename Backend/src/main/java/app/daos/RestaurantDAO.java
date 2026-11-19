@@ -5,7 +5,7 @@ import app.entities.Restaurant;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
-
+import java.util.UUID;
 public class RestaurantDAO extends EntityManagerDAO<Restaurant> {
 
     public RestaurantDAO(EntityManager em) {
