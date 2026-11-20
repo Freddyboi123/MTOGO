@@ -6,7 +6,7 @@ import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import dash from '../components/DashboardLayout.module.css';
 import styles from './Admin.module.css';
-import { courierApplications } from '../data/mtogo';
+import useApplicationCounts from '../utils/useApplicationCounts';
 
 const statusLabels = {
   PENDING: 'Ny',
@@ -33,7 +33,7 @@ export default function AdminRestaurantApplication() {
   }, []);
 
   const selected = applications.find((application) => application.id === selectedId) ?? applications[0];
-  const pending = applications.length + courierApplications.length;
+  const counts = useApplicationCounts();
 
   return (
     <AdminLayout breadcrumb="Administration  /  Ansøgninger">
@@ -48,11 +48,11 @@ export default function AdminRestaurantApplication() {
       </div>
 
       <div className={styles.tabs}>
-        <button className={styles.tabActive}>Restauranter · {applications.length}</button>
+        <button className={styles.tabActive}>Restauranter · {counts.restaurants}</button>
         <Link to="/admin/ansoegninger/chauffoer" className={styles.tab}>
-          Chauffører · {courierApplications.length}
+          Chauffører · {counts.couriers}
         </Link>
-        <span className={styles.tabsRight}>{pending} ansøgninger afventer handling</span>
+        <span className={styles.tabsRight}>{counts.total} ansøgninger afventer handling</span>
       </div>
 
       {error && <p className={ui.fieldHint}>{error}</p>}
@@ -77,11 +77,7 @@ export default function AdminRestaurantApplication() {
                   <span>{application.applicantName}</span>
                 </div>
                 <span>{new Date(application.createdAt).toLocaleDateString('da-DK')}</span>
-                <span>
-                  <span className={application.status === 'PENDING' ? ui.tag : ui.tagWarn}>
-                    {statusLabels[application.status]}
-                  </span>
-                </span>
+                <span>{statusLabels[application.status]}</span>
               </div>
             ))}
             <p className={cx(ui.fieldHint, styles.listFoot)}>
