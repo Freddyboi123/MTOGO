@@ -11,6 +11,7 @@ import Checkout from './pages/Checkout';
 import ApplyRestaurant from './pages/ApplyRestaurant';
 import ApplyCourier from './pages/ApplyCourier';
 import Profile from './pages/Profile';
+import FAQ from './pages/FAQ/FAQ';
 import RestaurantPanel from './pages/RestaurantPanel';
 import CourierPanel from './pages/CourierPanel';
 import AdminRestaurants from './pages/AdminRestaurants';
@@ -35,6 +36,7 @@ export default function App() {
       <Route path="/ansoeg/restaurant" element={<ApplyRestaurant />} />
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
+      <Route path="/help" element={<FAQ />} />
       <Route path="/restaurantpanel/*" element={<RestaurantPanel />} />
       <Route path="/chauffoerpanel/*" element={<CourierPanel />} />
       <Route path="/admin" element={<Navigate to="/admin/restauranter" replace />} />

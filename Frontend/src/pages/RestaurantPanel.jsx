@@ -94,6 +94,7 @@ export default function RestaurantPanel() {
       items={items}
       breadcrumb={`${restaurant.name}  /  Restaurantpanel`}
       user="Luca Moretti"
+      helpLink
     >
       <div className={dash.head}>
         <div>
