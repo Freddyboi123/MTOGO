@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
-import { getRestaurantApplications } from '../utils/api';
+import { getRestaurantApplications, useApplicationCounts } from '../utils/api';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import dash from '../components/DashboardLayout.module.css';
 import styles from './Admin.module.css';
-import useApplicationCounts from '../utils/useApplicationCounts';
 
 const statusLabels = {
   PENDING: 'Ny',

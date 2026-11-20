@@ -5,7 +5,7 @@ import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import dash from '../components/DashboardLayout.module.css';
 import styles from './Admin.module.css';
-import useApplicationCounts from '../utils/useApplicationCounts';
+import { useApplicationCounts } from '../utils/api';
 import { courierApplicationDetail } from '../data/mtogo';
 
 const courierApplications = [];

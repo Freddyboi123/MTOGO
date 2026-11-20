@@ -1,5 +1,5 @@
 import DashboardLayout from './DashboardLayout';
-import useApplicationCounts from '../utils/useApplicationCounts';
+import { useApplicationCounts } from '../utils/api';
 
 export default function AdminLayout({ breadcrumb, children }) {
   const counts = useApplicationCounts();
