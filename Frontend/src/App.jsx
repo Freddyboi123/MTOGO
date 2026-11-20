@@ -16,7 +16,7 @@ import RestaurantPanel from './pages/RestaurantPanel';
 import CourierPanel from './pages/CourierPanel';
 import AdminRestaurants from './pages/AdminRestaurants';
 import AdminCouriers from './pages/AdminCouriers';
-import AdminRestaurantApplication from './pages/AdminRestaurantApplication';
+import AdminRestaurantApplication from './pages/AdminRestaurantApplication/AdminRestaurantApplication';
 import AdminCourierApplication from './pages/AdminCourierApplication';
 
 export default function App() {

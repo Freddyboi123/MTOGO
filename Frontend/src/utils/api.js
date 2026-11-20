@@ -50,6 +50,8 @@ export const submitRestaurantApplication = (body) =>
   api('/restaurant-applications', { method: 'POST', body });
 export const resubmitRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}`, { method: 'PUT', body });
+export const decideRestaurantApplication = (id, body) =>
+  api(`/restaurant-application/${id}/decision`, { method: 'PUT', body });
 
 
 let cachedRestaurantCount = 0;
