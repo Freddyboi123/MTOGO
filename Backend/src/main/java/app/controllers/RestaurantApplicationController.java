@@ -48,6 +48,7 @@ public class RestaurantApplicationController extends BaseController<RestaurantAp
             get("/restaurant-applications", controller::getAllApplications, Role.ADMIN);
             get("/my-restaurant-applications", controller::getMyApplications, Role.CUSTOMER, Role.RESTAURANT_OWNER);
             put("/restaurant-application/{id}", controller::resubmitApplication, Role.CUSTOMER, Role.RESTAURANT_OWNER);
+            put("/restaurant-application/{id}/decision", controller::decideApplication, Role.ADMIN);
         };
     }
 
@@ -124,6 +125,22 @@ public class RestaurantApplicationController extends BaseController<RestaurantAp
         RestaurantApplication application = applicationService.resubmitApplication(user.getId(), applicationId, body);
 
         String message = messageService.buildMessage(Notifications.APPLICATION_UPDATED, application.getRestaurantName());
+        respond(ctx, 200, message, mapper.toDTO(application));
+    }
+
+    // ________________________________________________________
+
+    private void decideApplication(Context ctx) {
+        UUID applicationId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.APPLICATION_NOT_FOUND.getDisplayName());
+        RestaurantApplicationDTO body = ErrorHandler.tryBody(ctx, RestaurantApplicationDTO.class, Notifications.BODY_EMPTY.getDisplayName());
+
+        RestaurantApplication application = applicationService.decideApplication(applicationId, body);
+
+        String message = messageService.buildMessage(
+            Notifications.APPLICATION_DECIDED,
+            application.getRestaurantName(),
+            application.getStatus().name()
+        );
         respond(ctx, 200, message, mapper.toDTO(application));
     }
 }
