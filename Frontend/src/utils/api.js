@@ -56,6 +56,14 @@ export function logout() {
   localStorage.removeItem('user');
 }
 
+export function getUserName() {
+  try {
+    return JSON.parse(localStorage.getItem('user'))?.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function saveSession({ token, data }) {
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(data));
