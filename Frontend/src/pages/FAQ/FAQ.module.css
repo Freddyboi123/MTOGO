@@ -1,0 +1,43 @@
+.hero {
+  padding-top: 40px;
+  text-align: center;
+}
+
+.title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 44px;
+}
+
+.lead {
+  margin-top: 20px;
+}
+
+.list {
+  max-width: 760px;
+  margin-top: 36px;
+  padding-bottom: 56px;
+}
+
+.item {
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0;
+}
+
+.question {
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.link {
+  color: var(--orange);
+  text-decoration: underline;
+}
+
+.answer {
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 16px;
+  padding-left: 22px;
+}

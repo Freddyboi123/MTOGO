@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './SiteFooter.module.css';
@@ -8,7 +9,9 @@ export default function SiteFooter({ variant = 'full' }) {
       <footer className={styles.footer}>
         <div className={cx(ui.page, styles.slim)}>
           <span>© 2026 MTOGO</span>
-          <span>Hjælp &amp; kontakt     Privatliv     Handelsbetingelser</span>
+          <span>
+            <Link to="/help">Hjælp &amp; kontakt</Link>     Privatliv     Handelsbetingelser
+          </span>
         </div>
       </footer>
     );
@@ -25,7 +28,7 @@ export default function SiteFooter({ variant = 'full' }) {
         <div>
           <div className={styles.links}>
             <a href="#om">Om MTOGO</a>
-            <a href="#hjaelp">Hjælp &amp; kontakt</a>
+            <Link to="/help">Hjælp &amp; kontakt</Link>
             <a href="#partner">Bliv partner</a>
           </div>
           <div className={styles.linksSecondary}>
