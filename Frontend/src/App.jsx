@@ -20,6 +20,7 @@ import AdminCourierApplication from './pages/AdminCourierApplication';
 
 export default function App() {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
+  const deliveryOverview = useFeatureFlag('deliveryOverview');
 
   return (
     <Routes>
@@ -36,7 +37,7 @@ export default function App() {
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
       <Route path="/restaurantpanel/*" element={<RestaurantPanel />} />
-      <Route path="/chauffoerpanel/*" element={<CourierPanel />} />
+      {deliveryOverview && <Route path="/chauffoerpanel/*" element={<CourierPanel />} />}
       <Route path="/admin" element={<Navigate to="/admin/restauranter" replace />} />
       <Route path="/admin/restauranter" element={<AdminRestaurants />} />
       <Route path="/admin/chauffoerer" element={<AdminCouriers />} />
