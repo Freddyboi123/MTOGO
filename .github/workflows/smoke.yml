@@ -1,0 +1,39 @@
+name: Smoke test deployed API
+
+# Runs the frontend's real API client against the deployed backend.
+# Read-only / validation-rejected requests only: no data is created, no emails are sent.
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [CD]
+    types: [completed]
+
+jobs:
+  smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+    env:
+      VITE_API_URL: https://mtogo.api.roneu.dk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - run: npm ci
+      # The new images may take a few minutes to roll out after CD pushes them,
+      # so retry for up to ~10 minutes before failing.
+      - name: Smoke tests
+        run: |
+          for attempt in $(seq 1 10); do
+            if npm run test:smoke; then exit 0; fi
+            echo "Attempt $attempt failed, retrying in 60s..."
+            sleep 60
+          done
+          exit 1
