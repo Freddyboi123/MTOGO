@@ -20,3 +20,4 @@ SECRET_KEY=change-me-to-a-long-random-string-of-at-least-32-characters
 
 # Feature flags (true/false). A flag that is missing counts as false.
 FEATURE_RESTAURANT_OVERVIEW=true
+FEATURE_DELIVERY_OVERVIEW=false
