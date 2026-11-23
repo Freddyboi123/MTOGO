@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969/api';
 
 export async function api(path, { method = 'GET', body } = {}) {
@@ -49,12 +51,46 @@ export const submitRestaurantApplication = (body) =>
   api('/restaurant-applications', { method: 'POST', body });
 export const resubmitRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}`, { method: 'PUT', body });
+export const decideRestaurantApplication = (id, body) =>
+  api(`/restaurant-application/${id}/decision`, { method: 'PUT', body });
+
+
+let cachedRestaurantCount = 0;
+export function useApplicationCounts() {
+  const [restaurants, setRestaurants] = useState(cachedRestaurantCount);
+  const couriers = 0;
+
+  useEffect(() => {
+    async function loadCounts() {
+      try {
+        const res = await getRestaurantApplications();
+        cachedRestaurantCount = res.data.data.filter(
+          (application) => application.status === 'PENDING'
+        ).length;
+      } catch {
+        cachedRestaurantCount = 0;
+      }
+      setRestaurants(cachedRestaurantCount);
+    }
+    loadCounts();
+  }, []);
+
+  return { restaurants, couriers, total: restaurants + couriers };
+}
 
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));
 
 export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+}
+
+export function getUserName() {
+  try {
+    return JSON.parse(localStorage.getItem('user'))?.name ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function saveSession({ token, data }) {

@@ -5,17 +5,21 @@ import app.daos.RestaurantDAO;
 import app.daos.UserDAO;
 import app.dtos.RestaurantApplicationDTO;
 import app.entities.Address;
+import app.entities.Restaurant;
 import app.entities.RestaurantApplication;
 import app.entities.User;
 import app.enums.ApplicationStatus;
 import app.enums.Notifications;
+import app.enums.Role;
 import app.exceptions.ApiException;
 import app.mappers.RestaurantApplicationMapper;
 import app.server.Setup;
 import app.utils.ErrorHandler;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class RestaurantApplicationService {
@@ -116,6 +120,61 @@ public class RestaurantApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         return applicationDAO.update(application);
+    }
+
+    // ________________________________________________________
+
+    public RestaurantApplication decideApplication(UUID applicationId, RestaurantApplicationDTO dto) {
+        RestaurantApplication application = getApplication(applicationId);
+
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw new ApiException(400, Notifications.APPLICATION_NOT_PENDING.getDisplayName());
+        }
+
+        ApplicationStatus decision = dto.getStatus();
+        if (decision == null || decision == ApplicationStatus.PENDING) {
+            throw new ApiException(400, Notifications.APPLICATION_DECISION_INVALID.getDisplayName());
+        }
+
+        if (decision == ApplicationStatus.MORE_INFORMATION_NEEDED) {
+            ErrorHandler.tryString(dto.getAdminMessage(), Notifications.APPLICATION_MESSAGE_REQUIRED.getDisplayName());
+            application.setAdminMessage(dto.getAdminMessage());
+        }
+
+        if (decision == ApplicationStatus.APPROVED) {
+            createRestaurant(application);
+        }
+
+        application.setStatus(decision);
+
+        return applicationDAO.update(application);
+    }
+
+    // ________________________________________________________
+
+    private void createRestaurant(RestaurantApplication application) {
+        Address address = application.getAddress();
+
+        if (restaurantDAO.existsByNameAndCity(application.getRestaurantName(), address.getCity())) {
+            throw new ApiException(400, Notifications.APPLICATION_NAME_TAKEN.getDisplayName());
+        }
+
+        User owner = application.getApplicant();
+
+
+        Restaurant restaurant = Restaurant.builder()
+            .name(application.getRestaurantName())
+            .description(application.getDescription())
+            .phoneNumber(application.getPhoneNumber())
+            .address(address)
+            .owner(owner)
+            .build();
+        restaurantDAO.create(restaurant);
+
+        Set<Role> roles = new HashSet<>(owner.getRoles());
+        roles.add(Role.RESTAURANT_OWNER);
+        owner.setRoles(roles);
+        userDAO.update(owner);
     }
 
     // ________________________________________________________

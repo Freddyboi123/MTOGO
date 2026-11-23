@@ -187,13 +187,6 @@
   margin-top: 12px;
 }
 
-.addressWarning {
-  color: var(--orange);
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 12px;
-}
-
 .caseNote {
   color: var(--muted);
   font-size: 13px;

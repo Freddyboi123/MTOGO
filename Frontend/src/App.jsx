@@ -11,11 +11,12 @@ import Checkout from './pages/Checkout';
 import ApplyRestaurant from './pages/ApplyRestaurant';
 import ApplyCourier from './pages/ApplyCourier';
 import Profile from './pages/Profile';
+import FAQ from './pages/FAQ/FAQ';
 import RestaurantPanel from './pages/RestaurantPanel';
 import CourierPanel from './pages/CourierPanel';
 import AdminRestaurants from './pages/AdminRestaurants';
 import AdminCouriers from './pages/AdminCouriers';
-import AdminRestaurantApplication from './pages/AdminRestaurantApplication';
+import AdminRestaurantApplication from './pages/AdminRestaurantApplication/AdminRestaurantApplication';
 import AdminCourierApplication from './pages/AdminCourierApplication';
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
       <Route path="/ansoeg/restaurant" element={<ApplyRestaurant />} />
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
+      <Route path="/help" element={<FAQ />} />
       <Route path="/restaurantpanel/*" element={<RestaurantPanel />} />
       {deliveryOverview && <Route path="/chauffoerpanel/*" element={<CourierPanel />} />}
       <Route path="/admin" element={<Navigate to="/admin/restauranter" replace />} />
