@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 public class FeatureFlagService {
 
-    private static final String CONFIG = "config.properties";
+    private static final String CONFIG = "feature-flags.properties";
 
     private final Function<String, String> propertyLookup;
 
