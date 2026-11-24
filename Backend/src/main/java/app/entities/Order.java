@@ -42,6 +42,9 @@ public class Order {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "expected_pickup_at")
+    private LocalDateTime expectedPickupAt;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal totalInclVat;
 

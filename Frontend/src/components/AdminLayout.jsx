@@ -1,8 +1,8 @@
 import DashboardLayout from './DashboardLayout';
-import { courierApplications, restaurantApplications } from '../data/mtogo';
+import { useApplicationCounts } from '../utils/api';
 
 export default function AdminLayout({ breadcrumb, children }) {
-  const pendingApplications = restaurantApplications.length + courierApplications.length;
+  const counts = useApplicationCounts();
 
   const items = [
     { to: '/admin', label: 'Overblik' },
@@ -11,7 +11,8 @@ export default function AdminLayout({ breadcrumb, children }) {
     {
       to: '/admin/ansoegninger/restaurant',
       label: 'Ansøgninger',
-      count: pendingApplications
+      activePath: '/admin/ansoegninger',
+      count: counts.total
     },
     { to: '/admin/ordrer', label: 'Ordrer' },
     { to: '/admin/indstillinger', label: 'Indstillinger' }

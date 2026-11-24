@@ -22,5 +22,6 @@ final class EntityRegistry {
         configuration.addAnnotatedClass(OrderStatusHistory.class);
         configuration.addAnnotatedClass(Payment.class);
         configuration.addAnnotatedClass(Restaurant.class);
+        configuration.addAnnotatedClass(RestaurantApplication.class);
     }
 }

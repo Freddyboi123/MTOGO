@@ -11,15 +11,17 @@ import Checkout from './pages/Checkout';
 import ApplyRestaurant from './pages/ApplyRestaurant';
 import ApplyCourier from './pages/ApplyCourier';
 import Profile from './pages/Profile';
+import FAQ from './pages/FAQ/FAQ';
 import RestaurantPanel from './pages/RestaurantPanel';
 import CourierPanel from './pages/CourierPanel';
 import AdminRestaurants from './pages/AdminRestaurants';
 import AdminCouriers from './pages/AdminCouriers';
-import AdminRestaurantApplication from './pages/AdminRestaurantApplication';
+import AdminRestaurantApplication from './pages/AdminRestaurantApplication/AdminRestaurantApplication';
 import AdminCourierApplication from './pages/AdminCourierApplication';
 
 export default function App() {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
+  const deliveryOverview = useFeatureFlag('deliveryOverview');
 
   return (
     <Routes>
@@ -29,14 +31,15 @@ export default function App() {
       <Route path="/restaurant" element={<Navigate to="/restauranter" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/opret-konto" element={<SignUp />} />
-      <Route path="/glemt-adgangskode" element={<ResetPassword />} />
+      <Route path="/glemt-adgangskode" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/betaling" element={<Checkout />} />
       <Route path="/ansoeg/restaurant" element={<ApplyRestaurant />} />
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
+      <Route path="/help" element={<FAQ />} />
       <Route path="/restaurantpanel/*" element={<RestaurantPanel />} />
-      <Route path="/chauffoerpanel/*" element={<CourierPanel />} />
+      {deliveryOverview && <Route path="/chauffoerpanel/*" element={<CourierPanel />} />}
       <Route path="/admin" element={<Navigate to="/admin/restauranter" replace />} />
       <Route path="/admin/restauranter" element={<AdminRestaurants />} />
       <Route path="/admin/chauffoerer" element={<AdminCouriers />} />

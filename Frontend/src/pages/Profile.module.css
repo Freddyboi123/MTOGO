@@ -15,7 +15,7 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 232px 600px 1fr;
+  grid-template-columns: 232px 600px;
   gap: 32px;
   align-items: start;
   padding-bottom: 56px;

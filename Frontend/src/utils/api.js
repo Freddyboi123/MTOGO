@@ -1,11 +1,18 @@
 import { API_URL } from '../api/config';
+import { useEffect, useState } from 'react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969/api';
 
 export async function api(path, { method = 'GET', body } = {}) {
+  const token = localStorage.getItem('token');
   let res;
   try {
     res = await fetch(`${API_URL}${path}`, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      headers: {
+        ...(body && { 'Content-Type': 'application/json' }),
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
       body: body ? JSON.stringify(body) : undefined
     });
   } catch {
@@ -34,11 +41,57 @@ export const resendVerify = (email) => api('/users/auth/resend-verify', { method
 export const forgotPassword = (email) => api('/users/auth/forgot-password', { method: 'POST', body: { email } });
 export const resetPassword = (body) => api('/users/auth/reset-password', { method: 'POST', body });
 
+export const getMyRestaurants = () => api('/my-restaurants');
+export const getAvailableDeliveries = () => api('/deliveries/available');
+export const addMenuItem = (categoryId, body) =>
+  api(`/category/${categoryId}/items`, { method: 'POST', body });
+
+export const getRestaurantApplications = () => api('/restaurant-applications');
+export const getMyRestaurantApplications = () => api('/my-restaurant-applications');
+export const submitRestaurantApplication = (body) =>
+  api('/restaurant-applications', { method: 'POST', body });
+export const resubmitRestaurantApplication = (id, body) =>
+  api(`/restaurant-application/${id}`, { method: 'PUT', body });
+export const decideRestaurantApplication = (id, body) =>
+  api(`/restaurant-application/${id}/decision`, { method: 'PUT', body });
+
+
+let cachedRestaurantCount = 0;
+export function useApplicationCounts() {
+  const [restaurants, setRestaurants] = useState(cachedRestaurantCount);
+  const couriers = 0;
+
+  useEffect(() => {
+    async function loadCounts() {
+      try {
+        const res = await getRestaurantApplications();
+        cachedRestaurantCount = res.data.data.filter(
+          (application) => application.status === 'PENDING'
+        ).length;
+      } catch {
+        cachedRestaurantCount = 0;
+      }
+      setRestaurants(cachedRestaurantCount);
+    }
+    loadCounts();
+  }, []);
+
+  return { restaurants, couriers, total: restaurants + couriers };
+}
+
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));
 
 export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+}
+
+export function getUserName() {
+  try {
+    return JSON.parse(localStorage.getItem('user'))?.name ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function saveSession({ token, data }) {

@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
+import { addMenuItem, getMyRestaurants } from '../utils/api';
 import StatCard from '../components/StatCard';
 import Panel from '../components/Panel';
 import DataTable from '../components/DataTable';
@@ -9,7 +11,6 @@ import styles from './RestaurantPanel.module.css';
 import {
   openingHours,
   restaurant,
-  restaurantMenuRows,
   restaurantOrders,
   restaurantPanelStats
 } from '../data/mtogo';
@@ -40,12 +41,60 @@ const orderColumns = [
 ];
 
 export default function RestaurantPanel() {
+  const [categories, setCategories] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [itemName, setItemName] = useState('');
+  const [itemDescription, setItemDescription] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [error, setError] = useState('');
+
+  async function loadMenu() {
+    try {
+      const res = await getMyRestaurants();
+      setCategories(res.data.data[0]?.categories ?? []);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  useEffect(() => {
+    loadMenu();
+  }, []);
+
+  async function handleAddItem(event) {
+    event.preventDefault();
+    setError('');
+    try {
+      await addMenuItem(categories[0].id, {
+        name: itemName,
+        description: itemDescription,
+        price: itemPrice
+      });
+      setItemName('');
+      setItemDescription('');
+      setItemPrice('');
+      setShowForm(false);
+      await loadMenu();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  const menuRows = categories.flatMap((category) =>
+    (category.items ?? []).map((item) => ({
+      name: item.name,
+      price: `${item.price} kr.`,
+      state: item.available ? 'Aktiv' : 'Ikke tilgængelig'
+    }))
+  );
+
   return (
     <DashboardLayout
       role="Restaurantpartner"
       items={items}
       breadcrumb={`${restaurant.name}  /  Restaurantpanel`}
       user="Luca Moretti"
+      helpLink
     >
       <div className={dash.head}>
         <div>
@@ -130,16 +179,54 @@ export default function RestaurantPanel() {
         <div className={styles.panelFlat}>
           <Panel
             title="Menu & varer"
-            subtitle={`${restaurantPanelStats.menuCategory} · ${restaurantMenuRows.length} af ${restaurantPanelStats.menuItemsTotal} varer`}
+            subtitle={`${restaurantPanelStats.menuCategory} · ${menuRows.length} af ${restaurantPanelStats.menuItemsTotal} varer`}
             controls={
-              <button className={cx(ui.btn, ui.btnDark, ui.btnSmall, styles.addItem)}>
+              <button
+                className={cx(ui.btn, ui.btnDark, ui.btnSmall, styles.addItem)}
+                onClick={() => setShowForm(!showForm)}
+                disabled={categories.length === 0}
+              >
                 + Tilføj vare
               </button>
             }
           >
+            {showForm && (
+              <form onSubmit={handleAddItem} className={ui.stack}>
+                <div className={ui.field}>
+                  <label htmlFor="item-name">Navn</label>
+                  <input
+                    id="item-name"
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                  />
+                </div>
+                <div className={ui.field}>
+                  <label htmlFor="item-description">Beskrivelse</label>
+                  <input
+                    id="item-description"
+                    value={itemDescription}
+                    onChange={(e) => setItemDescription(e.target.value)}
+                  />
+                </div>
+                <div className={ui.field}>
+                  <label htmlFor="item-price">Pris (kr.)</label>
+                  <input
+                    id="item-price"
+                    type="number"
+                    step="0.01"
+                    value={itemPrice}
+                    onChange={(e) => setItemPrice(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>
+                  Gem vare
+                </button>
+              </form>
+            )}
+            {error && <p className={ui.fieldHint}>{error}</p>}
             <DataTable
               columns={menuColumns}
-              rows={restaurantMenuRows}
+              rows={menuRows}
               rowKey="name"
               footLeft="Administrer kategorier →"
               footRight={`Se alle ${restaurantPanelStats.menuItemsTotal} varer →`}
