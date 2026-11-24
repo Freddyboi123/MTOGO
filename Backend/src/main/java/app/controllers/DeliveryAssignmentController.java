@@ -20,7 +20,6 @@ public class DeliveryAssignmentController {
     public static EndpointGroup registerRoutes() {
         DeliveryAssignmentController controller = new DeliveryAssignmentController();
         return () -> {
-            get("/deliveries/available", ctx -> ctx.json(Map.of("data", controller.service.available())), Role.DELIVERY_AGENT);
             get("/deliveries/mine", ctx -> ctx.json(Map.of("data", controller.service.mine(userId(ctx)))), Role.DELIVERY_AGENT);
             post("/deliveries/{orderId}/accept", ctx -> {
                 UUID orderId;
