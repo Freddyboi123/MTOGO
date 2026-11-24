@@ -1,4 +1,4 @@
-const API_URL = `${import.meta.env.VITE_API_URL ?? 'http://localhost:6969'}/api`;
+import { API_URL } from './config';
 
 export async function getJson(path) {
   const response = await fetch(`${API_URL}${path}`);

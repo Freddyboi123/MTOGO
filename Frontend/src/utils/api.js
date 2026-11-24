@@ -1,6 +1,5 @@
+import { API_URL } from '../api/config';
 import { useEffect, useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969/api';
 
 export async function api(path, { method = 'GET', body } = {}) {
   const token = localStorage.getItem('token');
@@ -44,6 +43,7 @@ export const getMyRestaurants = () => api('/my-restaurants');
 export const getMyRestaurant = (id) => api(`/my-restaurants/${id}`);
 export const setRestaurantVisibility = (id, active) =>
   api(`/my-restaurants/${id}/visibility`, { method: 'PUT', body: { active } });
+export const getAvailableDeliveries = () => api('/deliveries/available');
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
 
@@ -99,3 +99,8 @@ export function saveSession({ token, data }) {
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(data));
 }
+
+// US-10: authenticated delivery assignment.
+export const getMyDeliveries = () => api('/deliveries/mine');
+export const acceptDelivery = (orderId) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/accept`, { method: 'POST' });
