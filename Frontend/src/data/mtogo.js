@@ -387,6 +387,30 @@ export const restaurantPanelStats = {
   deliveryRadius: '4 km'
 };
 
+export const menuPanelTexts = {
+  title: 'Menu & varer',
+  add: '+ Tilføj vare',
+  columns: {
+    name: 'Vare',
+    price: 'Pris',
+    available: 'Tilgængelig',
+    actions: 'Handling'
+  },
+  available: 'Aktiv',
+  unavailable: 'Udsolgt',
+  markUnavailable: 'Marker udsolgt',
+  markAvailable: 'Gør aktiv',
+  edit: 'Rediger',
+  name: 'Navn',
+  description: 'Beskrivelse',
+  price: 'Pris (kr.)',
+  saveNew: 'Gem vare',
+  saveChanges: 'Gem ændringer',
+  cancel: 'Annuller',
+  categories: 'Administrer kategorier →',
+  allItems: 'Se alle varer →'
+};
+
 export const courierPanelStats = {
   deliveriesToday: 6,
   earningsToday: '224 kr.',

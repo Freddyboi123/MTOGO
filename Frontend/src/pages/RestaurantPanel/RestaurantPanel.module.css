@@ -119,6 +119,17 @@
   margin-left: auto;
 }
 
+.availability {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+}
+
 .hours {
   margin-top: 24px;
 }

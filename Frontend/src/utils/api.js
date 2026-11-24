@@ -48,6 +48,8 @@ export const placeOrder = (body) => api('/orders', { method: 'POST', body });
 export const getRestaurantOrders = (restaurantId) => api(`/my-restaurants/${restaurantId}/orders`);
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
+export const updateMenuItem = (itemId, body) =>
+  api(`/menu-item/${itemId}`, { method: 'PUT', body });
 
 export const getRestaurantApplications = () => api('/restaurant-applications');
 export const getMyRestaurantApplications = () => api('/my-restaurant-applications');

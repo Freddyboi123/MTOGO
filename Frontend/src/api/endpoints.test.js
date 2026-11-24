@@ -23,6 +23,7 @@ const CALLS = {
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),
+    updateMenuItem: (m) => m.updateMenuItem('42', { price: 60 }),
     getRestaurantApplications: (m) => m.getRestaurantApplications(),
     getMyRestaurantApplications: (m) => m.getMyRestaurantApplications(),
     submitRestaurantApplication: (m) => m.submitRestaurantApplication({ restaurantName: 'X' }),

@@ -86,7 +86,7 @@ export default function RestaurantPanel() {
       <RestaurantInfo myRestaurant={myRestaurant} onRestaurantChanged={setMyRestaurant} />
 
       <div className={styles.split}>
-        <MenuPanel categories={myRestaurant.categories ?? []} onItemAdded={loadRestaurant} />
+        <MenuPanel categories={myRestaurant.categories ?? []} onMenuChanged={loadRestaurant} />
         <OpeningHours />
       </div>
 
