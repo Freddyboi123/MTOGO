@@ -165,3 +165,51 @@ class DeliveryAssignmentServiceTest {
         assertTrue(service.mine(loser.userId()).isEmpty());
         assertFalse(availableIds().contains(orderId));
     }
+
+    private Claim claim(UUID userId, CyclicBarrier start) throws Exception {
+        // A distinct EntityManager per thread bypasses the service's synchronized(em) monitor.
+        try (EntityManager worker = emf.createEntityManager()) {
+            DeliveryAssignmentService workerService = new DeliveryAssignmentService(worker);
+            start.await(10, TimeUnit.SECONDS);
+            try {
+                workerService.accept(orderId, userId);
+                return new Claim(userId, true, 0, null);
+            } catch (ApiException exception) {
+                return new Claim(userId, false, exception.getStatus(), exception.getMessage());
+            }
+        }
+    }
+
+    private record Claim(UUID userId, boolean accepted, int status, String message) {}
+
+    @Test
+    void mineReturnsOnlyOwnActiveDeliveriesWithTheirStatus() {
+        service.accept(orderId, agentA);
+        em.getTransaction().begin();
+        Order other = newOrder(OrderStatus.READY_FOR_PICKUP);
+        Order completed = newOrder(OrderStatus.READY_FOR_PICKUP);
+        Order pickedUp = newOrder(OrderStatus.READY_FOR_PICKUP);
+        em.persist(pickedUp);
+        em.persist(other);
+        em.persist(completed);
+        em.getTransaction().commit();
+        service.accept(other.getId(), agentB);
+        DeliveryAssignmentDTO completedAssignment = service.accept(completed.getId(), agentA);
+        DeliveryAssignmentDTO pickedUpAssignment = service.accept(pickedUp.getId(), agentA);
+        em.getTransaction().begin();
+        em.find(Delivery.class, completedAssignment.getDeliveryId()).setStatus(DeliveryStatus.DELIVERED);
+        em.find(Order.class, completed.getId()).setStatus(OrderStatus.DELIVERED);
+        em.find(Delivery.class, pickedUpAssignment.getDeliveryId()).setStatus(DeliveryStatus.PICKED_UP);
+        em.find(Order.class, pickedUp.getId()).setStatus(OrderStatus.OUT_FOR_DELIVERY);
+        em.getTransaction().commit();
+        em.clear();
+        List<DeliveryAssignmentDTO> mine = service.mine(agentA);
+        assertEquals(2, mine.size());
+        DeliveryAssignmentDTO assigned = mine.stream().filter(d -> orderId.equals(d.getOrderId())).findFirst().orElseThrow();
+        DeliveryAssignmentDTO picked = mine.stream().filter(d -> pickedUp.getId().equals(d.getOrderId())).findFirst().orElseThrow();
+        assertEquals(DeliveryStatus.ASSIGNED, assigned.getDeliveryStatus());
+        assertEquals(OrderStatus.READY_FOR_PICKUP, assigned.getOrderStatus());
+        assertEquals(DeliveryStatus.PICKED_UP, picked.getDeliveryStatus());
+        assertEquals(OrderStatus.OUT_FOR_DELIVERY, picked.getOrderStatus());
+        assertEquals(List.of(other.getId()), service.mine(agentB).stream().map(DeliveryAssignmentDTO::getOrderId).toList());
+    }
