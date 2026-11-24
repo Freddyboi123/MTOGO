@@ -312,32 +312,30 @@ export const restaurantMenuRows = [
   { name: 'Funghi', price: '129 kr.', state: 'Aktiv' }
 ];
 
-export const restaurantOrders = [
-  {
-    id: '#1043',
-    customer: 'Emma Larsen',
-    items: '1 × Diavola',
-    amount: '158 kr.',
-    status: 'Ny ordre',
-    action: 'Accepter · Afvis'
+export const restaurantOrderTexts = {
+  title: 'Aktive ordrer',
+  count: 'ordrer',
+  loading: 'Henter ordrer…',
+  error: 'Ordrerne kunne ikke hentes.',
+  empty: 'Der er ingen ordrer endnu.',
+  columns: {
+    received: 'Modtaget',
+    items: 'Indhold',
+    address: 'Leveringsadresse',
+    total: 'Beløb',
+    status: 'Status'
   },
-  {
-    id: '#1042',
-    customer: 'Mikkel Hansen',
-    items: 'Margherita + Burrata',
-    amount: '267 kr.',
-    status: 'Klar til afhentning',
-    action: 'Se ordre →'
-  },
-  {
-    id: '#1041',
-    customer: 'Clara Berg',
-    items: '2 × Margherita',
-    amount: '257 kr.',
-    status: 'Tilberedes',
-    action: 'Markér klar →'
+  statuses: {
+    RECEIVED: 'Ny ordre',
+    PENDING: 'Afventer',
+    ACCEPTED: 'Accepteret',
+    PREPARING: 'Tilberedes',
+    READY_FOR_PICKUP: 'Klar til afhentning',
+    OUT_FOR_DELIVERY: 'På vej',
+    DELIVERED: 'Leveret',
+    CANCELLED: 'Annulleret'
   }
-];
+};
 
 export const openDeliveries = [
   {

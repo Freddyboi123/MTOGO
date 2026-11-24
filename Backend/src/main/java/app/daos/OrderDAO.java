@@ -6,6 +6,7 @@ import app.enums.OrderStatus;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
+import java.util.UUID;
 
 public class OrderDAO extends EntityManagerDAO<Order> {
 
@@ -24,6 +25,18 @@ public class OrderDAO extends EntityManagerDAO<Order> {
                 ORDER BY o.createdAt ASC
                 """, Order.class)
                 .setParameter("ready", OrderStatus.READY_FOR_PICKUP)
+                .getResultList());
+    }
+
+    // ________________________________________________________
+
+    public List<Order> getByRestaurant(UUID restaurantId) {
+        return executeQuery(() -> em.createQuery("""
+                SELECT o FROM Order o
+                WHERE o.restaurant.id = :restaurantId
+                ORDER BY o.createdAt DESC
+                """, Order.class)
+                .setParameter("restaurantId", restaurantId)
                 .getResultList());
     }
 }

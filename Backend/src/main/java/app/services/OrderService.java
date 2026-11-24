@@ -109,6 +109,21 @@ public class OrderService {
 
     // ________________________________________________________
 
+    public List<Order> getRestaurantOrders(UUID ownerId, UUID restaurantId) {
+        Restaurant restaurant = ErrorHandler.tryEntity(
+                restaurantDAO.getById(restaurantId),
+                Notifications.RESTAURANT_NOT_FOUND.getDisplayName()
+        );
+
+        if (!restaurant.getOwner().getId().equals(ownerId)) {
+            throw new ApiException(403, Notifications.ORDERS_NOT_OWNER.getDisplayName());
+        }
+
+        return orderDAO.getByRestaurant(restaurantId);
+    }
+
+    // ________________________________________________________
+
     private OrderLine createLine(Restaurant restaurant, OrderLineDTO dto) {
         if (dto.getMenuItemId() == null) {
             throw new ApiException(400, Notifications.MENU_ITEM_NOT_FOUND.getDisplayName());

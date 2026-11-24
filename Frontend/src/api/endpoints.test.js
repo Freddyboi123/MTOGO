@@ -19,6 +19,7 @@ const CALLS = {
     setRestaurantVisibility: (m) => m.setRestaurantVisibility('42', true),
     getAvailableDeliveries: (m) => m.getAvailableDeliveries(),
     placeOrder: (m) => m.placeOrder({ restaurantId: '42', lines: [] }),
+    getRestaurantOrders: (m) => m.getRestaurantOrders('42'),
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),

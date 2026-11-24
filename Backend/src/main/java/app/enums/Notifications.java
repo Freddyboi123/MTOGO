@@ -70,6 +70,8 @@ public enum Notifications {
     MENU_ITEM_NOT_FOUND("The menu item was not found"),
     MENU_ITEM_UNAVAILABLE("The menu item is not available"),
     PAYMENT_FAILED("The payment failed. No order was created"),
+    ORDERS_FETCHED("You fetched %s orders"),
+    ORDERS_NOT_OWNER("Only the owner of the restaurant can see its orders"),
 
     // DELIVERIES
     ORDER_ID_INVALID("The order ID is not valid"),
