@@ -359,4 +359,29 @@ class OrderServiceTest {
 
         assertEquals(404, exception.getStatus());
     }
+
+    // ________________________________________________________
+
+    @Test
+    void placedOrderKeepsOldPriceWhenTheRestaurantUpdatesTheItem() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        restaurantService.updateItem(owner.getId(), margherita.getId(), MenuItemDTO.builder().price(new BigDecimal("150.00")).build());
+        em.clear();
+
+        Order saved = orderDAO.getById(order.getId());
+        assertEquals(0, new BigDecimal("119.00").compareTo(saved.getLines().get(0).getUnitPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void itemMarkedUnavailableByTheRestaurantCannotBeOrdered() {
+        restaurantService.updateItem(owner.getId(), burrata.getId(), MenuItemDTO.builder().available(false).build());
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.placeOrder(customer.getId(), orderDTO(List.of(line(burrata, 1)))));
+
+        assertEquals(400, exception.getStatus());
+    }
 }

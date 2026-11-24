@@ -428,4 +428,109 @@ class RestaurantServiceTest {
 
         assertFalse(ids.contains(restaurant.getId()));
     }
+
+    // ________________________________________________________
+
+    private MenuItem createItem() {
+        return service.addItem(owner.getId(), createCategory().getId(), itemDTO("Margherita", new BigDecimal("89.00")));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void updateItemByOwnerChangesPriceAndDescription() {
+        MenuItem item = createItem();
+        MenuItemDTO changes = MenuItemDTO.builder()
+                .price(new BigDecimal("99.00"))
+                .description("Tomat, mozzarella og basilikum")
+                .build();
+
+        MenuItem updated = service.updateItem(owner.getId(), item.getId(), changes);
+
+        assertEquals(0, new BigDecimal("99.00").compareTo(updated.getPrice()));
+        assertEquals("Tomat, mozzarella og basilikum", updated.getDescription());
+        assertEquals("Margherita", updated.getName());
+        assertTrue(updated.isAvailable());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void updatedItemIsShownOnTheMenu() {
+        MenuItem item = createItem();
+        UUID restaurantId = item.getCategory().getRestaurant().getId();
+
+        service.updateItem(owner.getId(), item.getId(), MenuItemDTO.builder().price(new BigDecimal("95.00")).build());
+
+        MenuItem shown = findCategory(service.getMenu(restaurantId), "Pizza").getItems().get(0);
+        assertEquals(0, new BigDecimal("95.00").compareTo(shown.getPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void markItemUnavailableKeepsItOnTheMenuAsUnavailable() {
+        MenuItem item = createItem();
+        UUID restaurantId = item.getCategory().getRestaurant().getId();
+
+        service.updateItem(owner.getId(), item.getId(), MenuItemDTO.builder().available(false).build());
+
+        MenuItem shown = findCategory(service.getMenu(restaurantId), "Pizza").getItems().get(0);
+        assertFalse(shown.isAvailable());
+        assertEquals(0, new BigDecimal("89.00").compareTo(shown.getPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void updateItemByOtherUserThrows403AndKeepsPrice() {
+        MenuItem item = createItem();
+        MenuItemDTO changes = MenuItemDTO.builder().price(new BigDecimal("1.00")).build();
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.updateItem(otherUser.getId(), item.getId(), changes));
+
+        assertEquals(403, exception.getStatus());
+        assertEquals(0, new BigDecimal("89.00").compareTo(item.getPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void updateItemWithInvalidPriceThrows400() {
+        MenuItem item = createItem();
+        MenuItemDTO changes = MenuItemDTO.builder().price(new BigDecimal("0")).build();
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.updateItem(owner.getId(), item.getId(), changes));
+
+        assertEquals(400, exception.getStatus());
+        assertEquals(0, new BigDecimal("89.00").compareTo(item.getPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void updateItemWithBlankNameThrows400() {
+        MenuItem item = createItem();
+        MenuItemDTO changes = MenuItemDTO.builder().name(" ").build();
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.updateItem(owner.getId(), item.getId(), changes));
+
+        assertEquals(400, exception.getStatus());
+        assertEquals("Margherita", item.getName());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void updateUnknownItemThrows404() {
+        MenuItemDTO changes = MenuItemDTO.builder().price(new BigDecimal("50.00")).build();
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.updateItem(owner.getId(), UUID.randomUUID(), changes));
+
+        assertEquals(404, exception.getStatus());
+    }
 }
