@@ -108,3 +108,21 @@ class DeliveryAssignmentServiceTest {
         return em.createQuery("SELECT d FROM Delivery d JOIN FETCH d.agent a JOIN FETCH a.user WHERE d.order.id = :id", Delivery.class)
                 .setParameter("id", orderId).getResultList();
     }
+
+
+
+    @Test
+    void acceptsOrderAndRemovesItFromAvailableDeliveries() {
+        assertTrue(availableIds().contains(orderId));
+        DeliveryAssignmentDTO result = service.accept(orderId, agentA);
+        assertEquals(orderId, result.getOrderId());
+        assertNotNull(result.getDeliveryId());
+        assertNotNull(result.getAssignedAt());
+        assertEquals(DeliveryStatus.ASSIGNED, result.getDeliveryStatus());
+        assertEquals(OrderStatus.READY_FOR_PICKUP, result.getOrderStatus());
+        List<Delivery> persisted = assignments();
+        assertEquals(1, persisted.size());
+        assertEquals(result.getDeliveryId(), persisted.getFirst().getId());
+        assertEquals(agentA, persisted.getFirst().getAgent().getUser().getId());
+        assertFalse(availableIds().contains(orderId));
+    }
