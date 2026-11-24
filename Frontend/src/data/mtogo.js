@@ -407,6 +407,7 @@ export const menuPanelTexts = {
   saveNew: 'Gem vare',
   saveChanges: 'Gem ændringer',
   cancel: 'Annuller',
+  saved: 'er gemt',
   categories: 'Administrer kategorier →',
   allItems: 'Se alle varer →'
 };

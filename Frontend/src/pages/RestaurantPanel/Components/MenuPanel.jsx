@@ -13,6 +13,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
+  const [saved, setSaved] = useState('');
 
   const items = categories.flatMap((category) => category.items ?? []);
 
@@ -23,6 +24,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
 
   function openAdd() {
     setError('');
+    setSaved('');
     if (editing === 'new') {
       closeForm();
       return;
@@ -33,6 +35,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
 
   function openEdit(item) {
     setError('');
+    setSaved('');
     setEditing(item.id);
     setForm({ name: item.name, description: item.description ?? '', price: String(item.price) });
   }
@@ -44,12 +47,14 @@ export default function MenuPanel({ categories, onMenuChanged }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError('');
+    setSaved('');
     try {
       if (editing === 'new') {
         await addMenuItem(categories[0].id, form);
       } else {
         await updateMenuItem(editing, form);
       }
+      setSaved(`${form.name} ${menuPanelTexts.saved}`);
       closeForm();
       await onMenuChanged();
     } catch (err) {
@@ -59,8 +64,10 @@ export default function MenuPanel({ categories, onMenuChanged }) {
 
   async function toggleAvailable(item) {
     setError('');
+    setSaved('');
     try {
       await updateMenuItem(item.id, { available: !item.available });
+      setSaved(`${item.name} ${menuPanelTexts.saved}`);
       await onMenuChanged();
     } catch (err) {
       setError(err.message);
@@ -78,7 +85,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
           <span>{item.available ? menuPanelTexts.available : menuPanelTexts.unavailable}</span>
           <button
             type="button"
-            className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}
+            className={cx(ui.btn, ui.btnOutline, ui.btnSmall, styles.toggle)}
             onClick={() => toggleAvailable(item)}
           >
             {item.available ? menuPanelTexts.markUnavailable : menuPanelTexts.markAvailable}
@@ -141,6 +148,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
           </form>
         )}
         {error && <p className={ui.fieldHint}>{error}</p>}
+        {saved && <p className={styles.saved}>{saved}</p>}
         <DataTable
           columns={columns}
           rows={items}

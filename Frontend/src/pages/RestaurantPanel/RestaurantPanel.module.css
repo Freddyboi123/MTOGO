@@ -125,6 +125,17 @@
   gap: 12px;
 }
 
+.toggle {
+  min-width: 190px;
+}
+
+.saved {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
 .formActions {
   display: flex;
   gap: 12px;
