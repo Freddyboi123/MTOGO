@@ -312,6 +312,20 @@ export const restaurantMenuRows = [
   { name: 'Funghi', price: '129 kr.', state: 'Aktiv' }
 ];
 
+export const orderHistoryTexts = {
+  title: 'Ordrehistorik',
+  hint: 'Her kan du se dine tidligere ordrer.',
+  loading: 'Henter dine ordrer…',
+  error: 'Dine ordrer kunne ikke hentes.',
+  empty: 'Du har ikke bestilt noget endnu.',
+  columns: {
+    date: 'Dato',
+    restaurant: 'Restaurant',
+    total: 'Beløb',
+    status: 'Status'
+  }
+};
+
 export const restaurantOrderTexts = {
   title: 'Aktive ordrer',
   count: 'ordrer',
