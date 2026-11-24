@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { getAvailableDeliveries, getMyDeliveries, acceptDelivery, getUserName } from '../utils/api';
+import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout';
-import StatCard from '../components/StatCard';
+import { getAvailableDeliveries, isLoggedIn } from '../utils/api';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import dash from '../components/DashboardLayout.module.css';
 import styles from './CourierPanel.module.css';
-import { courierPanelStats } from '../data/mtogo';
 
 const items = [
   { to: '/chauffoerpanel', label: 'Leverancer' },
@@ -17,143 +15,152 @@ const items = [
   { to: '/chauffoerpanel/indstillinger', label: 'Indstillinger' }
 ];
 
-export default function CourierPanel() {
-  const location = useLocation();
-  const showingMine = location.pathname.startsWith('/chauffoerpanel/ture');
-  const [available, setAvailable] = useState([]);
-  const [mine, setMine] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [accepting, setAccepting] = useState(null);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+function getSessionUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null');
+  } catch {
+    return null;
+  }
+}
 
-  const refresh = useCallback(async () => {
-    try {
-      const [open, assigned] = await Promise.all([getAvailableDeliveries(), getMyDeliveries()]);
-      setAvailable(open.data ?? []);
-      setMine(assigned.data ?? []);
-      setError('');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+function formatAddress(street, postalCode, city) {
+  return [street, [postalCode, city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || 'Adresse ikke angivet';
+}
+
+function formatPickupTime(value) {
+  if (!value) return 'Ikke angivet';
+  const time = new Date(value);
+  if (Number.isNaN(time.getTime())) return 'Ikke angivet';
+  return new Intl.DateTimeFormat('da-DK', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(time);
+}
+
+export default function CourierPanel() {
+  const user = getSessionUser();
+  const authorized = isLoggedIn() && user?.roles?.includes('DELIVERY_AGENT');
+  const [deliveries, setDeliveries] = useState([]);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
-    refresh();
-    const interval = setInterval(refresh, 10000);
-    return () => clearInterval(interval);
-  }, [refresh]);
+    if (!authorized) return;
+    let active = true;
+    getAvailableDeliveries()
+      .then((response) => {
+        if (!active) return;
+        setDeliveries(response.data ?? []);
+        setError('');
+        setSelectedOrderId((current) =>
+          response.data?.some((delivery) => delivery.orderId === current) ? current : null
+        );
+      })
+      .catch((err) => {
+        if (active) setError(err.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [authorized, reload]);
 
-  async function takeOrder(orderId) {
-    setAccepting(orderId);
-    setNotice('');
-    try {
-      await acceptDelivery(orderId);
-      setNotice('Leveringen er nu tildelt dig.');
-    } catch (err) {
-      setError(err.status === 409 ? 'Leveringen er allerede taget af en anden chauffør.' : err.message);
-    } finally {
-      await refresh();
-      setAccepting(null);
-    }
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (!authorized) {
+    return <p className={cx(ui.page, styles.message)}>Kun chaufførpartnere har adgang til leveringsoversigten.</p>;
   }
 
-  function addressRow(delivery) {
-    return `${delivery.pickupAddress || 'Adresse mangler'} → ${delivery.deliveryAddress || 'Adresse mangler'}`;
-  }
+  const selected = !loading && !error
+    ? deliveries.find((delivery) => delivery.orderId === selectedOrderId)
+    : null;
+  const displayName = [user.name, user.lastName].filter(Boolean).join(' ');
 
   return (
     <DashboardLayout
       role="Chaufførpartner"
       items={items}
-      breadcrumb="Chauffør  /  Leverancer"
-      user={getUserName() || "Chauffør"}
+      breadcrumb="Chauffør / Ledige leverancer"
+      user={displayName}
     >
       <div className={dash.head}>
         <div>
-          <p className={ui.eyebrow}>Velkommen til dine leverancer</p>
-          <h1 className={dash.title}>{showingMine ? "Mine ture" : "Dine leverancer"}</h1>
-          <p className={dash.subtitle}>
-            {courierPanelStats.area} · {courierPanelStats.vehicle} · {courierPanelStats.date}
-          </p>
+          <p className={ui.eyebrow}>Chaufføroversigt</p>
+          <h1 className={dash.title}>Ledige leverancer</h1>
+          <p className={dash.subtitle}>Ordrer klar til afhentning, som endnu ikke har en chauffør.</p>
         </div>
         <div className={dash.actions}>
-          <span className={styles.onlinePill}>
-            <span className={styles.dot} />
-            Du er online
-          </span>
-          <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Gå offline</button>
+          <button
+            type="button"
+            className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}
+            disabled={loading}
+            onClick={() => { setLoading(true); setReload((value) => value + 1); }}
+          >
+            Opdater listen
+          </button>
         </div>
       </div>
 
-      <div className={dash.statGrid}>
-        <StatCard
-          label="Leveringer i dag"
-          value={courierPanelStats.deliveriesToday}
-          note="Tak for de gode ture"
-        />
-        <StatCard
-          label="Indtjening i dag"
-          value={courierPanelStats.earningsToday}
-          note="Før skat · ekskl. drikkepenge"
-        />
-        <StatCard
-          label="Dine ture"
-          value={`${mine.length} aktiv`}
-          note="Accepterede, ikke afsluttede leveringer"
-        />
-      </div>
-
-      {error && <p role="alert" className={ui.fieldHint}>{error}</p>}
-      {notice && <p role="status" className={ui.fieldHint}>{notice}</p>}
       <div className={styles.split}>
-        <div>
+        <section aria-label="Ledige leverancer">
           <div className={styles.listHead}>
-            <div>
-              <h2 className={styles.listTitle}>{showingMine ? 'Mine ture' : 'Ledige leverancer'}</h2>
-              <p className={styles.listNote}>
-                {loading ? 'Indlæser leveringer…' : `${showingMine ? mine.length : available.length} leveringer`}
-              </p>
-            </div>
-            <button type="button" className={cx(ui.btn, ui.btnOutline, ui.btnSmall)} onClick={refresh}>Opdater</button>
+            <h2 className={styles.listTitle}>Tilgængelige ordrer</h2>
+            {!loading && !error && <p className={styles.listNote}>{deliveries.length} ledige leverancer</p>}
           </div>
-          {!loading && (showingMine ? mine : available).length === 0 &&
-            <p>{showingMine ? 'Du har ingen aktive leveringer.' : 'Der er ingen ledige leveringer lige nu.'}</p>}
-          {(showingMine ? mine : available).map((delivery) => (
+
+          {loading && <p className={styles.message} role="status">Henter ledige leverancer...</p>}
+          {!loading && error && (
+            <p className={styles.message} role="alert">Kunne ikke hente leverancer: {error}</p>
+          )}
+          {!loading && !error && deliveries.length === 0 && (
+            <p className={styles.message} role="status">Der er ingen ledige leverancer lige nu.</p>
+          )}
+
+          {!loading && !error && deliveries.map((delivery) => (
             <article className={styles.delivery} key={delivery.orderId}>
               <div>
-                <div className={styles.deliveryLabel}>ORDRE {delivery.orderId}</div>
+                <div className={styles.deliveryLabel}>LEDIG · ORDRE {delivery.orderId}</div>
                 <h3 className={styles.deliveryName}>{delivery.restaurantName}</h3>
-                <p className={styles.deliveryRoute}>{addressRow(delivery)}</p>
-                {showingMine && <p className={styles.deliveryRoute}>Status: {delivery.deliveryStatus} / {delivery.orderStatus}</p>}
-                {delivery.expectedPickupTime && <p className={styles.deliveryRoute}>Afhentning: {delivery.expectedPickupTime}</p>}
+                <p className={styles.deliveryRoute}>Forventet afhentning: {formatPickupTime(delivery.expectedPickupAt)}</p>
               </div>
-              {!showingMine &&
-                <button type="button" disabled={accepting !== null}
-                  onClick={() => takeOrder(delivery.orderId)}
-                  className={cx(ui.btn, ui.btnDark, ui.btnSmall, styles.takeButton)}>
-                  {accepting === delivery.orderId ? 'Accepterer…' : 'Tag levering'}
-                </button>}
+              <button
+                type="button"
+                className={cx(ui.btn, ui.btnDark, ui.btnSmall)}
+                aria-expanded={selectedOrderId === delivery.orderId}
+                onClick={() => setSelectedOrderId((current) =>
+                  current === delivery.orderId ? null : delivery.orderId
+                )}
+              >
+                {selectedOrderId === delivery.orderId ? 'Skjul detaljer' : 'Se detaljer'}
+              </button>
             </article>
           ))}
-        </div>
-        <div className={ui.block}>
-          <h2 className={styles.activeTitle}>Mine aktive leveringer</h2>
-          {mine.length === 0 && <p>Du har endnu ikke accepteret en levering.</p>}
-          {mine.map((delivery) => (
-            <div key={delivery.orderId} className={styles.stop}>
-              <div>
-                <strong className={styles.stopName}>{delivery.restaurantName}</strong>
-                <span className={styles.stopLine}>Ordre: {delivery.orderId}</span>
-                <span className={styles.stopLine}>Afhent: {delivery.pickupAddress}</span>
-                <span className={styles.stopLine}>Lever: {delivery.deliveryAddress}</span>
-                <span className={styles.stopLine}>Status: {delivery.deliveryStatus}</span>
+        </section>
+
+        <section aria-label="Ordredetaljer" className={ui.block}>
+          <h2 className={styles.detailsTitle}>Ordredetaljer</h2>
+          {!selected ? (
+            <p className={styles.message}>Vælg en ledig levering for at se afhentnings- og leveringsadresse.</p>
+          ) : (
+            <>
+              <p className={styles.orderNumber}>Ordrenummer: {selected.orderId}</p>
+              <div className={styles.detail}>
+                <span className={ui.sectionLabel}>RESTAURANT / AFHENTNING</span>
+                <strong>{selected.restaurantName}</strong>
+                <p>{formatAddress(selected.pickupStreet, selected.pickupPostalCode, selected.pickupCity)}</p>
               </div>
-            </div>
-          ))}
-        </div>
+              <div className={styles.detail}>
+                <span className={ui.sectionLabel}>KUNDE / LEVERING</span>
+                <p>{formatAddress(selected.deliveryStreet, selected.deliveryPostalCode, selected.deliveryCity)}</p>
+              </div>
+              <div className={styles.detail}>
+                <span className={ui.sectionLabel}>FORVENTET AFHENTNING</span>
+                <p>{formatPickupTime(selected.expectedPickupAt)}</p>
+              </div>
+            </>
+          )}
+        </section>
       </div>
     </DashboardLayout>
   );

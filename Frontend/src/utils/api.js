@@ -41,6 +41,7 @@ export const forgotPassword = (email) => api('/users/auth/forgot-password', { me
 export const resetPassword = (body) => api('/users/auth/reset-password', { method: 'POST', body });
 
 export const getMyRestaurants = () => api('/my-restaurants');
+export const getAvailableDeliveries = () => api('/deliveries/available');
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
 
