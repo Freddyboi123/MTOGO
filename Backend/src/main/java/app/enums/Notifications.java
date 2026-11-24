@@ -71,6 +71,12 @@ public enum Notifications {
     MENU_ITEM_UNAVAILABLE("The menu item is not available"),
     PAYMENT_FAILED("The payment failed. No order was created"),
 
+    // DELIVERIES
+    ORDER_ID_INVALID("The order ID is not valid"),
+    LOGIN_REQUIRED("You must be logged in"),
+    DELIVERY_AGENT_NOT_ACTIVE("You are not an active delivery agent"),
+    DELIVERY_ALREADY_TAKEN("This delivery has already been taken or is no longer available"),
+
     // RESTAURANTS AND MENUS
     RESTAURANT_CREATED("Restaurant %s was created"),
     RESTAURANT_NOT_FOUND("The restaurant was not found"),
