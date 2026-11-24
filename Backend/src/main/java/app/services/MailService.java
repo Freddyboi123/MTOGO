@@ -1,5 +1,6 @@
 package app.services;
 
+import app.entities.RestaurantApplication;
 import app.entities.User;
 import app.utils.Utils;
 import jakarta.mail.Authenticator;
@@ -76,6 +77,61 @@ public class MailService {
         );
 
         send(user.getEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendApplicationStatusEmail(RestaurantApplication application) {
+
+        String companyName = Utils.getPropertyValue("COMPANY_NAME", CONFIG);
+        User applicant = application.getApplicant();
+        String adminMessage = application.getAdminMessage();
+        String statusText;
+        String details = "";
+
+        switch (application.getStatus()) {
+            case APPROVED -> statusText = "godkendt. Din restaurant er nu oprettet, og du kan begynde at oprette din menu.";
+            case REJECTED -> {
+                statusText = "afvist.";
+
+                if (adminMessage != null && !adminMessage.isBlank()) {
+                    details = "\nBegrundelse:\n" + adminMessage + "\n";
+                }
+
+            }
+            case MORE_INFORMATION_NEEDED -> {
+
+                statusText = "sat på pause, fordi vi mangler yderligere oplysninger.";
+
+                details = String.format("""
+                \nVi har brug for følgende: %s 
+                \n\nLog ind, ret din ansøgning og send den ind igen."""
+                , adminMessage);
+
+            }
+            default -> {
+                return new MailResult(false, "No mail for status " + application.getStatus());
+            }
+        }
+
+        String subject = String.format("%s: Din ansøgning er ændret", companyName);
+        String body = String.format("""
+            Hej %s %s,
+
+            Din ansøgning for %s er blevet %s
+            %s
+            Venlig hilsen
+            %s
+            """,
+            applicant.getFirstname(),
+            applicant.getLastname(),
+            application.getRestaurantName(),
+            statusText,
+            details,
+            companyName
+        );
+
+        return send(applicant.getEmail(), subject, body);
     }
 
     // ________________________________________________________

@@ -26,5 +26,6 @@ public class RestaurantApplicationDTO {
     private String createdAt;
     private String applicantName;
     private boolean addressInUse;
+    private Boolean mailSent;
 
 }

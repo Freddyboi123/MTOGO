@@ -62,6 +62,55 @@
   margin-top: 20px;
 }
 
+.visibility {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.visibility input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: var(--radius-pill);
+  background: var(--pale);
+  transition: background 0.15s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--white);
+  transition: transform 0.15s;
+}
+
+.visibility input:checked + .switch {
+  background: var(--green);
+}
+
+.visibility input:checked + .switch::after {
+  transform: translateX(18px);
+}
+
+.visibility input:focus-visible + .switch {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
 .panelFlat {
   margin-top: 0;
 }

@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Landing from './pages/Landing';
+import Landing from './pages/Landing/Landing';
 import useFeatureFlag from './featureFlags/useFeatureFlag';
 import Restaurants from './pages/Restaurants';
 import RestaurantMenu from './pages/RestaurantMenu';
@@ -10,9 +10,9 @@ import ResetPassword from './pages/ResetPassword';
 import Checkout from './pages/Checkout';
 import ApplyRestaurant from './pages/ApplyRestaurant';
 import ApplyCourier from './pages/ApplyCourier';
-import Profile from './pages/Profile';
+import Profile from './pages/Profile/Profile';
 import FAQ from './pages/FAQ/FAQ';
-import RestaurantPanel from './pages/RestaurantPanel';
+import RestaurantPanel from './pages/RestaurantPanel/RestaurantPanel';
 import CourierPanel from './pages/CourierPanel';
 import AdminRestaurants from './pages/AdminRestaurants';
 import AdminCouriers from './pages/AdminCouriers';
@@ -38,7 +38,8 @@ export default function App() {
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
       <Route path="/help" element={<FAQ />} />
-      <Route path="/restaurantpanel/*" element={<RestaurantPanel />} />
+      <Route path="/restaurantpanel"element={<Navigate to="/min-profil" state={{ section: 'Mine restauranter' }} replace />}/>
+      <Route path="/restaurantpanel/:id/*" element={<RestaurantPanel />} />
       {deliveryOverview && <Route path="/chauffoerpanel/*" element={<CourierPanel />} />}
       <Route path="/admin" element={<Navigate to="/admin/restauranter" replace />} />
       <Route path="/admin/restauranter" element={<AdminRestaurants />} />

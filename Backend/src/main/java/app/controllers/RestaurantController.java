@@ -14,6 +14,7 @@ import app.entities.MenuItem;
 import app.entities.Restaurant;
 import app.enums.Notifications;
 import app.enums.Role;
+import app.exceptions.ApiException;
 import app.mappers.MenuCategoryMapper;
 import app.mappers.MenuItemMapper;
 import app.mappers.RestaurantMapper;
@@ -29,6 +30,7 @@ import java.util.UUID;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.put;
 
 public class RestaurantController extends BaseController<Restaurant, RestaurantDTO> {
 
@@ -53,10 +55,14 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
     public static EndpointGroup registerRoutes() {
         RestaurantController controller = new RestaurantController();
         return () -> {
-            get("/restaurants", controller::getAll, Role.ANYONE);
-            get("/restaurant/{id}", controller::getByID, Role.ANYONE);
+            get("/restaurants", controller::getAllVisible, Role.ANYONE);
+            get("/restaurant/{id}", controller::getVisible, Role.ANYONE);
+            get("/restaurants/admin", controller::getAll, Role.ADMIN);
+            get("/restaurants/admin/{id}", controller::getByID, Role.ADMIN);
             get("/restaurant/menu/{id}",controller::getMenu, Role.ANYONE);
-            get("/my-restaurants", controller::getMyRestaurants, Role.RESTAURANT_OWNER);
+            get("/my-restaurants", controller::getMyRestaurants, Role.CUSTOMER, Role.RESTAURANT_OWNER);
+            get("/my-restaurants/{id}", controller::getMyRestaurant, Role.RESTAURANT_OWNER);
+            put("/my-restaurants/{id}/visibility", controller::setVisibility, Role.RESTAURANT_OWNER);
             post("/restaurants", controller::createRestaurant, Role.RESTAURANT_OWNER);
             post("/restaurant/{id}/categories", controller::addCategory, Role.RESTAURANT_OWNER);
             post("/category/{id}/items", controller::addItem, Role.RESTAURANT_OWNER);
@@ -68,7 +74,7 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
     @Override
     protected List<Restaurant> getAllEntities() {
-        return restaurantService.getActiveRestaurants();
+        return restaurantDAO.getAll();
     }
 
     // ________________________________________________________
@@ -76,6 +82,41 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
     @Override
     protected Restaurant getEntityById(UUID id) {
         return restaurantService.getRestaurant(id);
+    }
+
+    // ________________________________________________________
+
+    private void getAllVisible(Context ctx) {
+
+        List<RestaurantDTO> list = restaurantService.getActiveRestaurants()
+            .stream()
+            .map(mapper::toDTO)
+            .toList();
+
+        String message = messageService.buildMessage(
+            Notifications.GET_ALL,
+            String.valueOf(list.size()),
+            entityClass.getSimpleName().toLowerCase()
+        );
+
+        respond(ctx, 200, message, Map.of("data", list));
+
+    }
+
+    // ________________________________________________________
+
+    private void getVisible(Context ctx) {
+
+        UUID id = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
+        Restaurant restaurant = restaurantService.getVisibleRestaurant(id);
+
+        String message = messageService.buildMessage(
+            Notifications.GET_BY_ID,
+            entityClass.getSimpleName().toLowerCase(),
+            id.toString()
+        );
+        respond(ctx, 200, message, Map.of("data", mapper.toDTO(restaurant)));
+
     }
 
     // ________________________________________________________
@@ -94,6 +135,47 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
                 entityClass.getSimpleName().toLowerCase()
         );
         respond(ctx, 200, message, Map.of("data", list));
+    }
+
+    // ________________________________________________________
+
+    private void getMyRestaurant(Context ctx) {
+
+        UserDTO user = getUser(ctx);
+        UUID restaurantId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
+
+        Restaurant restaurant = restaurantService.getMyRestaurant(user.getId(), restaurantId);
+
+        String message = messageService.buildMessage(
+                Notifications.GET_BY_ID,
+                entityClass.getSimpleName().toLowerCase(),
+                restaurantId.toString()
+        );
+
+        respond(ctx, 200, message, Map.of("data", mapper.toDTO(restaurant)));
+
+    }
+
+    // ________________________________________________________
+
+    private void setVisibility(Context ctx) {
+        UserDTO user = getUser(ctx);
+        UUID restaurantId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
+        Map<String, String> body = ErrorHandler.tryBodyMap(ctx, Notifications.BODY_EMPTY.getDisplayName());
+
+        String active = String.valueOf(body.get("active"));
+        if (!active.equals("true") && !active.equals("false")) {
+            throw new ApiException(400, Notifications.RESTAURANT_VISIBILITY_INVALID.getDisplayName());
+        }
+
+        Restaurant restaurant = restaurantService.setVisibility(user.getId(), restaurantId, Boolean.parseBoolean(active));
+
+        String message = messageService.buildMessage(
+            Notifications.RESTAURANT_VISIBILITY_CHANGED,
+            restaurant.getName(),
+            restaurant.isActive() ? "visible" : "hidden"
+        );
+        respond(ctx, 200, message, Map.of("data", mapper.toDTO(restaurant)));
     }
 
     // ________________________________________________________
