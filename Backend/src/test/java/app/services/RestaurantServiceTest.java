@@ -177,11 +177,55 @@ class RestaurantServiceTest {
     // ________________________________________________________
 
     @Test
+    void getMyRestaurantsOnlyReturnsOwnRestaurants() {
+        Restaurant mine = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+        service.createRestaurant(otherUser.getId(), restaurantDTO("Burgerbar"));
+
+        List<Restaurant> result = service.getMyRestaurants(owner.getId());
+
+        assertEquals(1, result.size());
+        assertEquals(mine.getId(), result.get(0).getId());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getMyRestaurantReturnsRestaurantForOwner() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+
+        assertEquals(restaurant.getId(), service.getMyRestaurant(owner.getId(), restaurant.getId()).getId());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getMyRestaurantByOtherUserThrows403() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.getMyRestaurant(otherUser.getId(), restaurant.getId()));
+
+        assertEquals(403, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void addItemToCategoryOfOtherRestaurantThrows403() {
+        MenuCategory category = createCategory();
+        service.createRestaurant(otherUser.getId(), restaurantDTO("Burgerbar"));
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.addItem(otherUser.getId(), category.getId(), itemDTO("Margherita", new BigDecimal("79"))));
+
+        assertEquals(403, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
     void addCategoryByOtherUserThrows403() {
         Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
 
-        ApiException exception = assertThrows(ApiException.class,
-                () -> service.addCategory(otherUser.getId(), restaurant.getId(), categoryDTO("Pizza")));
+        ApiException exception = assertThrows(ApiException.class, () -> service.addCategory(otherUser.getId(), restaurant.getId(), categoryDTO("Pizza")));
 
         assertEquals(403, exception.getStatus());
     }

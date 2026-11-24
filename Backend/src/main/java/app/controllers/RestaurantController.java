@@ -56,6 +56,8 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
             get("/restaurants", controller::getAll, Role.ANYONE);
             get("/restaurant/{id}", controller::getByID, Role.ANYONE);
             get("/restaurant/menu/{id}",controller::getMenu, Role.ANYONE);
+            get("/my-restaurants", controller::getMyRestaurants, Role.CUSTOMER, Role.RESTAURANT_OWNER);
+            get("/my-restaurants/{id}", controller::getMyRestaurant, Role.RESTAURANT_OWNER);
             post("/restaurants", controller::createRestaurant, Role.RESTAURANT_OWNER);
             post("/restaurant/{id}/categories", controller::addCategory, Role.RESTAURANT_OWNER);
             post("/category/{id}/items", controller::addItem, Role.RESTAURANT_OWNER);
@@ -93,6 +95,25 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
                 entityClass.getSimpleName().toLowerCase()
         );
         respond(ctx, 200, message, Map.of("data", list));
+    }
+
+    // ________________________________________________________
+
+    private void getMyRestaurant(Context ctx) {
+
+        UserDTO user = getUser(ctx);
+        UUID restaurantId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
+
+        Restaurant restaurant = restaurantService.getMyRestaurant(user.getId(), restaurantId);
+
+        String message = messageService.buildMessage(
+                Notifications.GET_BY_ID,
+                entityClass.getSimpleName().toLowerCase(),
+                restaurantId.toString()
+        );
+
+        respond(ctx, 200, message, Map.of("data", mapper.toDTO(restaurant)));
+
     }
 
     // ________________________________________________________
