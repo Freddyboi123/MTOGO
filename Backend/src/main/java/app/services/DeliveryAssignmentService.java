@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.DeliveryAssignmentDTO;
 import app.entities.*;
+import app.enums.Notifications;
 import app.enums.OrderStatus;
 import app.exceptions.ApiException;
 import jakarta.persistence.EntityManager;
@@ -57,18 +58,18 @@ public class DeliveryAssignmentService {
                                 DeliveryAgent.class)
                         .setParameter("userId", userId)
                         .getResultStream().findFirst()
-                        .orElseThrow(() -> new ApiException(403, "You are not an active delivery agent"));
+                        .orElseThrow(() -> new ApiException(403, Notifications.DELIVERY_AGENT_NOT_ACTIVE.getDisplayName()));
 
                 // The database row lock serializes competing claims across server instances.
                 Order order = em.find(Order.class, orderId, LockModeType.PESSIMISTIC_WRITE);
                 if (order == null) {
-                    throw new ApiException(404, "Order not found");
+                    throw new ApiException(404, Notifications.ORDER_NOT_FOUND.getDisplayName());
                 }
                 em.refresh(order, LockModeType.PESSIMISTIC_WRITE);
                 if (order.getStatus() != OrderStatus.READY_FOR_PICKUP ||
                         !em.createQuery("SELECT d.id FROM Delivery d WHERE d.order.id = :id", UUID.class)
                                 .setParameter("id", orderId).setMaxResults(1).getResultList().isEmpty()) {
-                    throw new ApiException(409, "This delivery has already been taken or is no longer available");
+                    throw new ApiException(409, Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName());
                 }
 
                 Delivery delivery = Delivery.builder()

@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.dtos.UserDTO;
+import app.enums.Notifications;
 import app.enums.Role;
 import app.exceptions.ApiException;
 import app.server.Setup;
@@ -26,7 +27,7 @@ public class DeliveryAssignmentController {
                 try {
                     orderId = UUID.fromString(ctx.pathParam("orderId"));
                 } catch (IllegalArgumentException e) {
-                    throw new ApiException(400, "Invalid order ID");
+                    throw new ApiException(400, Notifications.ORDER_ID_INVALID.getDisplayName());
                 }
                 ctx.status(201).json(Map.of("data", controller.service.accept(orderId, userId(ctx))));
             }, Role.DELIVERY_AGENT);
@@ -35,7 +36,7 @@ public class DeliveryAssignmentController {
 
     private static UUID userId(Context ctx) {
         UserDTO user = ctx.attribute("user");
-        if (user == null || user.getId() == null) throw new ApiException(401, "Login required");
+        if (user == null || user.getId() == null) throw new ApiException(401, Notifications.LOGIN_REQUIRED.getDisplayName());
         return user.getId();
     }
 }
