@@ -99,7 +99,6 @@ export function saveSession({ token, data }) {
 }
 
 // US-10: authenticated delivery assignment.
-export const getAvailableDeliveries = () => api('/deliveries/available');
 export const getMyDeliveries = () => api('/deliveries/mine');
 export const acceptDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/accept`, { method: 'POST' });
