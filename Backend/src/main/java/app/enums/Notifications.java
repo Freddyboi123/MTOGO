@@ -75,6 +75,8 @@ public enum Notifications {
     RESTAURANT_CREATED("Restaurant %s was created"),
     RESTAURANT_NOT_FOUND("The restaurant was not found"),
     RESTAURANT_NAME_REQUIRED("You must enter a name for the restaurant"),
+    RESTAURANT_VISIBILITY_INVALID("You must send active as true or false"),
+    RESTAURANT_VISIBILITY_CHANGED("Restaurant %s is now %s"),
     OWNER_NOT_FOUND("The owner was not found"),
     NOT_RESTAURANT_OWNER("Only the owner of the restaurant can change its menu"),
     CATEGORY_ADDED("Category %s was added to the menu"),

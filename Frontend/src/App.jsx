@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Landing from './pages/Landing';
+import Landing from './pages/Landing/Landing';
 import useFeatureFlag from './featureFlags/useFeatureFlag';
 import Restaurants from './pages/Restaurants';
 import RestaurantMenu from './pages/RestaurantMenu';

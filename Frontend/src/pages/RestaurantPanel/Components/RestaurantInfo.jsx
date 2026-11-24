@@ -2,8 +2,9 @@ import { restaurant } from '../../../data/mtogo';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../RestaurantPanel.module.css';
+import VisibilityToggle from './VisibilityToggle';
 
-export default function RestaurantInfo({ myRestaurant }) {
+export default function RestaurantInfo({ myRestaurant, onRestaurantChanged }) {
   return (
     <div className={styles.split}>
       <div className={cx(ui.block, styles.block)}>
@@ -48,8 +49,11 @@ export default function RestaurantInfo({ myRestaurant }) {
           <h3 className={styles.previewName}>{myRestaurant.name}</h3>
           <p className={styles.previewKind}>Italiensk · Pizza · Pasta</p>
           <div className={styles.previewFooter}>
-            <span className={ui.tag}>Synlig og åben</span>
-            <span className={ui.linkQuiet}>Pause bestillinger</span>
+            <VisibilityToggle
+              restaurantId={myRestaurant.id}
+              visible={myRestaurant.active}
+              onChanged={onRestaurantChanged}
+            />
           </div>
         </div>
       </div>
