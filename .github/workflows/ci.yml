@@ -7,6 +7,28 @@ on:
     branches: [main]
 
 jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - run: npm ci
+      # Includes the contract test that checks every frontend API call
+      # against the routes defined in the backend source.
+      - name: Unit and contract tests
+        run: npm test
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: https://mtogo.api.roneu.dk
+
   build:
     runs-on: ubuntu-latest
     defaults:
