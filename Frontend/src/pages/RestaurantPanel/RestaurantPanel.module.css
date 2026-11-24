@@ -126,14 +126,30 @@
 }
 
 .toggle {
-  min-width: 190px;
+  min-width: 150px;
+}
+
+.status {
+  min-width: 64px;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 
 .saved {
   color: var(--green);
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
+  padding: 0 20px 12px;
+}
+
+.menuForm {
+  padding: 0 20px 20px;
+}
+
+.menuError {
+  padding: 0 20px 12px;
 }
 
 .formActions {

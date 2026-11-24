@@ -76,13 +76,13 @@ export default function MenuPanel({ categories, onMenuChanged }) {
 
   const columns = [
     { key: 'name', label: menuPanelTexts.columns.name },
-    { key: 'price', label: menuPanelTexts.columns.price, render: (item) => `${item.price} kr.` },
+    { key: 'price', label: menuPanelTexts.columns.price, render: (item) => <span className={styles.nowrap}>{item.price} kr.</span> },
     {
       key: 'available',
       label: menuPanelTexts.columns.available,
       render: (item) => (
         <div className={styles.availability}>
-          <span>{item.available ? menuPanelTexts.available : menuPanelTexts.unavailable}</span>
+          <span className={styles.status}>{item.available ? menuPanelTexts.available : menuPanelTexts.unavailable}</span>
           <button
             type="button"
             className={cx(ui.btn, ui.btnOutline, ui.btnSmall, styles.toggle)}
@@ -124,7 +124,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
         }
       >
         {editing && (
-          <form onSubmit={handleSubmit} className={ui.stack}>
+          <form onSubmit={handleSubmit} className={cx(ui.stack, styles.menuForm)}>
             <div className={ui.field}>
               <label htmlFor="item-name">{menuPanelTexts.name}</label>
               <input id="item-name" name="name" value={form.name} onChange={updateField} />
@@ -147,7 +147,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
             </div>
           </form>
         )}
-        {error && <p className={ui.fieldHint}>{error}</p>}
+        {error && <p className={cx(ui.fieldHint, styles.menuError)}>{error}</p>}
         {saved && <p className={styles.saved}>{saved}</p>}
         <DataTable
           columns={columns}
