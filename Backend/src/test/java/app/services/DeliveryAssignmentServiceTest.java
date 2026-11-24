@@ -213,3 +213,15 @@ class DeliveryAssignmentServiceTest {
         assertEquals(OrderStatus.OUT_FOR_DELIVERY, picked.getOrderStatus());
         assertEquals(List.of(other.getId()), service.mine(agentB).stream().map(DeliveryAssignmentDTO::getOrderId).toList());
     }
+
+    @ParameterizedTest
+    @EnumSource(value = OrderStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "READY_FOR_PICKUP")
+    void rejectsOrderThatIsNotReadyForPickup(OrderStatus status) {
+        em.getTransaction().begin();
+        em.find(Order.class, orderId).setStatus(status);
+        em.getTransaction().commit();
+        ApiException exception = assertThrows(ApiException.class, () -> service.accept(orderId, agentA));
+        assertEquals(409, exception.getStatus());
+        assertEquals(Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName(), exception.getMessage());
+        assertTrue(assignments().isEmpty());
+    }
