@@ -263,3 +263,20 @@ class DeliveryAssignmentServiceTest {
         assertEquals(1, assignments().size());
         assertEquals(accepted.getDeliveryId(), assignments().getFirst().getId());
     }
+
+    @Test
+    void acceptanceDoesNotRemoveOtherAvailableOrders() {
+        em.getTransaction().begin();
+        Order other = newOrder(OrderStatus.READY_FOR_PICKUP);
+        em.persist(other);
+        em.getTransaction().commit();
+        assertTrue(availableIds().containsAll(List.of(orderId, other.getId())));
+        service.accept(orderId, agentA);
+        try (EntityManager observer = emf.createEntityManager()) {
+            List<UUID> remaining = new DeliveryOverviewService(new OrderDAO(observer)).getAvailableDeliveries()
+                    .stream().map(dto -> dto.orderId()).toList();
+            assertFalse(remaining.contains(orderId));
+            assertTrue(remaining.contains(other.getId()));
+        }
+        assertEquals(other.getId(), service.accept(other.getId(), agentB).getOrderId());
+    }
