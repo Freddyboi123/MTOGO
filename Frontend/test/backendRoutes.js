@@ -1,8 +1,11 @@
+
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
-const APP_DIR = fileURLToPath(new URL('../../Backend/src/main/java/app/', import.meta.url));
+const APP_DIR = path.resolve(
+  process.cwd(),
+  '../Backend/src/main/java/app'
+);
 
 const join = (...parts) => '/' + parts.join('/').split('/').filter(Boolean).join('/');
 
@@ -15,6 +18,7 @@ export function readBackendRoutes() {
 
   return controllers.flatMap((name) => {
     const source = readFileSync(path.join(APP_DIR, 'controllers', `${name}.java`), 'utf8');
+
     return [...source.matchAll(/\b(get|post|put|patch|delete)\(\s*"([^"]+)"/g)].map(([, method, route]) => ({
       method: method.toUpperCase(),
       path: join(prefix, route)
