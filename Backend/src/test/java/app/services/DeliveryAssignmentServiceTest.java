@@ -225,3 +225,19 @@ class DeliveryAssignmentServiceTest {
         assertEquals(Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName(), exception.getMessage());
         assertTrue(assignments().isEmpty());
     }
+
+    @Test
+    void rejectsInactiveAgentWithoutChangingAvailability() {
+        em.getTransaction().begin();
+        DeliveryAgent agent = em.createQuery("SELECT a FROM DeliveryAgent a WHERE a.user.id = :id", DeliveryAgent.class)
+                .setParameter("id", agentA).getSingleResult();
+        agent.setActive(false);
+        em.getTransaction().commit();
+        ApiException exception = assertThrows(ApiException.class, () -> service.accept(orderId, agentA));
+        assertEquals(403, exception.getStatus());
+        assertEquals(Notifications.DELIVERY_AGENT_NOT_ACTIVE.getDisplayName(), exception.getMessage());
+        assertFalse(em.getTransaction().isActive());
+        assertTrue(assignments().isEmpty());
+        assertTrue(availableIds().contains(orderId));
+        assertEquals(orderId, service.accept(orderId, agentB).getOrderId());
+    }
