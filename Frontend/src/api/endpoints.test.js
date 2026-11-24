@@ -26,7 +26,14 @@ const CALLS = {
 };
 
 // Exported helpers in those modules that do not call the backend themselves.
-const NOT_ENDPOINTS = new Set(['api', 'isLoggedIn', 'logout', 'saveSession']);
+const NOT_ENDPOINTS = new Set([
+  'api', 
+  'isLoggedIn', 
+  'logout', 
+  'saveSession',
+  'getUserName',
+  'useApplicationCounts'
+]);
 
 const loaders = {
   'utils/api': () => import('../utils/api'),
