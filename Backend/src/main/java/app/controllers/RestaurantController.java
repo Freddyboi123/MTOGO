@@ -56,6 +56,7 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
             get("/restaurants", controller::getAll, Role.ANYONE);
             get("/restaurant/{id}", controller::getByID, Role.ANYONE);
             get("/restaurant/menu/{id}",controller::getMenu, Role.ANYONE);
+            get("/my-restaurants", controller::getMyRestaurants, Role.RESTAURANT_OWNER);
             post("/restaurants", controller::createRestaurant, Role.RESTAURANT_OWNER);
             post("/restaurant/{id}/categories", controller::addCategory, Role.RESTAURANT_OWNER);
             post("/category/{id}/items", controller::addItem, Role.RESTAURANT_OWNER);
