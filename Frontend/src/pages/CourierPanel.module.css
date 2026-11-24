@@ -1,46 +1,37 @@
 .split {
   display: grid;
-  grid-template-columns: 624px 1fr;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
   gap: 24px;
   margin-top: 28px;
   align-items: start;
 }
 
-.onlinePill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--mint);
-  border-radius: 10px;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--orange);
-}
-
 .listHead {
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
 }
 
-.listTitle {
-  font-size: 26px;
+.listTitle,
+.detailsTitle {
+  font-size: 24px;
   font-weight: 600;
 }
 
-.listNote {
+.listNote,
+.message,
+.deliveryRoute,
+.detail p {
   color: var(--muted);
   font-size: 14px;
-  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.message {
+  margin-top: 16px;
 }
 
 .delivery {
@@ -48,17 +39,20 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 20px;
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 24px;
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.deliveryLabel {
+.deliveryLabel,
+.orderNumber {
   font-size: 12px;
   font-weight: 700;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .deliveryName {
@@ -69,100 +63,28 @@
 }
 
 .deliveryRoute {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
-.deliveryPay {
-  font-family: var(--serif);
-  font-size: 26px;
-  text-align: right;
+.orderNumber {
+  margin-top: 20px;
 }
 
-.takeButton {
+.detail {
   margin-top: 28px;
 }
 
-.footnote {
-  margin-top: 24px;
-}
-
-.activeTitle {
-  font-size: 24px;
-}
-
-.activeMeta {
-  margin-top: 14px;
-}
-
-.statusStrip {
-  background: var(--mint);
-  border-radius: var(--radius-sm);
-  padding: 11px 15px;
-  font-size: 13px;
-  font-weight: 500;
-  margin-top: 18px;
-}
-
-.stop {
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  gap: 16px;
-  margin-top: 28px;
-}
-
-.stopDot {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--mint);
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.stopName {
+.detail strong {
   display: block;
+  margin-top: 8px;
   font-size: 17px;
-  font-weight: 600;
+}
+
+.detail p {
   margin-top: 8px;
 }
 
-.stopLine {
-  display: block;
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 8px;
-}
-
-.summary {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 32px;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.routeButton {
-  margin-top: 24px;
-}
-
-.confirmButton {
-  margin-top: 16px;
-}
-
-.helpTitle {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.helpLink {
-  margin-top: 16px;
-}
-
-@media (max-width: 1280px) {
+@media (max-width: 1080px) {
   .split {
     grid-template-columns: 1fr;
   }
