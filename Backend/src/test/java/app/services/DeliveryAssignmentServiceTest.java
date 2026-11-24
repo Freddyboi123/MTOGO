@@ -137,3 +137,31 @@ class DeliveryAssignmentServiceTest {
         assertEquals(1, persisted.size());
         assertEquals(agentA, persisted.getFirst().getAgent().getUser().getId());
     }
+
+    @RepeatedTest(3)
+    void onlyOneAgentCanAcceptTheSameOrderConcurrently() throws Exception {
+        CyclicBarrier start = new CyclicBarrier(2);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        Claim first;
+        Claim second;
+        try {
+            Future<Claim> a = executor.submit(() -> claim(agentA, start));
+            Future<Claim> b = executor.submit(() -> claim(agentB, start));
+            first = a.get(30, TimeUnit.SECONDS);
+            second = b.get(30, TimeUnit.SECONDS);
+        } finally {
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(15, TimeUnit.SECONDS), "Claim workers did not terminate");
+        }
+        assertNotEquals(first.accepted(), second.accepted(), "Exactly one agent must succeed");
+        Claim winner = first.accepted() ? first : second;
+        Claim loser = first.accepted() ? second : first;
+        assertEquals(409, loser.status());
+        assertEquals(Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName(), loser.message());
+        List<Delivery> persisted = assignments();
+        assertEquals(1, persisted.size());
+        assertEquals(winner.userId(), persisted.getFirst().getAgent().getUser().getId());
+        assertEquals(List.of(orderId), service.mine(winner.userId()).stream().map(DeliveryAssignmentDTO::getOrderId).toList());
+        assertTrue(service.mine(loser.userId()).isEmpty());
+        assertFalse(availableIds().contains(orderId));
+    }
