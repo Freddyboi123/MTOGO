@@ -190,33 +190,8 @@
   font-weight: 600;
 }
 
-.toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--mint);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  margin-top: 24px;
-}
 
-.toggleButton {
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-sm);
-  height: 38px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-}
 
-.toggleButtonActive {
-  composes: toggleButton;
-  background: var(--white);
-  color: var(--green);
-  font-weight: 600;
-  font-size: 14px;
-}
 
 .address {
   font-size: 13px;
@@ -224,11 +199,6 @@
   margin-top: 22px;
 }
 
-.eta {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 8px;
-}
 
 .line {
   margin-top: 26px;
@@ -266,6 +236,32 @@
   font-size: 12px;
   color: var(--muted);
   margin-top: 20px;
+}
+
+.layoutMenuOnly {
+  composes: layout;
+  grid-template-columns: 1fr;
+}
+
+.emptyBasket {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 22px;
+}
+
+.conflict {
+  background: var(--sand);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 18px;
+  font-size: 13px;
+}
+
+.conflictActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 @media (max-width: 1280px) {

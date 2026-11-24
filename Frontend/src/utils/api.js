@@ -44,6 +44,7 @@ export const getMyRestaurant = (id) => api(`/my-restaurants/${id}`);
 export const setRestaurantVisibility = (id, active) =>
   api(`/my-restaurants/${id}/visibility`, { method: 'PUT', body: { active } });
 export const getAvailableDeliveries = () => api('/deliveries/available');
+export const placeOrder = (body) => api('/orders', { method: 'POST', body });
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
 
