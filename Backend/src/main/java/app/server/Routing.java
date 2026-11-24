@@ -3,6 +3,7 @@ package app.server;
 import app.controllers.RestaurantApplicationController;
 import app.controllers.FeatureFlagController;
 import app.controllers.DeliveryOverviewController;
+import app.controllers.DeliveryAssignmentController;
 import app.controllers.OrderController;
 import app.controllers.RestaurantController;
 import app.controllers.UserController;
@@ -22,6 +23,7 @@ public class Routing {
                 FeatureFlagController.registerRoutes().addEndpoints();
                 OrderController.registerRoutes().addEndpoints();
                 DeliveryOverviewController.registerRoutes().addEndpoints();
+                DeliveryAssignmentController.registerRoutes().addEndpoints();
 
                 get("/health", ctx -> ctx.result("Health OK"));
             });
