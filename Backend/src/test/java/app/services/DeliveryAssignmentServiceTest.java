@@ -241,3 +241,15 @@ class DeliveryAssignmentServiceTest {
         assertTrue(availableIds().contains(orderId));
         assertEquals(orderId, service.accept(orderId, agentB).getOrderId());
     }
+
+    @Test
+    void rejectsMissingOrderAndAllowsNextValidClaim() {
+        UUID missingId = UUID.randomUUID();
+        ApiException exception = assertThrows(ApiException.class, () -> service.accept(missingId, agentA));
+        assertEquals(404, exception.getStatus());
+        assertEquals(Notifications.ORDER_NOT_FOUND.getDisplayName(), exception.getMessage());
+        assertFalse(em.getTransaction().isActive());
+        assertTrue(assignments().isEmpty());
+        assertTrue(availableIds().contains(orderId));
+        assertEquals(orderId, service.accept(orderId, agentA).getOrderId());
+    }
