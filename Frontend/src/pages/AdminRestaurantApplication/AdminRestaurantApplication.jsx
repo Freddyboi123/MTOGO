@@ -23,6 +23,7 @@ export default function AdminRestaurantApplication() {
   const [applications, setApplications] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const counts = useApplicationCounts();
 
   async function loadApplications() {
@@ -40,8 +41,14 @@ export default function AdminRestaurantApplication() {
 
   async function handleDecide(id, status, adminMessage) {
     setError('');
+    setNotice('');
     try {
-      await decideRestaurantApplication(id, { status, adminMessage });
+      const res = await decideRestaurantApplication(id, { status, adminMessage });
+      setNotice(
+        res.data.data.mailSent
+          ? 'Ansøgeren er blevet notificeret på mail.'
+          : 'Status er gemt, men mailen til ansøgeren kunne ikke sendes.'
+      );
       await loadApplications();
     } catch (err) {
       setError(err.message);
@@ -71,6 +78,7 @@ export default function AdminRestaurantApplication() {
       </div>
 
       {error && <p className={ui.fieldHint}>{error}</p>}
+      {notice && <p className={ui.fieldHint}>{notice}</p>}
 
       <div className={styles.split}>
         <div>

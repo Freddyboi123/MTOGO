@@ -28,6 +28,7 @@ public class RestaurantApplicationService {
     private final RestaurantDAO restaurantDAO;
     private final UserDAO userDAO;
     private final RestaurantApplicationMapper applicationMapper = new RestaurantApplicationMapper();
+    private final MailService mailService = new MailService();
 
     // ________________________________________________________
 
@@ -139,6 +140,8 @@ public class RestaurantApplicationService {
         if (decision == ApplicationStatus.MORE_INFORMATION_NEEDED) {
             ErrorHandler.tryString(dto.getAdminMessage(), Notifications.APPLICATION_MESSAGE_REQUIRED.getDisplayName());
             application.setAdminMessage(dto.getAdminMessage());
+        } else if (decision == ApplicationStatus.REJECTED) {
+            application.setAdminMessage(dto.getAdminMessage());
         }
 
         if (decision == ApplicationStatus.APPROVED) {
@@ -148,6 +151,12 @@ public class RestaurantApplicationService {
         application.setStatus(decision);
 
         return applicationDAO.update(application);
+    }
+
+    // ________________________________________________________
+
+    public MailService.MailResult notifyApplicant(RestaurantApplication application) {
+        return mailService.sendApplicationStatusEmail(application);
     }
 
     // ________________________________________________________
