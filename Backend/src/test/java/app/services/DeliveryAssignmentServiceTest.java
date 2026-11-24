@@ -109,8 +109,6 @@ class DeliveryAssignmentServiceTest {
                 .setParameter("id", orderId).getResultList();
     }
 
-
-
     @Test
     void acceptsOrderAndRemovesItFromAvailableDeliveries() {
         assertTrue(availableIds().contains(orderId));
@@ -126,6 +124,7 @@ class DeliveryAssignmentServiceTest {
         assertEquals(agentA, persisted.getFirst().getAgent().getUser().getId());
         assertFalse(availableIds().contains(orderId));
     }
+
     @Test
     void rejectsAnOrderThatHasAlreadyBeenAccepted() {
         service.accept(orderId, agentA);
