@@ -253,3 +253,13 @@ class DeliveryAssignmentServiceTest {
         assertTrue(availableIds().contains(orderId));
         assertEquals(orderId, service.accept(orderId, agentA).getOrderId());
     }
+
+    @Test
+    void rejectsDuplicateClaimBySameAgent() {
+        DeliveryAssignmentDTO accepted = service.accept(orderId, agentA);
+        ApiException exception = assertThrows(ApiException.class, () -> service.accept(orderId, agentA));
+        assertEquals(409, exception.getStatus());
+        assertEquals(Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName(), exception.getMessage());
+        assertEquals(1, assignments().size());
+        assertEquals(accepted.getDeliveryId(), assignments().getFirst().getId());
+    }
