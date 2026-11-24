@@ -9,7 +9,10 @@ public enum FeatureFlag {
     RESTAURANT_OVERVIEW("restaurantOverview"),
 
     // US-09: Delivery agents can see ready, unassigned orders
-    DELIVERY_OVERVIEW("deliveryOverview")
+    DELIVERY_OVERVIEW("deliveryOverview"),
+
+    // US-05 and US-06: basket and placing an order
+    ORDERING("ordering")
 
     ;
 

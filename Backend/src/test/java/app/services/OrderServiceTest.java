@@ -45,6 +45,7 @@ class OrderServiceTest {
     private RestaurantService restaurantService;
     private OrderService orderService;
     private User customer;
+    private User owner;
     private Restaurant restaurant;
     private MenuItem margherita;
     private MenuItem burrata;
@@ -78,7 +79,7 @@ class OrderServiceTest {
         orderService = new OrderService(orderDAO, restaurantDAO, itemDAO, userDAO, new MockPaymentService());
 
         customer = createUser(Role.CUSTOMER);
-        User owner = createUser(Role.RESTAURANT_OWNER);
+        owner = createUser(Role.RESTAURANT_OWNER);
 
         restaurant = restaurantService.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
         MenuCategory pizza = restaurantService.addCategory(owner.getId(), restaurant.getId(), categoryDTO("Pizza"));
@@ -291,6 +292,70 @@ class OrderServiceTest {
 
         ApiException exception = assertThrows(ApiException.class,
                 () -> orderService.placeOrder(customer.getId(), dto));
+
+        assertEquals(404, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void ownerSeesTheOrdersOfTheirRestaurant() {
+        Order first = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+        Order second = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(burrata, 2))));
+
+        List<Order> orders = orderService.getRestaurantOrders(owner.getId(), restaurant.getId());
+
+        assertEquals(2, orders.size());
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(first.getId())));
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(second.getId())));
+        assertEquals("Nørrebrogade 18", orders.get(0).getDeliveryAddress().getStreet());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void ownerOnlySeesOrdersFromTheirOwnRestaurant() {
+        User otherOwner = createUser(Role.RESTAURANT_OWNER);
+        Restaurant other = restaurantService.createRestaurant(otherOwner.getId(), restaurantDTO("Burger Barn"));
+        MenuCategory burgers = restaurantService.addCategory(otherOwner.getId(), other.getId(), categoryDTO("Burgers"));
+        MenuItem burger = restaurantService.addItem(otherOwner.getId(), burgers.getId(), itemDTO("Cheeseburger", "99.00", true));
+        OrderDTO otherOrder = orderDTO(List.of(line(burger, 1)));
+        otherOrder.setRestaurantId(other.getId());
+
+        orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+        orderService.placeOrder(customer.getId(), otherOrder);
+
+        List<Order> orders = orderService.getRestaurantOrders(owner.getId(), restaurant.getId());
+
+        assertEquals(1, orders.size());
+        assertEquals(restaurant.getId(), orders.get(0).getRestaurant().getId());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void anotherOwnerCanNotSeeTheOrdersThrows403() {
+        User otherOwner = createUser(Role.RESTAURANT_OWNER);
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.getRestaurantOrders(otherOwner.getId(), restaurant.getId()));
+
+        assertEquals(403, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void restaurantWithoutOrdersReturnsEmptyList() {
+        assertTrue(orderService.getRestaurantOrders(owner.getId(), restaurant.getId()).isEmpty());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void ordersForUnknownRestaurantThrows404() {
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.getRestaurantOrders(owner.getId(), UUID.randomUUID()));
 
         assertEquals(404, exception.getStatus());
     }

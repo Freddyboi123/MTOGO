@@ -102,13 +102,50 @@ export const restaurant = {
   ]
 };
 
-export const basket = {
-  address: 'Til Nørrebrogade 18, København N',
-  eta: 'Forventet levering 20–30 min',
-  lines: [
-    { name: 'Margherita', quantity: 1, price: 119 },
-    { name: 'Burrata', quantity: 1, price: 129 }
-  ]
+export const basketTexts = {
+  title: 'Din bestilling',
+  empty: 'Din kurv er tom. Tilføj en ret fra menuen.',
+  from: 'Fra',
+  otherRestaurant: 'Din kurv har retter fra en anden restaurant. Du kan kun bestille fra én restaurant ad gangen.',
+  emptyAndAdd: 'Tøm kurven og tilføj',
+  keep: 'Behold min bestilling',
+  fewer: 'Færre',
+  more: 'Flere',
+  total: 'I alt',
+  checkout: 'Gå til betaling',
+  fine: 'Alle priser er inkl. levering og moms.'
+};
+
+export const checkoutTexts = {
+  back: '← Tilbage til menuen',
+  title: 'Lige om lidt er der mad.',
+  crumbs: 'Kurv   →   Levering   →   Betaling',
+  crumbsNote: 'Sikker betaling · Alle priser er inkl. moms',
+  deliveryTitle: '01  Levering',
+  street: 'Adresse',
+  postalCode: 'Postnummer',
+  city: 'By',
+  paymentTitle: '02  Betaling',
+  paymentNote: 'Betalingen er simuleret i denne version.',
+  summaryTitle: 'Din bestilling',
+  total: 'I alt',
+  pay: 'Betal og bestil',
+  sending: 'Bestiller…',
+  terms: 'Ved at bestille accepterer du handelsbetingelserne.',
+  hint: 'Inkl. levering og moms · Ingen ekstra gebyrer',
+  emptyTitle: 'Din kurv er tom.',
+  emptyLink: 'Find en restaurant →',
+  loginRequired: 'Du skal være logget ind for at bestille.',
+  login: 'Log ind',
+  signUp: 'Opret konto',
+  addressRequired: 'Udfyld adresse, postnummer og by.',
+  paymentFailed: 'Betalingen blev afvist. Der er ikke oprettet nogen ordre.',
+  failed: 'Ordren kunne ikke oprettes. Prøv igen om lidt.',
+  confirmedTitle: 'Tak for din bestilling.',
+  orderNumber: 'Ordrenummer',
+  confirmedTotal: 'Betalt',
+  confirmedNote: 'Restauranten har modtaget din ordre.',
+  more: 'Bestil mere →'
 };
 
 export const customer = {
@@ -275,32 +312,30 @@ export const restaurantMenuRows = [
   { name: 'Funghi', price: '129 kr.', state: 'Aktiv' }
 ];
 
-export const restaurantOrders = [
-  {
-    id: '#1043',
-    customer: 'Emma Larsen',
-    items: '1 × Diavola',
-    amount: '158 kr.',
-    status: 'Ny ordre',
-    action: 'Accepter · Afvis'
+export const restaurantOrderTexts = {
+  title: 'Aktive ordrer',
+  count: 'ordrer',
+  loading: 'Henter ordrer…',
+  error: 'Ordrerne kunne ikke hentes.',
+  empty: 'Der er ingen ordrer endnu.',
+  columns: {
+    received: 'Modtaget',
+    items: 'Indhold',
+    address: 'Leveringsadresse',
+    total: 'Beløb',
+    status: 'Status'
   },
-  {
-    id: '#1042',
-    customer: 'Mikkel Hansen',
-    items: 'Margherita + Burrata',
-    amount: '267 kr.',
-    status: 'Klar til afhentning',
-    action: 'Se ordre →'
-  },
-  {
-    id: '#1041',
-    customer: 'Clara Berg',
-    items: '2 × Margherita',
-    amount: '257 kr.',
-    status: 'Tilberedes',
-    action: 'Markér klar →'
+  statuses: {
+    RECEIVED: 'Ny ordre',
+    PENDING: 'Afventer',
+    ACCEPTED: 'Accepteret',
+    PREPARING: 'Tilberedes',
+    READY_FOR_PICKUP: 'Klar til afhentning',
+    OUT_FOR_DELIVERY: 'På vej',
+    DELIVERED: 'Leveret',
+    CANCELLED: 'Annulleret'
   }
-];
+};
 
 export const openDeliveries = [
   {

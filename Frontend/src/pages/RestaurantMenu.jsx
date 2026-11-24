@@ -5,10 +5,10 @@ import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './RestaurantMenu.module.css';
-import { basket, restaurantMenu } from '../data/mtogo';
+import { basketTexts, restaurantMenu } from '../data/mtogo';
 import { fetchMenu, fetchRestaurant } from '../api/restaurants';
-
-const deliveryMethods = ['Levering', 'Afhentning'];
+import useFeatureFlag from '../featureFlags/useFeatureFlag';
+import useBasket from '../basket/useBasket';
 
 function formatPrice(price) {
   return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
@@ -20,7 +20,9 @@ export default function RestaurantMenu() {
   const [menu, setMenu] = useState([]);
   const [status, setStatus] = useState('loading');
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const [method, setMethod] = useState(deliveryMethods[0]);
+  const [pendingItem, setPendingItem] = useState(null);
+  const ordering = useFeatureFlag('ordering');
+  const { basket, total, add, increase, decrease, isOtherRestaurant } = useBasket();
 
   useEffect(() => {
     setStatus('loading');
@@ -34,7 +36,18 @@ export default function RestaurantMenu() {
       .catch(() => setStatus('error'));
   }, [id]);
 
-  const total = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
+  function handleAdd(item) {
+    if (isOtherRestaurant(restaurant.id)) {
+      setPendingItem(item);
+      return;
+    }
+    add(restaurant, item);
+  }
+
+  function emptyAndAdd() {
+    add(restaurant, pendingItem);
+    setPendingItem(null);
+  }
 
   const selectedCategory = menu.find((category) => category.id === selectedCategoryId);
   const address = restaurant
@@ -77,7 +90,7 @@ export default function RestaurantMenu() {
         </section>
       )}
 
-      <section className={cx(ui.page, styles.layout)}>
+      <section className={cx(ui.page, ordering ? styles.layout : styles.layoutMenuOnly)}>
         <div>
           {status === 'ready' && menu.length === 0 && (
             <p className={styles.state}>{restaurantMenu.emptyMenu}</p>
@@ -119,13 +132,16 @@ export default function RestaurantMenu() {
                       )}
                       <div className={styles.itemPrice}>{formatPrice(item.price)}</div>
                     </div>
-                    <button
-                      className={styles.addButton}
-                      aria-label={`Tilføj ${item.name}`}
-                      disabled={item.available === false}
-                    >
-                      +
-                    </button>
+                    {ordering && (
+                      <button
+                        className={styles.addButton}
+                        aria-label={`Tilføj ${item.name}`}
+                        disabled={item.available === false}
+                        onClick={() => handleAdd(item)}
+                      >
+                        +
+                      </button>
+                    )}
                   </article>
                 ))}
               </div>
@@ -133,55 +149,71 @@ export default function RestaurantMenu() {
           )}
         </div>
 
-        <aside className={styles.basket}>
-          <h2>Din bestilling</h2>
+        {ordering && (
+          <aside className={styles.basket}>
+            <h2>{basketTexts.title}</h2>
 
-          <div className={styles.toggle}>
-            {deliveryMethods.map((name) => (
-              <button
-                key={name}
-                className={name === method ? styles.toggleButtonActive : styles.toggleButton}
-                onClick={() => setMethod(name)}
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-
-          <p className={styles.address}>{basket.address}</p>
-          <p className={styles.eta}>{basket.eta}</p>
-
-          {basket.lines.map((line) => (
-            <div className={styles.line} key={line.name}>
-              <div className={styles.lineRow}>
-                <span>
-                  {line.quantity} × {line.name}
-                </span>
-                <span>{line.price} kr.</span>
+            {pendingItem && (
+              <div className={styles.conflict}>
+                <p>{basketTexts.otherRestaurant}</p>
+                <div className={styles.conflictActions}>
+                  <button className={cx(ui.btn, ui.btnPrimary)} onClick={emptyAndAdd}>
+                    {basketTexts.emptyAndAdd}
+                  </button>
+                  <button className={cx(ui.btn, ui.btnOutline)} onClick={() => setPendingItem(null)}>
+                    {basketTexts.keep}
+                  </button>
+                </div>
               </div>
-              <div className={styles.quantity}>
-                <button aria-label="Færre">−</button>
-                <span>{line.quantity}</span>
-                <button aria-label="Flere">+</button>
-              </div>
-            </div>
-          ))}
+            )}
 
-          <hr className={ui.divider} />
+            {basket.lines.length === 0 && <p className={styles.emptyBasket}>{basketTexts.empty}</p>}
 
-          <div className={ui.sumTotal}>
-            <span>I alt</span>
-            <span>{total} kr.</span>
-          </div>
+            {basket.lines.length > 0 && (
+              <>
+                <p className={styles.address}>
+                  {basketTexts.from} {basket.restaurantName}
+                </p>
 
-          <Link
-            to="/betaling"
-            className={cx(ui.btn, ui.btnPrimary, ui.btnBlock, styles.checkoutButton)}
-          >
-            Gå til betaling · {total} kr.
-          </Link>
-          <p className={styles.fine}>Alle priser er inkl. moms.</p>
-        </aside>
+                {basket.lines.map((line) => (
+                  <div className={styles.line} key={line.menuItemId}>
+                    <div className={styles.lineRow}>
+                      <span>
+                        {line.quantity} × {line.name}
+                      </span>
+                      <span>{formatPrice(line.price * line.quantity)}</span>
+                    </div>
+                    <div className={styles.quantity}>
+                      <button aria-label={basketTexts.fewer} onClick={() => decrease(line.menuItemId)}>
+                        −
+                      </button>
+                      <span>{line.quantity}</span>
+                      <button aria-label={basketTexts.more} onClick={() => increase(line.menuItemId)}>
+                        +
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <hr className={ui.divider} />
+
+                <div className={ui.sumTotal}>
+                  <span>{basketTexts.total}</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+
+                <Link
+                  to="/betaling"
+                  className={cx(ui.btn, ui.btnPrimary, ui.btnBlock, styles.checkoutButton)}
+                >
+                  {basketTexts.checkout} · {formatPrice(total)}
+                </Link>
+              </>
+            )}
+
+            <p className={styles.fine}>{basketTexts.fine}</p>
+          </aside>
+        )}
       </section>
 
       <SiteFooter variant="slim" />

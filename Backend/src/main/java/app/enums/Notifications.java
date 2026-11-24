@@ -70,11 +70,21 @@ public enum Notifications {
     MENU_ITEM_NOT_FOUND("The menu item was not found"),
     MENU_ITEM_UNAVAILABLE("The menu item is not available"),
     PAYMENT_FAILED("The payment failed. No order was created"),
+    ORDERS_FETCHED("You fetched %s orders"),
+    ORDERS_NOT_OWNER("Only the owner of the restaurant can see its orders"),
+
+    // DELIVERIES
+    ORDER_ID_INVALID("The order ID is not valid"),
+    LOGIN_REQUIRED("You must be logged in"),
+    DELIVERY_AGENT_NOT_ACTIVE("You are not an active delivery agent"),
+    DELIVERY_ALREADY_TAKEN("This delivery has already been taken or is no longer available"),
 
     // RESTAURANTS AND MENUS
     RESTAURANT_CREATED("Restaurant %s was created"),
     RESTAURANT_NOT_FOUND("The restaurant was not found"),
     RESTAURANT_NAME_REQUIRED("You must enter a name for the restaurant"),
+    RESTAURANT_VISIBILITY_INVALID("You must send active as true or false"),
+    RESTAURANT_VISIBILITY_CHANGED("Restaurant %s is now %s"),
     OWNER_NOT_FOUND("The owner was not found"),
     NOT_RESTAURANT_OWNER("Only the owner of the restaurant can change its menu"),
     CATEGORY_ADDED("Category %s was added to the menu"),
@@ -100,7 +110,9 @@ public enum Notifications {
     APPLICATION_DECIDED("The application for %s is now %s"),
     APPLICATION_NOT_PENDING("Only a new application can get a decision"),
     APPLICATION_DECISION_INVALID("The decision must be APPROVED, REJECTED or MORE_INFORMATION_NEEDED"),
-    APPLICATION_MESSAGE_REQUIRED("You must write what information is missing")
+    APPLICATION_MESSAGE_REQUIRED("You must write what information is missing"),
+
+    MAIL_SENDER_BOOLEAN_FAILED("Mail sender failed!")
 
     ;
 

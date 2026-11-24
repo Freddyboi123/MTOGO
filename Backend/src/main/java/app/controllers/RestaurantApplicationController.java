@@ -11,6 +11,7 @@ import app.enums.Notifications;
 import app.enums.Role;
 import app.mappers.RestaurantApplicationMapper;
 import app.server.Setup;
+import app.services.MailService;
 import app.services.RestaurantApplicationService;
 import app.utils.ErrorHandler;
 import io.javalin.apibuilder.EndpointGroup;
@@ -131,16 +132,22 @@ public class RestaurantApplicationController extends BaseController<RestaurantAp
     // ________________________________________________________
 
     private void decideApplication(Context ctx) {
+
         UUID applicationId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.APPLICATION_NOT_FOUND.getDisplayName());
         RestaurantApplicationDTO body = ErrorHandler.tryBody(ctx, RestaurantApplicationDTO.class, Notifications.BODY_EMPTY.getDisplayName());
 
         RestaurantApplication application = applicationService.decideApplication(applicationId, body);
+        MailService.MailResult mailResult = applicationService.notifyApplicant(application);
 
         String message = messageService.buildMessage(
             Notifications.APPLICATION_DECIDED,
             application.getRestaurantName(),
             application.getStatus().name()
         );
-        respond(ctx, 200, message, mapper.toDTO(application));
+
+        RestaurantApplicationDTO dto = mapper.toDTO(application);
+        dto.setMailSent(mailResult.sent());
+        respond(ctx, 200, message, dto);
+
     }
 }

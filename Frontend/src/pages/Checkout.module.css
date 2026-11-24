@@ -31,46 +31,6 @@
   padding-bottom: 56px;
 }
 
-.customer {
-  margin-top: 24px;
-}
-
-.customerName {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.customerAddress {
-  color: var(--muted);
-  margin-top: 12px;
-}
-
-.customerContact {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 20px;
-}
-
-.eta {
-  background: var(--mint);
-  border-radius: var(--radius-md);
-  padding: 17px 18px;
-  min-width: 263px;
-}
-
-.etaValue {
-  display: block;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 28px;
-  margin-top: 10px;
-}
-
-.etaNote {
-  font-size: 13px;
-  color: var(--muted);
-}
-
 .payOptions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -103,12 +63,6 @@
   margin-top: 6px;
   font-size: 12px;
   color: var(--muted);
-}
-
-.noteHint {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 12px;
 }
 
 .summaryTitle {
@@ -149,35 +103,6 @@
   margin-top: 18px;
 }
 
-.editBasket {
-  margin-top: 20px;
-}
-
-.discount {
-  display: grid;
-  grid-template-columns: 1fr 118px;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.discount input {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  height: 45px;
-  padding: 0 13px;
-  background: var(--white);
-  outline: none;
-}
-
-.apply {
-  border: 1px solid var(--border);
-  background: var(--mint);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .payButton {
   margin-top: 28px;
 }
@@ -187,18 +112,6 @@
   color: var(--muted);
   margin-top: 20px;
   line-height: 1.6;
-}
-
-.helpTitle {
-  font-size: 26px;
-}
-
-.helpBody {
-  margin-top: 20px;
-}
-
-.helpLink {
-  margin-top: 16px;
 }
 
 @media (max-width: 1280px) {
@@ -211,4 +124,38 @@
   .payOptions {
     grid-template-columns: 1fr;
   }
+}
+
+.message {
+  background: var(--sand);
+}
+
+.messageActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.error {
+  color: var(--orange);
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+.confirmation {
+  display: grid;
+  gap: 16px;
+  max-width: 520px;
+  margin-top: 24px;
+}
+
+.confirmation p {
+  display: grid;
+  gap: 4px;
+}
+
+.orderNumber {
+  font-size: 13px;
+  word-break: break-all;
 }

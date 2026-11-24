@@ -5,66 +5,169 @@ import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Checkout.module.css';
-import { basket, customer, restaurant } from '../data/mtogo';
+import { checkoutTexts, restaurantMenu } from '../data/mtogo';
+import { isLoggedIn, placeOrder } from '../utils/api';
+import useBasket from '../basket/useBasket';
 
 const paymentMethods = [
   { id: 'kort', title: 'Betalingskort', note: 'Visa / Mastercard' },
   { id: 'mobilepay', title: 'MobilePay', note: null }
 ];
 
-export default function Checkout() {
-  const [method, setMethod] = useState(paymentMethods[0].id);
+function formatPrice(price) {
+  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
+}
 
-  const total = basket.lines.reduce((sum, line) => sum + line.price * line.quantity, 0);
+function errorMessage(error) {
+  if (error.status === 402) return checkoutTexts.paymentFailed;
+  if (error.status === 401 || error.status === 403) return checkoutTexts.loginRequired;
+  if (error.status === 400 && error.message) return error.message;
+  return checkoutTexts.failed;
+}
+
+export default function Checkout() {
+  const { basket, total, clear } = useBasket();
+  const [method, setMethod] = useState(paymentMethods[0].id);
+  const [address, setAddress] = useState({ street: '', postalCode: '', city: '' });
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
+  const loggedIn = isLoggedIn();
+
+  function updateAddress(field, value) {
+    setAddress((current) => ({ ...current, [field]: value }));
+  }
+
+  function submit() {
+    if (!address.street.trim() || !address.postalCode.trim() || !address.city.trim()) {
+      setError(checkoutTexts.addressRequired);
+      return;
+    }
+
+    setStatus('sending');
+    setError(null);
+
+    placeOrder({
+      restaurantId: basket.restaurantId,
+      street: address.street.trim(),
+      postalCode: address.postalCode.trim(),
+      city: address.city.trim(),
+      lines: basket.lines.map((line) => ({ menuItemId: line.menuItemId, quantity: line.quantity }))
+    })
+      .then((response) => {
+        setConfirmation({ id: response.data.id, total: response.data.total });
+        clear();
+      })
+      .catch((e) => setError(errorMessage(e)))
+      .finally(() => setStatus('idle'));
+  }
+
+  if (confirmation) {
+    return (
+      <>
+        <SiteHeader variant="app" />
+        <section className={cx(ui.page, styles.head)}>
+          <h1 className={styles.title}>{checkoutTexts.confirmedTitle}</h1>
+          <div className={cx(ui.block, styles.confirmation)}>
+            <p>
+              <span className={ui.eyebrowMuted}>{checkoutTexts.orderNumber}</span>
+              <strong className={styles.orderNumber}>{confirmation.id}</strong>
+            </p>
+            <p>
+              <span className={ui.eyebrowMuted}>{checkoutTexts.confirmedTotal}</span>
+              <strong>{formatPrice(confirmation.total)}</strong>
+            </p>
+            <p>{checkoutTexts.confirmedNote}</p>
+            <Link to="/restauranter" className={ui.linkAccent}>
+              {checkoutTexts.more}
+            </Link>
+          </div>
+        </section>
+        <SiteFooter variant="slim" />
+      </>
+    );
+  }
+
+  if (basket.lines.length === 0) {
+    return (
+      <>
+        <SiteHeader variant="app" />
+        <section className={cx(ui.page, styles.head)}>
+          <h1 className={styles.title}>{checkoutTexts.emptyTitle}</h1>
+          <Link to="/restauranter" className={ui.linkAccent}>
+            {checkoutTexts.emptyLink}
+          </Link>
+        </section>
+        <SiteFooter variant="slim" />
+      </>
+    );
+  }
 
   return (
     <>
       <SiteHeader variant="app" />
 
       <section className={cx(ui.page, styles.head)}>
-        <Link to="/restaurant" className={ui.linkQuiet}>
-          ← Tilbage til menuen
+        <Link to={`/restaurant/${basket.restaurantId}`} className={ui.linkQuiet}>
+          {checkoutTexts.back}
         </Link>
-        <h1 className={styles.title}>Lige om lidt er der mad.</h1>
+        <h1 className={styles.title}>{checkoutTexts.title}</h1>
         <div className={styles.crumbs}>
-          <span>Kurv   →   Levering   →   Betaling</span>
-          <span className={styles.crumbsNote}>
-            Sikker betaling · Alle priser er inkl. moms
-          </span>
+          <span>{checkoutTexts.crumbs}</span>
+          <span className={styles.crumbsNote}>{checkoutTexts.crumbsNote}</span>
         </div>
       </section>
 
       <section className={cx(ui.page, styles.layout)}>
         <div>
-          <div className={ui.block}>
-            <div className={ui.blockHead}>
-              <h2>01  Levering</h2>
-              <span className={ui.linkQuiet}>Rediger adresse →</span>
-            </div>
-            <div className={cx(ui.blockHead, styles.customer)}>
-              <div>
-                <strong className={styles.customerName}>
-                  {customer.firstName} {customer.lastName}
-                </strong>
-                <p className={styles.customerAddress}>
-                  {customer.street}, {customer.floor}
-                  <br />
-                  {customer.postalCode} {customer.city}
-                </p>
-                <p className={styles.customerContact}>
-                  {customer.phone} · {customer.email}
-                </p>
+          {!loggedIn && (
+            <div className={cx(ui.block, styles.message)}>
+              <p>{checkoutTexts.loginRequired}</p>
+              <div className={styles.messageActions}>
+                <Link to="/login" className={cx(ui.btn, ui.btnPrimary)}>
+                  {checkoutTexts.login}
+                </Link>
+                <Link to="/opret-konto" className={cx(ui.btn, ui.btnOutline)}>
+                  {checkoutTexts.signUp}
+                </Link>
               </div>
-              <div className={styles.eta}>
-                <span className={ui.eyebrowMuted}>Forventet levering</span>
-                <strong className={styles.etaValue}>20–30 min</strong>
-                <span className={styles.etaNote}>Så hurtigt som muligt</span>
+            </div>
+          )}
+
+          <div className={ui.block}>
+            <h2>{checkoutTexts.deliveryTitle}</h2>
+            <div className={ui.stack}>
+              <div className={ui.field}>
+                <label htmlFor="checkout-street">{checkoutTexts.street}</label>
+                <input
+                  id="checkout-street"
+                  value={address.street}
+                  onChange={(e) => updateAddress('street', e.target.value)}
+                />
+              </div>
+              <div className={ui.fieldRow}>
+                <div className={ui.field}>
+                  <label htmlFor="checkout-postal">{checkoutTexts.postalCode}</label>
+                  <input
+                    id="checkout-postal"
+                    value={address.postalCode}
+                    onChange={(e) => updateAddress('postalCode', e.target.value)}
+                  />
+                </div>
+                <div className={ui.field}>
+                  <label htmlFor="checkout-city">{checkoutTexts.city}</label>
+                  <input
+                    id="checkout-city"
+                    value={address.city}
+                    onChange={(e) => updateAddress('city', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           <div className={ui.block}>
-            <h2>02  Betaling</h2>
+            <h2>{checkoutTexts.paymentTitle}</h2>
             <div className={styles.payOptions}>
               {paymentMethods.map((option) => (
                 <button
@@ -79,98 +182,47 @@ export default function Checkout() {
                 </button>
               ))}
             </div>
-
-            <div className={ui.stack}>
-              <div className={ui.field}>
-                <label htmlFor="card-number">Kortnummer</label>
-                <input id="card-number" placeholder="1234 1234 1234 1234" />
-              </div>
-              <div className={ui.fieldRow}>
-                <div className={ui.field}>
-                  <label htmlFor="card-expiry">Udløbsdato</label>
-                  <input id="card-expiry" placeholder="MM / ÅÅ" />
-                </div>
-                <div className={ui.field}>
-                  <label htmlFor="card-cvc">Sikkerhedskode</label>
-                  <input id="card-cvc" placeholder="CVC" />
-                </div>
-              </div>
-              <div className={ui.field}>
-                <label htmlFor="card-name">Navn på kortet</label>
-                <input id="card-name" placeholder="Som det står på dit kort" />
-              </div>
-            </div>
-          </div>
-
-          <div className={ui.block}>
-            <h2>03  Besked til chaufføren</h2>
-            <p className={styles.noteHint}>
-              Valgfrit · F.eks. dørkode eller hvor chaufføren skal ringe på.
-            </p>
-            <div className={ui.stack}>
-              <div className={ui.field}>
-                <textarea
-                  defaultValue="Ring venligst på ved ankomst."
-                  aria-label="Leveringsnote"
-                />
-              </div>
-            </div>
+            <p className={ui.fieldHint}>{checkoutTexts.paymentNote}</p>
           </div>
         </div>
 
         <aside>
           <div className={ui.block}>
-            <h2 className={styles.summaryTitle}>Din bestilling</h2>
+            <h2 className={styles.summaryTitle}>{checkoutTexts.summaryTitle}</h2>
 
             <div className={styles.restaurant}>
-              <img className={styles.restaurantPhoto} src={restaurant.cover} alt="" />
+              <img className={styles.restaurantPhoto} src={restaurantMenu.cover} alt="" />
               <div>
-                <strong>{restaurant.name}</strong>
-                <span>Levering · 20–30 min</span>
+                <strong>{basket.restaurantName}</strong>
               </div>
             </div>
 
             {basket.lines.map((line) => (
-              <div className={styles.orderLine} key={line.name}>
+              <div className={styles.orderLine} key={line.menuItemId}>
                 <span>
                   {line.quantity} × {line.name}
                 </span>
-                <span>{line.price * line.quantity} kr.</span>
+                <span>{formatPrice(line.price * line.quantity)}</span>
               </div>
             ))}
 
-            <p className={cx(ui.linkQuiet, styles.editBasket)}>Rediger kurv →</p>
-
-            <div className={styles.discount}>
-              <input placeholder="Rabatkode" aria-label="Rabatkode" />
-              <button className={styles.apply}>Anvend</button>
-            </div>
-
             <hr className={ui.divider} />
             <div className={ui.sumTotal}>
-              <span>I alt</span>
-              <span>{total} kr.</span>
+              <span>{checkoutTexts.total}</span>
+              <span>{formatPrice(total)}</span>
             </div>
 
-            <button className={cx(ui.btn, ui.btnPrimary, ui.btnBlock, styles.payButton)}>
-              Betal {total} kr. og bestil
-            </button>
-            <p className={styles.terms}>
-              Ved at bestille accepterer du handelsbetingelserne.
-              <br />
-              Betalingen gennemføres sikkert.
-            </p>
-            <p className={ui.fieldHint}>Inkl. levering og moms · Ingen ekstra gebyrer</p>
-          </div>
+            {error && <p className={styles.error}>{error}</p>}
 
-          <div className={ui.block}>
-            <h2 className={cx(ui.display, styles.helpTitle)}>
-              En god bestilling.
-              <br />
-              Hele vejen hjem.
-            </h2>
-            <p className={styles.helpBody}>Har du spørgsmål til din bestilling?</p>
-            <p className={cx(ui.linkAccent, styles.helpLink)}>Kontakt kundeservice →</p>
+            <button
+              className={cx(ui.btn, ui.btnPrimary, ui.btnBlock, styles.payButton)}
+              onClick={submit}
+              disabled={!loggedIn || status === 'sending'}
+            >
+              {status === 'sending' ? checkoutTexts.sending : `${checkoutTexts.pay} · ${formatPrice(total)}`}
+            </button>
+            <p className={styles.terms}>{checkoutTexts.terms}</p>
+            <p className={ui.fieldHint}>{checkoutTexts.hint}</p>
           </div>
         </aside>
       </section>

@@ -177,11 +177,55 @@ class RestaurantServiceTest {
     // ________________________________________________________
 
     @Test
+    void getMyRestaurantsOnlyReturnsOwnRestaurants() {
+        Restaurant mine = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+        service.createRestaurant(otherUser.getId(), restaurantDTO("Burgerbar"));
+
+        List<Restaurant> result = service.getMyRestaurants(owner.getId());
+
+        assertEquals(1, result.size());
+        assertEquals(mine.getId(), result.get(0).getId());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getMyRestaurantReturnsRestaurantForOwner() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+
+        assertEquals(restaurant.getId(), service.getMyRestaurant(owner.getId(), restaurant.getId()).getId());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getMyRestaurantByOtherUserThrows403() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.getMyRestaurant(otherUser.getId(), restaurant.getId()));
+
+        assertEquals(403, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void addItemToCategoryOfOtherRestaurantThrows403() {
+        MenuCategory category = createCategory();
+        service.createRestaurant(otherUser.getId(), restaurantDTO("Burgerbar"));
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.addItem(otherUser.getId(), category.getId(), itemDTO("Margherita", new BigDecimal("79"))));
+
+        assertEquals(403, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
     void addCategoryByOtherUserThrows403() {
         Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
 
-        ApiException exception = assertThrows(ApiException.class,
-                () -> service.addCategory(otherUser.getId(), restaurant.getId(), categoryDTO("Pizza")));
+        ApiException exception = assertThrows(ApiException.class, () -> service.addCategory(otherUser.getId(), restaurant.getId(), categoryDTO("Pizza")));
 
         assertEquals(403, exception.getStatus());
     }
@@ -295,6 +339,56 @@ class RestaurantServiceTest {
         ApiException exception = assertThrows(ApiException.class, () -> service.getMenu(UUID.randomUUID()));
 
         assertEquals(404, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void setVisibilityByOwnerHidesAndShowsRestaurant() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+
+        service.setVisibility(owner.getId(), restaurant.getId(), false);
+        assertFalse(service.getActiveRestaurants().stream().anyMatch(r -> r.getId().equals(restaurant.getId())));
+
+        service.setVisibility(owner.getId(), restaurant.getId(), true);
+        assertTrue(service.getActiveRestaurants().stream().anyMatch(r -> r.getId().equals(restaurant.getId())));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void setVisibilityOnlyChangesThatRestaurant() {
+        Restaurant first = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+        Restaurant second = service.createRestaurant(owner.getId(), restaurantDTO("Sushi Bar"));
+
+        service.setVisibility(owner.getId(), first.getId(), false);
+
+        assertFalse(service.getRestaurant(first.getId()).isActive());
+        assertTrue(service.getRestaurant(second.getId()).isActive());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void setVisibilityByOtherUserThrows403AndKeepsRestaurantVisible() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.setVisibility(otherUser.getId(), restaurant.getId(), false));
+
+        assertEquals(403, exception.getStatus());
+        assertTrue(service.getRestaurant(restaurant.getId()).isActive());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void hiddenRestaurantAndMenuAreNotPublic() {
+        Restaurant restaurant = service.createRestaurant(owner.getId(), restaurantDTO("Pizzeria"));
+        service.setVisibility(owner.getId(), restaurant.getId(), false);
+
+        assertEquals(404, assertThrows(ApiException.class, () -> service.getVisibleRestaurant(restaurant.getId())).getStatus());
+        assertEquals(404, assertThrows(ApiException.class, () -> service.getMenu(restaurant.getId())).getStatus());
+        assertEquals(restaurant.getId(), service.getMyRestaurant(owner.getId(), restaurant.getId()).getId());
     }
 
     // ________________________________________________________

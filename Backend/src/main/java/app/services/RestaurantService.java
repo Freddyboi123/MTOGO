@@ -61,8 +61,41 @@ public class RestaurantService {
     public List<Restaurant> getMyRestaurants(UUID ownerId) {
         return restaurantDAO.getByOwnerId(ownerId);
     }
+
     // ________________________________________________________
-      
+
+    public Restaurant getMyRestaurant(UUID ownerId, UUID restaurantId) {
+        Restaurant restaurant = getRestaurant(restaurantId);
+        checkOwner(restaurant, ownerId);
+        return restaurant;
+    }
+
+    // ________________________________________________________
+
+    public Restaurant getVisibleRestaurant(UUID id) {
+        Restaurant restaurant = getRestaurant(id);
+
+        if (!restaurant.isActive()) {
+            throw new ApiException(404, Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
+        }
+
+        return restaurant;
+
+    }
+
+    // ________________________________________________________
+
+    public Restaurant setVisibility(UUID ownerId, UUID restaurantId, boolean visible) {
+
+        Restaurant restaurant = getMyRestaurant(ownerId, restaurantId);
+        restaurant.setActive(visible);
+
+        return restaurantDAO.update(restaurant);
+
+    }
+
+    // ________________________________________________________
+
     public List<Restaurant> getActiveRestaurants() {
         return restaurantDAO.getAllActive();
     }
@@ -129,6 +162,6 @@ public class RestaurantService {
     // ________________________________________________________
 
     public List<MenuCategory> getMenu(UUID restaurantId) {
-        return getRestaurant(restaurantId).getCategories();
+        return getVisibleRestaurant(restaurantId).getCategories();
     }
 }
