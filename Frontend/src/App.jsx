@@ -22,6 +22,7 @@ import AdminCourierApplication from './pages/AdminCourierApplication';
 export default function App() {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
   const deliveryOverview = useFeatureFlag('deliveryOverview');
+  const ordering = useFeatureFlag('ordering');
 
   return (
     <Routes>
@@ -33,7 +34,7 @@ export default function App() {
       <Route path="/opret-konto" element={<SignUp />} />
       <Route path="/glemt-adgangskode" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/betaling" element={<Checkout />} />
+      {ordering && <Route path="/betaling" element={<Checkout />} />}
       <Route path="/ansoeg/restaurant" element={<ApplyRestaurant />} />
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
