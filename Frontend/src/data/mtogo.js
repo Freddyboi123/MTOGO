@@ -148,18 +148,6 @@ export const checkoutTexts = {
   more: 'Bestil mere →'
 };
 
-export const customer = {
-  firstName: 'Sofie',
-  lastName: 'Andersen',
-  email: 'sofie.a@email.dk',
-  phone: '+45 28 34 56 78',
-  street: 'Nørrebrogade 18',
-  postalCode: '2200',
-  city: 'København N',
-  floor: '2. tv.',
-  since: 'Kunde · siden november 2026'
-};
-
 export const applications = [
   {
     type: 'Restaurantpartner · A-026',
@@ -376,13 +364,6 @@ export const courierTotals = {
 };
 
 export const restaurantPanelStats = {
-  ordersToday: 12,
-  activeOrders: 3,
-  revenueToday: '2.486 kr.',
-  rating: '4,8 / 5',
-  reviews: '240+',
-  menuCategory: 'Pizza',
-  menuItemsTotal: 12,
   minimumOrder: '99 kr.',
   deliveryRadius: '4 km'
 };
@@ -408,8 +389,8 @@ export const menuPanelTexts = {
   saveChanges: 'Gem ændringer',
   cancel: 'Annuller',
   saved: 'er gemt',
-  categories: 'Administrer kategorier →',
-  allItems: 'Se alle varer →'
+  categoryCount: 'kategorier',
+  itemCount: 'varer'
 };
 
 export const courierPanelStats = {
@@ -548,8 +529,7 @@ export const restaurantOverview = {
   lead: 'Udforsk restauranterne på MTOGO, og vælg hvor du vil bestille fra.',
   loading: 'Henter restauranter…',
   error: 'Restauranterne kunne ikke hentes. Prøv igen om lidt.',
-  empty: 'Der er ingen restauranter endnu.',
-  placeholderImage: '/images/restaurant-cover.png'
+  empty: 'Der er ingen restauranter endnu.'
 };
 
 export const restaurantMenu = {
@@ -560,5 +540,34 @@ export const restaurantMenu = {
   emptyCategory: 'Der er ingen retter i denne kategori endnu.',
   unavailable: 'Udsolgt',
   currency: 'kr.',
-  cover: '/images/restaurant-cover.png'
+  phone: 'Tlf.'
+};
+
+export const headerTexts = {
+  restaurants: 'Restauranter',
+  howItWorks: 'Sådan fungerer det',
+  partner: 'Bliv partner',
+  basket: 'Kurv',
+  profile: 'Profil',
+  login: 'Log ind',
+  signUp: 'Opret konto'
+};
+
+export const roleLabels = {
+  CUSTOMER: 'Kunde',
+  RESTAURANT_OWNER: 'Restaurantejer',
+  DELIVERY_AGENT: 'Bud',
+  ADMIN: 'Administrator',
+  OWNER: 'Ejer'
+};
+
+export const restaurantPanelTexts = {
+  publicPage: 'Se offentlig side ↗',
+  logout: 'Log ud',
+  items: 'Varer på menuen',
+  itemsNote: 'Alle varer i dine kategorier',
+  unavailable: 'Udsolgte varer',
+  unavailableNote: 'Kan ikke bestilles lige nu',
+  categories: 'Kategorier',
+  categoriesNote: 'På din menu'
 };

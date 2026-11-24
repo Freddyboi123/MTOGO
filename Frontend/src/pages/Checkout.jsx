@@ -65,7 +65,7 @@ export default function Checkout() {
   if (confirmation) {
     return (
       <>
-        <SiteHeader variant="app" />
+        <SiteHeader />
         <section className={cx(ui.page, styles.head)}>
           <h1 className={styles.title}>{checkoutTexts.confirmedTitle}</h1>
           <div className={cx(ui.block, styles.confirmation)}>
@@ -91,7 +91,7 @@ export default function Checkout() {
   if (basket.lines.length === 0) {
     return (
       <>
-        <SiteHeader variant="app" />
+        <SiteHeader />
         <section className={cx(ui.page, styles.head)}>
           <h1 className={styles.title}>{checkoutTexts.emptyTitle}</h1>
           <Link to="/restauranter" className={ui.linkAccent}>
@@ -105,7 +105,7 @@ export default function Checkout() {
 
   return (
     <>
-      <SiteHeader variant="app" />
+      <SiteHeader />
 
       <section className={cx(ui.page, styles.head)}>
         <Link to={`/restaurant/${basket.restaurantId}`} className={ui.linkQuiet}>

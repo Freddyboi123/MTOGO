@@ -6,6 +6,7 @@ import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Restaurants.module.css';
 import { fetchRestaurants } from '../api/restaurants';
+import restaurantImage from '../utils/restaurantImage';
 import { restaurantOverview } from '../data/mtogo';
 
 export default function Restaurants() {
@@ -45,7 +46,7 @@ export default function Restaurants() {
                 className={styles.card}
               >
                 <div className={styles.cardPhoto}>
-                  <img src={restaurantOverview.placeholderImage} alt={restaurant.name} />
+                  <img src={restaurantImage(restaurant)} alt={restaurant.name} />
                 </div>
                 <div className={styles.cardBody}>
                   <h2>{restaurant.name}</h2>
