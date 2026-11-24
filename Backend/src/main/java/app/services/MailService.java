@@ -157,7 +157,7 @@ public class MailService {
     // ________________________________________________________
 
     public MailResult send(String to, String subject, String body) {
-        if (ErrorHandler.tryParseBoolean(MAIL_DISABLED_PROPERTY, Notifications.MAIL_SENDER_BOOLEAN_FAILED.getDisplayName())) {
+        if (ErrorHandler.tryParseBoolean(System.getProperty(MAIL_DISABLED_PROPERTY), Notifications.MAIL_SENDER_BOOLEAN_FAILED.getDisplayName())) {
             logger.info("Mail disabled, skipping email to {}", to);
             return new MailResult(true, "Mail skipped");
         }
