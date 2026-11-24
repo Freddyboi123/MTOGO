@@ -110,7 +110,9 @@ public enum Notifications {
     APPLICATION_DECIDED("The application for %s is now %s"),
     APPLICATION_NOT_PENDING("Only a new application can get a decision"),
     APPLICATION_DECISION_INVALID("The decision must be APPROVED, REJECTED or MORE_INFORMATION_NEEDED"),
-    APPLICATION_MESSAGE_REQUIRED("You must write what information is missing")
+    APPLICATION_MESSAGE_REQUIRED("You must write what information is missing"),
+
+    MAIL_SENDER_BOOLEAN_FAILED("Mail sender failed!")
 
     ;
 
