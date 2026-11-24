@@ -1,8 +1,6 @@
 import { API_URL } from '../api/config';
 import { useEffect, useState } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6969/api';
-
 export async function api(path, { method = 'GET', body } = {}) {
   const token = localStorage.getItem('token');
   let res;
