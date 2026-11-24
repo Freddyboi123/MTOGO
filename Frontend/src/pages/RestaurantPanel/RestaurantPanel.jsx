@@ -11,6 +11,7 @@ import RestaurantInfo from './Components/RestaurantInfo';
 import MenuPanel from './Components/MenuPanel';
 import OpeningHours from './Components/OpeningHours';
 import ActiveOrders from './Components/ActiveOrders';
+import useFeatureFlag from '../../featureFlags/useFeatureFlag';
 
 const buildItems = (id) => [
   { to: `/restaurantpanel/${id}/overblik`, label: 'Overblik' },
@@ -25,6 +26,7 @@ export default function RestaurantPanel() {
   const { id } = useParams();
   const [myRestaurant, setMyRestaurant] = useState(null);
   const [error, setError] = useState('');
+  const ordering = useFeatureFlag('ordering');
 
   async function loadRestaurant() {
     try {
@@ -88,7 +90,7 @@ export default function RestaurantPanel() {
         <OpeningHours />
       </div>
 
-      <ActiveOrders />
+      {ordering && <ActiveOrders restaurantId={id} />}
     </DashboardLayout>
   );
 }
