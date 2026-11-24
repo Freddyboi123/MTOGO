@@ -280,3 +280,38 @@ class DeliveryAssignmentServiceTest {
         }
         assertEquals(other.getId(), service.accept(other.getId(), agentB).getOrderId());
     }
+
+    @Test
+    void competingClaimWaitsForOrderLockAndRechecksAvailability() throws Exception {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        CyclicBarrier start = new CyclicBarrier(2);
+        try (EntityManager holder = emf.createEntityManager()) {
+            holder.getTransaction().begin();
+            try {
+                Order locked = holder.find(Order.class, orderId, LockModeType.PESSIMISTIC_WRITE);
+                Future<Claim> pending = executor.submit(() -> claim(agentB, start));
+                start.await(10, TimeUnit.SECONDS);
+                assertThrows(TimeoutException.class, () -> pending.get(250, TimeUnit.MILLISECONDS),
+                        "A competing claim must not finish while the order is locked");
+                DeliveryAgent winner = holder.createQuery("SELECT a FROM DeliveryAgent a WHERE a.user.id = :id", DeliveryAgent.class)
+                        .setParameter("id", agentA).getSingleResult();
+                holder.persist(Delivery.builder().order(locked).agent(winner).assignedAt(LocalDateTime.now()).build());
+                holder.getTransaction().commit();
+                Claim result = pending.get(30, TimeUnit.SECONDS);
+                assertFalse(result.accepted());
+                assertEquals(409, result.status());
+                assertEquals(Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName(), result.message());
+            } finally {
+                if (holder.getTransaction().isActive()) holder.getTransaction().rollback();
+            }
+        } finally {
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(15, TimeUnit.SECONDS));
+        }
+        List<Delivery> persisted = assignments();
+        assertEquals(1, persisted.size());
+        assertEquals(agentA, persisted.getFirst().getAgent().getUser().getId());
+        assertTrue(service.mine(agentB).isEmpty());
+        assertFalse(availableIds().contains(orderId));
+    }
+}
