@@ -126,3 +126,14 @@ class DeliveryAssignmentServiceTest {
         assertEquals(agentA, persisted.getFirst().getAgent().getUser().getId());
         assertFalse(availableIds().contains(orderId));
     }
+    @Test
+    void rejectsAnOrderThatHasAlreadyBeenAccepted() {
+        service.accept(orderId, agentA);
+        ApiException exception = assertThrows(ApiException.class, () -> service.accept(orderId, agentB));
+        assertEquals(409, exception.getStatus());
+        assertEquals(Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName(), exception.getMessage());
+        assertFalse(em.getTransaction().isActive());
+        List<Delivery> persisted = assignments();
+        assertEquals(1, persisted.size());
+        assertEquals(agentA, persisted.getFirst().getAgent().getUser().getId());
+    }
