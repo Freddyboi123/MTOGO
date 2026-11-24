@@ -95,8 +95,7 @@ public class DeliveryAssignmentService {
                 .restaurantName(order.getRestaurant().getName())
                 .pickupAddress(format(order.getRestaurant().getAddress()))
                 .deliveryAddress(format(order.getDeliveryAddress()))
-                // No estimated pickup time exists on Order yet; do not invent one.
-                .expectedPickupTime(null)
+                .expectedPickupTime(order.getExpectedPickupAt())
                 .assignedAt(delivery == null ? null : delivery.getAssignedAt())
                 .orderStatus(order.getStatus())
                 .deliveryStatus(delivery == null ? null : delivery.getStatus())
