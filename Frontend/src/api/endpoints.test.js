@@ -13,7 +13,15 @@ const CALLS = {
     verifyEmail: (m) => m.verifyEmail('token'),
     resendVerify: (m) => m.resendVerify('a@b.dk'),
     forgotPassword: (m) => m.forgotPassword('a@b.dk'),
-    resetPassword: (m) => m.resetPassword({ token: 't', password: 'x' })
+    resetPassword: (m) => m.resetPassword({ token: 't', password: 'x' }),
+    getMyRestaurants: (m) => m.getMyRestaurants(),
+    getAvailableDeliveries: (m) => m.getAvailableDeliveries(),
+    addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),
+    getRestaurantApplications: (m) => m.getRestaurantApplications(),
+    getMyRestaurantApplications: (m) => m.getMyRestaurantApplications(),
+    submitRestaurantApplication: (m) => m.submitRestaurantApplication({ restaurantName: 'X' }),
+    resubmitRestaurantApplication: (m) => m.resubmitRestaurantApplication('42', { restaurantName: 'X' }),
+    decideRestaurantApplication: (m) => m.decideRestaurantApplication('42', { status: 'APPROVED' })
   },
   'api/featureFlags': {
     fetchFeatureFlags: (m) => m.fetchFeatureFlags()
