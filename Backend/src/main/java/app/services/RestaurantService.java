@@ -19,6 +19,7 @@ import app.mappers.RestaurantMapper;
 import app.server.Setup;
 import app.utils.ErrorHandler;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -141,14 +142,56 @@ public class RestaurantService {
 
         ErrorHandler.tryString(dto.getName(), Notifications.MENU_ITEM_NAME_REQUIRED.getDisplayName());
 
-        if (dto.getPrice() == null || dto.getPrice().signum() <= 0) {
-            throw new ApiException(400, Notifications.MENU_ITEM_PRICE_INVALID.getDisplayName());
-        }
+        checkPrice(dto.getPrice());
 
         MenuItem item = itemMapper.toEntity(dto);
         category.addItem(item);
 
         return itemDAO.create(item);
+    }
+
+    // ________________________________________________________
+
+    public MenuItem updateItem(UUID userId, UUID itemId, MenuItemDTO dto) {
+        MenuItem item = ErrorHandler.tryEntity(
+                itemDAO.getById(itemId),
+                Notifications.MENU_ITEM_NOT_FOUND.getDisplayName()
+        );
+        checkOwner(item.getCategory().getRestaurant(), userId);
+
+        if (dto.getName() != null) {
+            ErrorHandler.tryString(dto.getName(), Notifications.MENU_ITEM_NAME_REQUIRED.getDisplayName());
+        }
+
+        if (dto.getPrice() != null) {
+            checkPrice(dto.getPrice());
+        }
+
+        if (dto.getName() != null) {
+            item.setName(dto.getName());
+        }
+
+        if (dto.getDescription() != null) {
+            item.setDescription(dto.getDescription());
+        }
+
+        if (dto.getPrice() != null) {
+            item.setPrice(dto.getPrice());
+        }
+
+        if (dto.getAvailable() != null) {
+            item.setAvailable(dto.getAvailable());
+        }
+
+        return itemDAO.update(item);
+    }
+
+    // ________________________________________________________
+
+    private void checkPrice(BigDecimal price) {
+        if (price == null || price.signum() <= 0) {
+            throw new ApiException(400, Notifications.MENU_ITEM_PRICE_INVALID.getDisplayName());
+        }
     }
 
     // ________________________________________________________
