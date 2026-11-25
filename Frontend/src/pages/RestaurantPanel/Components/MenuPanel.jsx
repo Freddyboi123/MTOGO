@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { addMenuItem, updateMenuItem } from '../../../utils/api';
-import { menuPanelTexts, restaurantPanelStats } from '../../../data/mtogo';
+import { menuPanelTexts } from '../../../data/mtogo';
 import Panel from '../../../components/Panel';
 import DataTable from '../../../components/DataTable';
 import cx from '../../../utils/cx';
@@ -112,7 +112,7 @@ export default function MenuPanel({ categories, onMenuChanged }) {
     <div className={styles.panelFlat}>
       <Panel
         title={menuPanelTexts.title}
-        subtitle={`${restaurantPanelStats.menuCategory} · ${items.length} af ${restaurantPanelStats.menuItemsTotal} varer`}
+        subtitle={`${categories.length} ${menuPanelTexts.categoryCount} · ${items.length} ${menuPanelTexts.itemCount}`}
         controls={
           <button
             className={cx(ui.btn, ui.btnDark, ui.btnSmall, styles.addItem)}
@@ -153,8 +153,6 @@ export default function MenuPanel({ categories, onMenuChanged }) {
           columns={columns}
           rows={items}
           rowKey="id"
-          footLeft={menuPanelTexts.categories}
-          footRight={menuPanelTexts.allItems}
         />
       </Panel>
     </div>

@@ -9,11 +9,14 @@
   color: var(--cream);
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
 .photo {
-  height: 615px;
+  flex: 1;
+  min-height: 160px;
   background: var(--green) url('/images/auth-pizza.png') center / cover no-repeat;
 }
 
@@ -33,7 +36,6 @@
   padding: 44px 48px 40px;
   display: flex;
   flex-direction: column;
-  flex: 1;
 }
 
 .asideTitle {
@@ -53,7 +55,7 @@
 .footnote {
   color: var(--sage);
   font-size: 12px;
-  margin-top: auto;
+  margin-top: 16px;
 }
 
 .main {
@@ -75,10 +77,6 @@
     grid-template-columns: minmax(300px, 520px) 1fr;
   }
 
-  .photo {
-    height: 420px;
-  }
-
   .form {
     width: 100%;
     max-width: 456px;
@@ -90,7 +88,13 @@
     grid-template-columns: 1fr;
   }
 
+  .aside {
+    position: relative;
+    height: auto;
+  }
+
   .photo {
+    flex: none;
     height: 220px;
   }
 
