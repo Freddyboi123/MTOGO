@@ -39,4 +39,17 @@ public class OrderDAO extends EntityManagerDAO<Order> {
                 .setParameter("restaurantId", restaurantId)
                 .getResultList());
     }
+
+    // ________________________________________________________
+
+    public List<Order> getByCustomer(UUID customerId) {
+        return executeQuery(() -> em.createQuery("""
+                SELECT o FROM Order o
+                JOIN FETCH o.restaurant
+                WHERE o.customer.id = :customerId
+                ORDER BY o.createdAt DESC
+                """, Order.class)
+                .setParameter("customerId", customerId)
+                .getResultList());
+    }
 }
