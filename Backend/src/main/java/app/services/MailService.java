@@ -3,6 +3,7 @@ package app.services;
 import app.entities.RestaurantApplication;
 import app.entities.User;
 import app.enums.Notifications;
+import app.exceptions.ApiException;
 import app.utils.ErrorHandler;
 import app.utils.Utils;
 import jakarta.mail.Authenticator;
@@ -170,6 +171,7 @@ public class MailService {
         String username = Utils.getPropertyValue("SMTP_USERNAME", CONFIG);
         String password = Utils.getPropertyValue("SMTP_PASSWORD", CONFIG).replace(" ", "");
         String companyName = Utils.getPropertyValue("COMPANY_NAME", CONFIG);
+        String from = getFromAddress(username);
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", auth);
@@ -191,7 +193,7 @@ public class MailService {
 
         try {
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(username, companyName, "UTF-8"));
+            message.setFrom(new InternetAddress(from, companyName, "UTF-8"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject, "UTF-8");
             message.setText(body, "UTF-8");
@@ -201,6 +203,19 @@ public class MailService {
         } catch (Exception e) {
             logger.error("Could not send email to {}", to, e);
             return new MailResult(false, "Could not send email. Check the SMTP settings in config (SMTP_PASSWORD must be a Gmail app password).");
+        }
+    }
+
+    // ________________________________________________________
+
+    // SMTP_FROM is optional: relay providers use a login that is not the
+    // sender address. Falls back to the SMTP username.
+    private String getFromAddress(String username) {
+        try {
+            String from = Utils.getPropertyValue("SMTP_FROM", CONFIG);
+            return from.isBlank() ? username : from;
+        } catch (ApiException e) {
+            return username;
         }
     }
 
