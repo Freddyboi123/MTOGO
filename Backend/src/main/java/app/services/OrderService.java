@@ -124,6 +124,12 @@ public class OrderService {
 
     // ________________________________________________________
 
+    public List<Order> getMyOrders(UUID customerId) {
+        return orderDAO.getByCustomer(customerId);
+    }
+
+    // ________________________________________________________
+
     private OrderLine createLine(Restaurant restaurant, OrderLineDTO dto) {
         if (dto.getMenuItemId() == null) {
             throw new ApiException(400, Notifications.MENU_ITEM_NOT_FOUND.getDisplayName());
