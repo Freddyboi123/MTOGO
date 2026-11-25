@@ -21,7 +21,7 @@
         <junit.version>5.13.4</junit.version>
         <jacoco.version>0.8.16</jacoco.version>
         <spotbugs.plugin.version>4.10.5.0</spotbugs.plugin.version>
-        <coverage.line.minimum>0.25</coverage.line.minimum>
+        <coverage.line.minimum>0.60</coverage.line.minimum>
     </properties>
 
 
