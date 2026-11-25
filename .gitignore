@@ -43,3 +43,5 @@ build/
 Backend/src/main/resources/config.properties
 Backend/src/main/resources/config.properties
 /package-lock.json
+
+/Backend/.idea/
