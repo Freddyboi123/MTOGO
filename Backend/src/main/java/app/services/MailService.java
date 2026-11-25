@@ -226,7 +226,6 @@ public class MailService {
         String starttls = getOptional("SMTP_STARTTLS", "true");
         String timeout = getOptional("SMTP_TIMEOUT", "10000");
         String companyName = getCompanyName();
-        // SMTP_FROM is optional: relay providers use a login that is not the sender address.
         String from = getOptional("SMTP_FROM", username);
 
         Properties props = new Properties();
