@@ -96,10 +96,34 @@ When code is pushed to `main`, the CD pipeline builds Docker images for the back
 - Backend: https://mtogo.api.roneu.dk
 - Frontend: https://mtogo.roneu.dk
 
+After each deploy the smoke workflow runs a few tests against the deployed backend to check that it answers.
+
+## Testing
+
+| Level | What | Run |
+| --- | --- | --- |
+| Backend unit and integration tests | JUnit 5 with an H2 database in memory | `cd Backend` and `mvn verify` |
+| Frontend tests | Vitest, including a check that every API call matches a backend route | `cd Frontend` and `npm test` |
+| End to end tests | Playwright in a browser against a backend with test data (`PlaywrightServer`) | `cd Frontend` and `npm run test:e2e` |
+| Smoke tests | Vitest against the deployed backend after each deploy | `cd Frontend` and `npm run test:smoke` |
+
+CI runs the backend and frontend tests and the Playwright tests on every pull request. The backend build fails if line coverage is below the minimum in `Backend/pom.xml` or SpotBugs finds high priority problems.
+
+To try the app locally without PostgreSQL, the Playwright test server can be started. It uses an in memory database with test data, for example the restaurant owner `owner@mtogo.dk` with the password `Password123!`, and turns mail off.
+
+## Feature flags
+
+Unfinished features are merged to `main` behind a feature flag that is turned off. The flags are defined in `Backend/src/main/resources/feature-flags.properties`, which also says which user stories each flag belongs to. An environment variable with the same name, for example `FEATURE_ORDERING=true`, overrides the file on the server without a new deploy. The frontend reads the flags from `GET /api/features`.
+
+## Monitoring
+
+The backend exposes metrics in the Prometheus format at `/metrics`: JVM metrics such as memory, garbage collection and threads, and a timer for every request with method, route and status code. Prometheus on the server collects the metrics and Grafana shows them on a dashboard with requests, response times, error rate and the most used routes.
+
 ## How we work
 
 - We use a Kanban board in GitHub Projects with a prioritized backlog: https://github.com/users/Freddyboi123/projects/1
 - We never work directly on `main`. Branches are short lived, created from `main` and merged back into `main` through a pull request after another team member has reviewed it
+- A branch is created from the newest `main`, and `main` is merged into the branch before the pull request is merged
 - `main` must always be stable and ready to deploy
 - Every pull request needs a review and a passing automated build
 - Each person works on one issue at a time. If you take an issue, you finish it within a reasonable time, otherwise it is released
