@@ -363,6 +363,31 @@ class OrderServiceTest {
     // ________________________________________________________
 
     @Test
+    void customerSeesTheirOwnOrderHistory() {
+        Order first = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+        Order second = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(burrata, 2))));
+
+        List<Order> orders = orderService.getMyOrders(customer.getId());
+
+        assertEquals(2, orders.size());
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(first.getId())));
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(second.getId())));
+        assertEquals("Pizzeria", orders.get(0).getRestaurant().getName());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void customerDoesNotSeeOtherCustomersOrders() {
+        User otherCustomer = createUser(Role.CUSTOMER);
+        orderService.placeOrder(otherCustomer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        assertTrue(orderService.getMyOrders(customer.getId()).isEmpty());
+    }
+
+    // ________________________________________________________
+
+    @Test
     void placedOrderKeepsOldPriceWhenTheRestaurantUpdatesTheItem() {
         Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
 
