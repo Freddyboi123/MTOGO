@@ -38,6 +38,7 @@ public class OrderService {
     private final UserDAO userDAO;
     private final IPaymentService paymentService;
     private final OrderMapper orderMapper = new OrderMapper();
+    private final CommissionCalculator commissionCalculator = new CommissionCalculator();
 
     // ________________________________________________________
 
@@ -96,6 +97,7 @@ public class OrderService {
         order.setStatus(OrderStatus.RECEIVED);
         order.setTotalInclVat(total);
         order.setTotalExclVat(total.divide(VAT_FACTOR, 2, RoundingMode.HALF_UP));
+        order.setCommissionAmount(commissionCalculator.calculate(order.getTotalExclVat()));
         lines.forEach(order::addLine);
         order.addStatusHistory(OrderStatusHistory.builder().status(OrderStatus.RECEIVED).build());
         order.setPayment(Payment.builder()

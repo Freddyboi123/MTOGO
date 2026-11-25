@@ -384,4 +384,13 @@ class OrderServiceTest {
 
         assertTrue(orderService.getMyOrders(customer.getId()).isEmpty());
     }
+
+    // ________________________________________________________
+
+    @Test
+    void placedOrderGetsCommissionFromTheSlidingScale() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 2), line(burrata, 1))));
+
+        assertEquals(0, new BigDecimal("15.68").compareTo(order.getCommissionAmount()));
+    }
 }
