@@ -72,6 +72,9 @@ public enum Notifications {
     PAYMENT_FAILED("The payment failed. No order was created"),
     ORDERS_FETCHED("You fetched %s orders"),
     ORDERS_NOT_OWNER("Only the owner of the restaurant can see its orders"),
+    ORDER_STATUS_UPDATED("Order %s is now %s"),
+    ORDER_STATUS_NOT_OWNER("Only the restaurant that received the order can change its status"),
+    ORDER_STATUS_INVALID("The order cannot change to that status"),
 
     // DELIVERIES
     ORDER_ID_INVALID("The order ID is not valid"),

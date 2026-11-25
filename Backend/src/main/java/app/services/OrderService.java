@@ -26,11 +26,17 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class OrderService {
 
     private static final BigDecimal VAT_FACTOR = new BigDecimal("1.25");
+    private static final Map<OrderStatus, Set<OrderStatus>> RESTAURANT_STEPS = Map.of(
+            OrderStatus.PREPARING, Set.of(OrderStatus.RECEIVED, OrderStatus.ACCEPTED),
+            OrderStatus.READY_FOR_PICKUP, Set.of(OrderStatus.PREPARING)
+    );
 
     private final OrderDAO orderDAO;
     private final RestaurantDAO restaurantDAO;
@@ -128,6 +134,27 @@ public class OrderService {
 
     public List<Order> getMyOrders(UUID customerId) {
         return orderDAO.getByCustomer(customerId);
+    }
+
+    // ________________________________________________________
+
+    public Order updateStatus(UUID ownerId, UUID orderId, OrderStatus status) {
+        Order order = ErrorHandler.tryEntity(
+                orderDAO.getById(orderId),
+                Notifications.ORDER_NOT_FOUND.getDisplayName()
+        );
+
+        if (!order.getRestaurant().getOwner().getId().equals(ownerId)) {
+            throw new ApiException(403, Notifications.ORDER_STATUS_NOT_OWNER.getDisplayName());
+        }
+
+        if (status == null || !RESTAURANT_STEPS.getOrDefault(status, Set.of()).contains(order.getStatus())) {
+            throw new ApiException(400, Notifications.ORDER_STATUS_INVALID.getDisplayName());
+        }
+
+        order.setStatus(status);
+        order.addStatusHistory(OrderStatusHistory.builder().status(status).build());
+        return orderDAO.update(order);
     }
 
     // ________________________________________________________
