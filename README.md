@@ -62,6 +62,13 @@ Configuration is read from `Backend/src/main/resources/config.properties`. The f
 | `ISSUER` | JWT issuer |
 | `TOKEN_EXPIRE_TIME` | JWT lifetime |
 | `SECRET_KEY` | JWT signing key |
+| `COMPANY_NAME` | Name used in emails (default `MTOGO`) |
+| `SMTP_USERNAME` | SMTP login, e.g. the Gmail address mail is sent from |
+| `SMTP_PASSWORD` | SMTP password (for Gmail, an app password) |
+| `SMTP_FROM` | Optional sender address, if it differs from `SMTP_USERNAME` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_AUTH`, `SMTP_STARTTLS`, `SMTP_TIMEOUT` | Optional, default to Gmail (`smtp.gmail.com:587` with STARTTLS) |
+
+Locally (`DEPLOYED=false`), mail sends through the real SMTP server once `SMTP_USERNAME` and `SMTP_PASSWORD` are set. Links in emails point to `http://localhost:<PORT>` and `FRONTEND_URL` (default `http://localhost:5173`).
 
 Build and test:
 
