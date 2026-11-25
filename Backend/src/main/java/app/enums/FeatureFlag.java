@@ -5,16 +5,14 @@ import lombok.Getter;
 @Getter
 public enum FeatureFlag {
 
-    // US-01: Customer can see a list of restaurants
     RESTAURANT_OVERVIEW("restaurantOverview"),
-
-    // US-09: Delivery agents can see ready, unassigned orders
     DELIVERY_OVERVIEW("deliveryOverview"),
-
-    // US-05 and US-06: basket and placing an order
-    ORDERING("ordering")
-
-    ;
+    ORDERING("ordering"),
+    DELIVERY_BONUS("deliveryBonus"),
+    ORDER_STATUS("orderStatus"),
+    RATINGS("ratings"),
+    MANAGEMENT_DASHBOARD("managementDashboard"),
+    LANGUAGE_CHOICE("languageChoice");
 
     // ________________________________________________________
 
