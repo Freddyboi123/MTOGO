@@ -1,0 +1,36 @@
+### Test that the backend can send mail
+# Paste the address you want the mail sent to here, then run the requests below.
+@email = paste-your-email@example.com
+@url = http://localhost:6969
+
+### 1. Register a user -> sends the verify mail
+# The response says whether the mail was sent. If it says the mail failed, check the backend log.
+# Each email can only be registered once. Use a new address (e.g. you+test2@gmail.com) to test again.
+POST {{url}}/api/users/auth/register
+Content-Type: application/json
+
+{
+  "first_name": "Mail",
+  "last_name": "Test",
+  "email": "{{email}}",
+  "password": "Password123!",
+  "repeat_password": "Password123!"
+}
+
+### 2. Send the verify mail again (user from step 1, not yet verified)
+# Always returns 200, even when no mail is sent. Check the backend log for "Email sent to".
+POST {{url}}/api/users/auth/resend-verify
+Content-Type: application/json
+
+{
+  "email": "{{email}}"
+}
+
+### 3. Send a reset password mail (any existing user)
+# Always returns 200, even when no mail is sent. Check the backend log for "Email sent to".
+POST {{url}}/api/users/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "{{email}}"
+}

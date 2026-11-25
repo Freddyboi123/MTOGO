@@ -105,6 +105,13 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- In-memory SMTP server, so MailService tests send real mail without reaching Brevo/Gmail -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail</artifactId>
+            <version>2.1.13</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.h2database</groupId>
