@@ -119,6 +119,44 @@
   margin-left: auto;
 }
 
+.availability {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle {
+  min-width: 150px;
+}
+
+.status {
+  min-width: 64px;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.saved {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 20px 12px;
+}
+
+.menuForm {
+  padding: 0 20px 20px;
+}
+
+.menuError {
+  padding: 0 20px 12px;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+}
+
 .hours {
   margin-top: 24px;
 }

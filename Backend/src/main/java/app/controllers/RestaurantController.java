@@ -66,6 +66,7 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
             post("/restaurants", controller::createRestaurant, Role.RESTAURANT_OWNER);
             post("/restaurant/{id}/categories", controller::addCategory, Role.RESTAURANT_OWNER);
             post("/category/{id}/items", controller::addItem, Role.RESTAURANT_OWNER);
+            put("/menu-item/{id}", controller::updateItem, Role.RESTAURANT_OWNER);
 
         };
     }
@@ -214,6 +215,19 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
         String message = messageService.buildMessage(Notifications.MENU_ITEM_ADDED, item.getName());
         respond(ctx, 201, message, itemMapper.toDTO(item));
+    }
+
+    // ________________________________________________________
+
+    private void updateItem(Context ctx) {
+        UserDTO user = getUser(ctx);
+        UUID itemId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.MENU_ITEM_NOT_FOUND.getDisplayName());
+        MenuItemDTO body = ErrorHandler.tryBody(ctx, MenuItemDTO.class, Notifications.BODY_EMPTY.getDisplayName());
+
+        MenuItem item = restaurantService.updateItem(user.getId(), itemId, body);
+
+        String message = messageService.buildMessage(Notifications.MENU_ITEM_UPDATED, item.getName());
+        respond(ctx, 200, message, itemMapper.toDTO(item));
     }
 
     // ________________________________________________________
