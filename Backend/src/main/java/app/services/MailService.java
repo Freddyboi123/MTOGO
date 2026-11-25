@@ -3,6 +3,7 @@ package app.services;
 import app.entities.RestaurantApplication;
 import app.entities.User;
 import app.enums.Notifications;
+import app.exceptions.ApiException;
 import app.utils.ErrorHandler;
 import app.utils.Utils;
 import jakarta.mail.Authenticator;
@@ -16,17 +17,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.function.UnaryOperator;
 
 public class MailService {
 
     public static final String MAIL_DISABLED_PROPERTY = "mail.disabled";
     private static final String CONFIG = "config.properties";
+    private static final String DEFAULT_COMPANY_NAME = "MTOGO";
+    private static final String DEV_FRONTEND_URL = "http://localhost:5173";
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
+
+    // Looks up a config key and returns null when it is missing. Tests pass their own lookup.
+    private final UnaryOperator<String> config;
+
+    public MailService() {
+        this(MailService::readConfig);
+    }
+
+    MailService(UnaryOperator<String> config) {
+        this.config = config;
+    }
+
+    private static String readConfig(String key) {
+        try {
+            return Utils.getPropertyValue(key, CONFIG);
+        } catch (ApiException e) {
+            return null;
+        }
+    }
 
     // ________________________________________________________
 
     public MailResult sendVerifyEmail(User user) {
-        String companyName = Utils.getPropertyValue("COMPANY_NAME", CONFIG);
+        String companyName = getCompanyName();
         String link = getBackendUrl() + "/api/users/auth/verify?token=" + user.getVerifyToken();
 
         String subject = String.format("%s: Godkend bruger", companyName);
@@ -55,7 +78,7 @@ public class MailService {
     // ________________________________________________________
 
     public void sendResetPasswordEmail(User user) {
-        String companyName = Utils.getPropertyValue("COMPANY_NAME", CONFIG);
+        String companyName = getCompanyName();
         String link = getFrontendUrl() + "/reset-password?token=" + user.getResetToken();
 
         String subject = String.format("%s: Nulstil adgangskode", companyName);
@@ -86,7 +109,7 @@ public class MailService {
 
     public MailResult sendApplicationStatusEmail(RestaurantApplication application) {
 
-        String companyName = Utils.getPropertyValue("COMPANY_NAME", CONFIG);
+        String companyName = getCompanyName();
         User applicant = application.getApplicant();
         String adminMessage = application.getAdminMessage();
         String statusText;
@@ -140,18 +163,44 @@ public class MailService {
     // ________________________________________________________
 
     private String getBackendUrl() {
-        boolean deployed = Boolean.parseBoolean(Utils.getPropertyValue("DEPLOYED", CONFIG));
-
-        if (deployed) {
-            return Utils.getPropertyValue("BACKEND_URL", CONFIG).replaceAll("/+$", "");
+        if (isDeployed()) {
+            return getRequired("BACKEND_URL").replaceAll("/+$", "");
         }
-        return "http://localhost:" + Utils.getPropertyValue("PORT", CONFIG);
+        return "http://localhost:" + getOptional("PORT", "6969");
     }
 
     // ________________________________________________________
 
+    // Deployed environments must set FRONTEND_URL. Locally it falls back to the Vite dev server.
     private String getFrontendUrl() {
-        return Utils.getPropertyValue("FRONTEND_URL", CONFIG).replaceAll("/+$", "");
+        String url = isDeployed()
+                ? getRequired("FRONTEND_URL")
+                : getOptional("FRONTEND_URL", DEV_FRONTEND_URL);
+        return url.replaceAll("/+$", "");
+    }
+
+    // ________________________________________________________
+
+    private boolean isDeployed() {
+        return Boolean.parseBoolean(getOptional("DEPLOYED", "false"));
+    }
+
+    // ________________________________________________________
+
+    // Reads a key from env/config and returns the fallback when it is missing or blank.
+    private String getOptional(String key, String fallback) {
+        String value = config.apply(key);
+        return value == null || value.isBlank() ? fallback : value.trim();
+    }
+
+    // ________________________________________________________
+
+    private String getRequired(String key) {
+        String value = config.apply(key);
+        if (value == null || value.isBlank()) {
+            throw new ApiException(500, String.format("Property %s not found in %s", key, CONFIG));
+        }
+        return value.trim();
     }
 
     // ________________________________________________________
@@ -162,14 +211,22 @@ public class MailService {
             return new MailResult(true, "Mail skipped");
         }
 
-        String host = Utils.getPropertyValue("SMTP_HOST", CONFIG);
-        String port = Utils.getPropertyValue("SMTP_PORT", CONFIG);
-        String auth = Utils.getPropertyValue("SMTP_AUTH", CONFIG);
-        String starttls = Utils.getPropertyValue("SMTP_STARTTLS", CONFIG);
-        String timeout = Utils.getPropertyValue("SMTP_TIMEOUT", CONFIG);
-        String username = Utils.getPropertyValue("SMTP_USERNAME", CONFIG);
-        String password = Utils.getPropertyValue("SMTP_PASSWORD", CONFIG).replace(" ", "");
-        String companyName = Utils.getPropertyValue("COMPANY_NAME", CONFIG);
+        String username = getOptional("SMTP_USERNAME", "");
+        String password = getOptional("SMTP_PASSWORD", "").replace(" ", "");
+
+        if (username.isBlank() || password.isBlank()) {
+            logger.error("SMTP_USERNAME/SMTP_PASSWORD not set, cannot send email to {}", to);
+            return new MailResult(false, "Could not send email. SMTP_USERNAME and SMTP_PASSWORD must be set in config.properties or as environment variables.");
+        }
+
+        // Defaults match Gmail, so a dev only needs the username and app password.
+        String host = getOptional("SMTP_HOST", "smtp.gmail.com");
+        String port = getOptional("SMTP_PORT", "587");
+        String auth = getOptional("SMTP_AUTH", "true");
+        String starttls = getOptional("SMTP_STARTTLS", "true");
+        String timeout = getOptional("SMTP_TIMEOUT", "10000");
+        String companyName = getCompanyName();
+        String from = getOptional("SMTP_FROM", username);
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", auth);
@@ -191,7 +248,7 @@ public class MailService {
 
         try {
             MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(username, companyName, "UTF-8"));
+            message.setFrom(new InternetAddress(from, companyName, "UTF-8"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject, "UTF-8");
             message.setText(body, "UTF-8");
@@ -202,6 +259,12 @@ public class MailService {
             logger.error("Could not send email to {}", to, e);
             return new MailResult(false, "Could not send email. Check the SMTP settings in config (SMTP_PASSWORD must be a Gmail app password).");
         }
+    }
+
+    // ________________________________________________________
+
+    private String getCompanyName() {
+        return getOptional("COMPANY_NAME", DEFAULT_COMPANY_NAME);
     }
 
     // ________________________________________________________
