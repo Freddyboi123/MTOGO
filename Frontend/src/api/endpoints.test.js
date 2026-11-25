@@ -21,6 +21,7 @@ const CALLS = {
     placeOrder: (m) => m.placeOrder({ restaurantId: '42', lines: [] }),
     getRestaurantOrders: (m) => m.getRestaurantOrders('42'),
     getMyOrders: (m) => m.getMyOrders(),
+    updateOrderStatus: (m) => m.updateOrderStatus('42', 'PREPARING'),
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),

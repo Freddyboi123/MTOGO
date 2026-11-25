@@ -337,8 +337,12 @@ export const restaurantOrderTexts = {
     items: 'Indhold',
     address: 'Leveringsadresse',
     total: 'Beløb',
-    status: 'Status'
+    status: 'Status',
+    action: 'Handling'
   },
+  startPreparing: 'Start tilberedning',
+  markReady: 'Klar til afhentning',
+  statusError: 'Status kunne ikke opdateres.',
   statuses: {
     RECEIVED: 'Ny ordre',
     PENDING: 'Afventer',
