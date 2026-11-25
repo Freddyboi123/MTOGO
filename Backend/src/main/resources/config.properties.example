@@ -13,6 +13,20 @@ DB_NAME=mtogo
 DB_USERNAME=postgres
 DB_PASSWORD=change-me
 
+# Mail
+# Only SMTP_USERNAME and SMTP_PASSWORD are required. The rest default to Gmail
+# (smtp.gmail.com:587, STARTTLS). SMTP_PASSWORD must be a Gmail app password,
+# not the account password. Ask the team for the shared mtogo.noreply credentials.
+COMPANY_NAME=MTOGO
+SMTP_USERNAME=
+SMTP_PASSWORD=
+#SMTP_FROM=
+#SMTP_HOST=smtp.gmail.com
+#SMTP_PORT=587
+#SMTP_AUTH=true
+#SMTP_STARTTLS=true
+#SMTP_TIMEOUT=10000
+
 # JWT
 ISSUER=MTOGO
 TOKEN_EXPIRE_TIME=86400000
