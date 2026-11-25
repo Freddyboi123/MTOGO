@@ -2,6 +2,8 @@ package app.services;
 
 import app.entities.RestaurantApplication;
 import app.entities.User;
+import app.enums.Notifications;
+import app.utils.ErrorHandler;
 import app.utils.Utils;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
@@ -17,6 +19,7 @@ import java.util.Properties;
 
 public class MailService {
 
+    public static final String MAIL_DISABLED_PROPERTY = "mail.disabled";
     private static final String CONFIG = "config.properties";
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
@@ -154,6 +157,11 @@ public class MailService {
     // ________________________________________________________
 
     public MailResult send(String to, String subject, String body) {
+        if (ErrorHandler.tryParseBoolean(System.getProperty(MAIL_DISABLED_PROPERTY), Notifications.MAIL_SENDER_BOOLEAN_FAILED.getDisplayName())) {
+            logger.info("Mail disabled, skipping email to {}", to);
+            return new MailResult(true, "Mail skipped");
+        }
+
         String host = Utils.getPropertyValue("SMTP_HOST", CONFIG);
         String port = Utils.getPropertyValue("SMTP_PORT", CONFIG);
         String auth = Utils.getPropertyValue("SMTP_AUTH", CONFIG);
