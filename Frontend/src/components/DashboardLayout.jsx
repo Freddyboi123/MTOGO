@@ -35,6 +35,10 @@ export default function DashboardLayout({ role, items, breadcrumb, user, helpLin
             </NavLink>
           ))}
         </nav>
+
+        <button className={styles.sideLogout} onClick={handleLogout}>
+          Log ud
+        </button>
       </aside>
 
       <div className={styles.main}>

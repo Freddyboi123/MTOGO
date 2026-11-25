@@ -1,14 +1,18 @@
-import { customer } from '../../../data/mtogo';
+import { getUser } from '../../../utils/api';
+import { roleLabels } from '../../../data/mtogo';
 import styles from '../Profile.module.css';
 
 export default function ProfileNav({ sections, section, onSelect, onLogout }) {
+  const user = getUser();
+  const role = (user.roles ?? []).map((name) => roleLabels[name]).find(Boolean);
+
   return (
     <nav className={styles.nav}>
       <div className={styles.who}>
         <strong>
-          {customer.firstName} {customer.lastName}
+          {user.name} {user.lastName}
         </strong>
-        <span>{customer.since}</span>
+        {role && <span>{role}</span>}
       </div>
       {sections.map((name) => (
         <button
