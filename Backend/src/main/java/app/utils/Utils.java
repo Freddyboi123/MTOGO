@@ -9,6 +9,11 @@ import java.util.Properties;
 public class Utils {
 
     public static String getPropertyValue(String propName, String resourceName) {
+        String systemValue = System.getProperty(propName);
+        if (systemValue != null && !systemValue.isBlank()) {
+            return systemValue.trim();
+        }
+
         String envValue = System.getenv(propName);
         if (envValue != null && !envValue.isBlank()) {
             return envValue.trim();
