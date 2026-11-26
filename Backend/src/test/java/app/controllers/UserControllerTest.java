@@ -265,4 +265,173 @@ class UserControllerTest {
 
         assertEquals(400, response.statusCode());
     }
+
+    // ________________________________________________________
+
+    private static HttpResponse<String> patchMe(String token, Map<String, String> body) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/users/profile"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(body)))
+                .build();
+        return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    // ________________________________________________________
+
+    private static String loginToken(String email, String password) throws IOException, InterruptedException {
+        return JSON.readTree(login(email, password).body()).get("token").asText();
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithoutATokenReturns401() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/users/profile"))
+                .header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("{}"))
+                .build();
+
+        assertEquals(401, CLIENT.send(request, HttpResponse.BodyHandlers.ofString()).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeUpdatesOnlyTheFieldsThatChanged() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+        String token = loginToken(email, PASSWORD);
+
+        HttpResponse<String> response = patchMe(token, Map.of(
+                "first_name", "Test",
+                "last_name", "Newname",
+                "phone_number", "12345678"
+        ));
+
+        assertEquals(200, response.statusCode());
+        User user = findUser(email);
+        assertEquals("Test", user.getFirstname());
+        assertEquals("Newname", user.getLastname());
+        assertEquals("12345678", user.getPhoneNumber());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithTheSameValuesReportsNoChanges() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+        String token = loginToken(email, PASSWORD);
+
+        HttpResponse<String> response = patchMe(token, Map.of("first_name", "Test", "email", email));
+
+        assertEquals(200, response.statusCode());
+        assertEquals("There was nothing to update", JSON.readTree(response.body()).get("message").asText());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithAnEmptyPhoneNumberRemovesIt() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+        String token = loginToken(email, PASSWORD);
+        patchMe(token, Map.of("phone_number", "12345678"));
+
+        HttpResponse<String> response = patchMe(token, Map.of("phone_number", ""));
+
+        assertEquals(200, response.statusCode());
+        assertNull(findUser(email).getPhoneNumber());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithAnInvalidPhoneNumberReturns400() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        assertEquals(400, patchMe(loginToken(email, PASSWORD), Map.of("phone_number", "abc")).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithAnEmailInUseReturns400() throws Exception {
+        String email = newEmail();
+        String other = newEmail();
+        registerVerified(email);
+        register(other, PASSWORD);
+
+        assertEquals(400, patchMe(loginToken(email, PASSWORD), Map.of("email", other)).statusCode());
+        assertNotNull(findUser(email));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithANewEmailReturnsATokenThatStillWorks() throws Exception {
+        String email = newEmail();
+        String newEmail = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of("email", newEmail));
+
+        assertEquals(200, response.statusCode());
+        String newToken = JSON.readTree(response.body()).get("token").asText();
+        assertEquals(200, patchMe(newToken, Map.of("first_name", "Test")).statusCode());
+        assertNotNull(findUser(newEmail));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeChangesThePasswordWhenTheCurrentOneIsCorrect() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of(
+                "current_password", PASSWORD,
+                "new_password", "NewPassword1!",
+                "repeat_password", "NewPassword1!"
+        ));
+
+        assertEquals(200, response.statusCode());
+        assertEquals(401, login(email, PASSWORD).statusCode());
+        assertEquals(200, login(email, "NewPassword1!").statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithAWrongCurrentPasswordReturns400() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of(
+                "current_password", "Wrong123!",
+                "new_password", "NewPassword1!",
+                "repeat_password", "NewPassword1!"
+        ));
+
+        assertEquals(400, response.statusCode());
+        assertEquals(200, login(email, PASSWORD).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchMeWithAWeakNewPasswordReturns400() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of(
+                "current_password", PASSWORD,
+                "new_password", "abc",
+                "repeat_password", "abc"
+        ));
+
+        assertEquals(400, response.statusCode());
+    }
 }

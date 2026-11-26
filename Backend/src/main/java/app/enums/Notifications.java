@@ -59,6 +59,16 @@ public enum Notifications {
     ROLE_INVALID("The role does not exist"),
     ROLE_ASSIGNED("The role %s was given to %s"),
 
+    // PROFILE
+    PROFILE_UPDATED("Your profile was updated"),
+    PROFILE_NO_CHANGES("There was nothing to update"),
+    PROFILE_EMAIL_INVALID("The email address is not valid"),
+    PROFILE_PHONE_INVALID("The phone number is not valid"),
+    PROFILE_FIRSTNAME_EMPTY("The first name cannot be empty"),
+    PROFILE_LASTNAME_EMPTY("The last name cannot be empty"),
+    PROFILE_CURRENT_PASSWORD_REQUIRED("You must enter your current password to change it"),
+    PROFILE_CURRENT_PASSWORD_WRONG("The current password is wrong"),
+
     // ORDERS
     ORDER_PLACED("Order %s was placed"),
     ORDER_NOT_FOUND("The order was not found"),

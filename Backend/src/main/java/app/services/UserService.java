@@ -15,6 +15,7 @@ import io.javalin.http.Context;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,6 +27,8 @@ public class UserService {
     private final UserMapper userMapper = new UserMapper();
     private final MailService mailService = new MailService();
     private static final int TOKEN_MINUTES = 30;
+    private static final String EMAIL_PATTERN = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+    private static final String PHONE_PATTERN = "\\+?\\d{8,12}";
 
     // ________________________________________________________
 
@@ -67,16 +70,16 @@ public class UserService {
         }
 
         User user = ErrorHandler.tryEntity(
-                userDAO.create(User.builder()
-                        .firstname(firstname)
-                        .lastname(lastname)
-                        .roles(Set.of(role))
-                        .email(email)
-                        .password(PasswordService.hashHelper(password))
-                        .verifyToken(UUID.randomUUID().toString())
-                        .verifyTokenExpiresAt(LocalDateTime.now().plusMinutes(TOKEN_MINUTES))
-                        .build()),
-                messageService.buildMessage(Notifications.EMAIL_EXISTS, email)
+            userDAO.create(User.builder()
+                .firstname(firstname)
+                .lastname(lastname)
+                .roles(Set.of(role))
+                .email(email)
+                .password(PasswordService.hashHelper(password))
+                .verifyToken(UUID.randomUUID().toString())
+                .verifyTokenExpiresAt(LocalDateTime.now().plusMinutes(TOKEN_MINUTES))
+                .build()),
+            messageService.buildMessage(Notifications.EMAIL_EXISTS, email)
         );
 
         UserDTO dto = userMapper.toDTO(user);
@@ -84,8 +87,8 @@ public class UserService {
         MailService.MailResult mailResult = mailService.sendVerifyEmail(user);
 
         String message = mailResult.sent()
-                ? messageService.buildMessage(Notifications.REGISTER_SUCCESS, user.getEmail())
-                : Notifications.MAIL_FAILED.getDisplayName();
+            ? messageService.buildMessage(Notifications.REGISTER_SUCCESS, user.getEmail())
+            : Notifications.MAIL_FAILED.getDisplayName();
 
         ctx.status(201).json(Map.of(
                 "message", message,
@@ -117,14 +120,14 @@ public class UserService {
         String token = securityService.createToken(dto);
 
         String message = messageService.buildMessage(
-                Notifications.LOGGED_IN,
-                dto.getName()
+            Notifications.LOGGED_IN,
+            dto.getName()
         );
 
         ctx.status(200).json(Map.of(
-                "message", message,
-                "token", token,
-                "data", dto
+            "message", message,
+            "token", token,
+            "data", dto
         ));
     }
 
@@ -134,8 +137,8 @@ public class UserService {
         String token = ErrorHandler.tryString(ctx.queryParam("token"), Notifications.VERIFY_INVALID_TOKEN.getDisplayName());
 
         User user = ErrorHandler.tryEntity(
-                userDAO.getByToken(token, "verifyToken"),
-                Notifications.VERIFY_INVALID_TOKEN.getDisplayName()
+            userDAO.getByToken(token, "verifyToken"),
+            Notifications.VERIFY_INVALID_TOKEN.getDisplayName()
         );
 
         if (user.isVerified()) {
@@ -253,6 +256,100 @@ public class UserService {
                 "message", message,
                 "data", dto
         ));
+    }
+
+    // ________________________________________________________
+
+    public void getProfile(Context ctx, UserDTO tokenUser) {
+        User user = ErrorHandler.tryEntity(userDAO.getById(tokenUser.getId()), Notifications.USER_NOT_FOUND.getDisplayName());
+
+        ctx.status(200).json(Map.of("data", toDtoWithRoles(user)));
+    }
+
+    // ________________________________________________________
+
+    public void updateProfile(Context ctx, UserDTO userDTO) {
+        Map<String, String> body = ErrorHandler.tryBodyMap(ctx, Notifications.BODY_EMPTY.getDisplayName());
+        User user = ErrorHandler.tryEntity(userDAO.getById(userDTO.getId()), Notifications.USER_NOT_FOUND.getDisplayName());
+
+        boolean changed = false;
+
+        if (body.containsKey("first_name")) {
+            String firstname = ErrorHandler.tryString(body.get("first_name"), Notifications.PROFILE_FIRSTNAME_EMPTY.getDisplayName()).trim();
+            if (!firstname.equals(user.getFirstname())) {
+                user.setFirstname(firstname);
+                changed = true;
+            }
+        }
+
+        if (body.containsKey("last_name")) {
+            String lastname = ErrorHandler.tryString(body.get("last_name"), Notifications.PROFILE_LASTNAME_EMPTY.getDisplayName()).trim();
+            if (!lastname.equals(user.getLastname())) {
+                user.setLastname(lastname);
+                changed = true;
+            }
+        }
+
+        if (body.containsKey("email")) {
+            String email = ErrorHandler.tryString(body.get("email"), Notifications.PROFILE_EMAIL_INVALID.getDisplayName()).trim();
+            if (!email.matches(EMAIL_PATTERN)) {
+                throw new ApiException(400, Notifications.PROFILE_EMAIL_INVALID.getDisplayName());
+            }
+            if (!email.equals(user.getEmail())) {
+                if (userDAO.existByColumn(email, "email")) {
+                    throw new ApiException(400, messageService.buildMessage(Notifications.EMAIL_EXISTS, email));
+                }
+                user.setEmail(email);
+                changed = true;
+            }
+        }
+
+        if (body.containsKey("phone_number")) {
+            String raw = body.get("phone_number");
+            String phone = raw == null || raw.isBlank() ? null : raw.trim();
+            if (phone != null && !phone.replaceAll("\\s", "").matches(PHONE_PATTERN)) {
+                throw new ApiException(400, Notifications.PROFILE_PHONE_INVALID.getDisplayName());
+            }
+            if (!Objects.equals(phone, user.getPhoneNumber())) {
+                user.setPhoneNumber(phone);
+                changed = true;
+            }
+        }
+
+        String newPassword = body.get("new_password");
+        if (newPassword != null && !newPassword.isBlank()) {
+            String currentPassword = ErrorHandler.tryString(body.get("current_password"), Notifications.PROFILE_CURRENT_PASSWORD_REQUIRED.getDisplayName());
+            if (!PasswordService.passwordEquals(currentPassword, user.getPassword())) {
+                throw new ApiException(400, Notifications.PROFILE_CURRENT_PASSWORD_WRONG.getDisplayName());
+            }
+            if (!newPassword.equals(body.get("repeat_password"))) {
+                throw new ApiException(400, Notifications.REGISTER_PASSWORD_MISMATCH.getDisplayName());
+            }
+            PasswordService.passwordValidation(newPassword);
+            user.setPassword(PasswordService.hashHelper(newPassword));
+            changed = true;
+        }
+
+        if (changed) {
+            userDAO.update(user);
+        }
+
+        UserDTO dto = toDtoWithRoles(user);
+        Notifications result = changed ? Notifications.PROFILE_UPDATED : Notifications.PROFILE_NO_CHANGES;
+
+        ctx.status(200).json(Map.of(
+            "message", result.getDisplayName(),
+            "token", securityService.createToken(dto),
+            "data", dto
+        ));
+    }
+
+    // ________________________________________________________
+
+    private UserDTO toDtoWithRoles(User user) {
+        UserDTO dto = userMapper.toDTO(user);
+        dto.setRoles(user.getRoles());
+        return dto;
     }
 
 }

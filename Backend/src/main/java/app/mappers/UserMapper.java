@@ -13,6 +13,7 @@ public class UserMapper implements IMapper<User, UserDTO> {
                 .firstname(dto.getName())
                 .lastname(dto.getLastName())
                 .email(dto.getEmail())
+                .phoneNumber(dto.getPhoneNumber())
                 .build();
     }
 
@@ -22,6 +23,7 @@ public class UserMapper implements IMapper<User, UserDTO> {
                 .name(entity.getFirstname())
                 .lastName(entity.getLastname())
                 .email(entity.getEmail())
+                .phoneNumber(entity.getPhoneNumber())
                 .build();
     }
 }
