@@ -112,6 +112,21 @@
   margin-top: 16px;
 }
 
+.caseTagChanged {
+  animation: statusPop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+@keyframes statusPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .caseSection {
   margin-top: 28px;
 }
@@ -146,6 +161,179 @@
 
 .decisionNote {
   margin-top: 20px;
+}
+
+.errorText {
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* Status tags */
+
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+}
+
+.listRow .statusTag {
+  display: inline-flex;
+  margin-top: 0;
+  font-size: 12px;
+  color: var(--tag-fg);
+}
+
+.statusPending {
+  composes: statusTag;
+  --tag-bg: var(--sand);
+  --tag-fg: var(--green);
+}
+
+.statusApproved {
+  composes: statusTag;
+  --tag-bg: var(--sage);
+  --tag-fg: var(--green);
+}
+
+.statusRejected {
+  composes: statusTag;
+  --tag-bg: #fbe4dd;
+  --tag-fg: var(--orange);
+}
+
+.statusInfo {
+  composes: statusTag;
+  --tag-bg: #fdf1d8;
+  --tag-fg: #8a5a12;
+}
+
+/* Decision feedback banner */
+
+.feedback {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--feedback-fg);
+  background: var(--feedback-bg);
+  color: var(--green);
+  animation: feedbackIn 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.feedback::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--feedback-fg);
+  transform-origin: left;
+  animation: feedbackTimer 6s linear forwards;
+}
+
+.feedback strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.feedback p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.feedbackIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--feedback-fg);
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 700;
+  animation: feedbackPop 420ms 120ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+.feedbackClose {
+  margin-left: auto;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.feedbackApproved {
+  composes: feedback;
+  --feedback-bg: var(--mint);
+  --feedback-fg: var(--green);
+}
+
+.feedbackRejected {
+  composes: feedback;
+  --feedback-bg: #fdf0ec;
+  --feedback-fg: var(--orange);
+}
+
+.feedbackInfo {
+  composes: feedback;
+  --feedback-bg: #fdf6e6;
+  --feedback-fg: #b9801f;
+}
+
+@keyframes feedbackIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes feedbackPop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes feedbackTimer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback,
+  .feedbackIcon,
+  .caseTagChanged,
+  .feedback::after {
+    animation: none;
+  }
 }
 
 @media (max-width: 1280px) {

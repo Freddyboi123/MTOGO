@@ -19,19 +19,47 @@ const statusLabels = {
   MORE_INFORMATION_NEEDED: 'Mangler oplysninger'
 };
 
+const decisionTexts = {
+  APPROVED: 'er godkendt og oprettet som restaurant',
+  REJECTED: 'er afvist',
+  MORE_INFORMATION_NEEDED: 'er sendt tilbage til ansøgeren for flere oplysninger'
+};
+
+const feedbackIcons = {
+  APPROVED: '✓',
+  REJECTED: '✕',
+  MORE_INFORMATION_NEEDED: '?'
+};
+
+const feedbackClasses = {
+  APPROVED: styles.feedbackApproved,
+  REJECTED: styles.feedbackRejected,
+  MORE_INFORMATION_NEEDED: styles.feedbackInfo
+};
+
+const statusTagClasses = {
+  PENDING: styles.statusPending,
+  APPROVED: styles.statusApproved,
+  REJECTED: styles.statusRejected,
+  MORE_INFORMATION_NEEDED: styles.statusInfo
+};
+
 export default function AdminRestaurantApplication() {
   const [applications, setApplications] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const counts = useApplicationCounts();
 
   async function loadApplications() {
     try {
       const res = await getRestaurantApplications();
       setApplications(res.data.data);
+      return res.data.data;
     } catch (err) {
       setError(err.message);
+      return [];
     }
   }
 
@@ -39,19 +67,51 @@ export default function AdminRestaurantApplication() {
     loadApplications();
   }, []);
 
+  useEffect(() => {
+    if (!feedback) return undefined;
+    const timer = setTimeout(() => setFeedback(null), 6000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
+
   async function handleDecide(id, status, adminMessage) {
     setError('');
-    setNotice('');
+    setFeedback(null);
+    setSubmitting(true);
+
+    // Show the new status straight away, and undo it if the server refuses.
+    const previous = applications;
+    setSelectedId(id);
+    setApplications((current) =>
+      current.map((application) =>
+        application.id === id ? { ...application, status, adminMessage } : application
+      )
+    );
+
     try {
       const res = await decideRestaurantApplication(id, { status, adminMessage });
-      setNotice(
-        res.data.data.mailSent
+      const decided = res.data;
+
+      setApplications((current) =>
+        current.map((application) =>
+          application.id === id ? { ...application, ...decided } : application
+        )
+      );
+
+      setFeedback({
+        id: Date.now(),
+        status,
+        title: `${decided.restaurantName} ${decisionTexts[status]}`,
+        mail: decided.mailSent
           ? 'Ansøgeren er blevet notificeret på mail.'
           : 'Status er gemt, men mailen til ansøgeren kunne ikke sendes.'
-      );
-      await loadApplications();
+      });
+
+      counts.reload();
     } catch (err) {
+      setApplications(previous);
       setError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -77,8 +137,27 @@ export default function AdminRestaurantApplication() {
         <span className={styles.tabsRight}>{counts.total} ansøgninger afventer handling</span>
       </div>
 
-      {error && <p className={ui.fieldHint}>{error}</p>}
-      {notice && <p className={ui.fieldHint}>{notice}</p>}
+      {error && <p className={styles.errorText}>{error}</p>}
+      {feedback && (
+        <div
+          key={feedback.id}
+          role="status"
+          className={feedbackClasses[feedback.status]}
+        >
+          <span className={styles.feedbackIcon}>{feedbackIcons[feedback.status]}</span>
+          <div>
+            <strong>{feedback.title}</strong>
+            <p>{feedback.mail}</p>
+          </div>
+          <button
+            className={styles.feedbackClose}
+            onClick={() => setFeedback(null)}
+            aria-label="Luk besked"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <div className={styles.split}>
         <div>
@@ -86,6 +165,7 @@ export default function AdminRestaurantApplication() {
             applications={applications}
             selectedId={selected?.id}
             statusLabels={statusLabels}
+            statusTagClasses={statusTagClasses}
             onSelect={setSelectedId}
           />
         </div>
@@ -95,6 +175,8 @@ export default function AdminRestaurantApplication() {
             key={selected.id}
             application={selected}
             statusLabels={statusLabels}
+            statusTagClasses={statusTagClasses}
+            submitting={submitting}
             onDecide={handleDecide}
           />
         )}

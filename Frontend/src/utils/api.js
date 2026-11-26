@@ -72,22 +72,23 @@ export function useApplicationCounts() {
   const [restaurants, setRestaurants] = useState(cachedRestaurantCount);
   const couriers = 0;
 
-  useEffect(() => {
-    async function loadCounts() {
-      try {
-        const res = await getRestaurantApplications();
-        cachedRestaurantCount = res.data.data.filter(
-          (application) => application.status === 'PENDING'
-        ).length;
-      } catch {
-        cachedRestaurantCount = 0;
-      }
-      setRestaurants(cachedRestaurantCount);
+  async function reload() {
+    try {
+      const res = await getRestaurantApplications();
+      cachedRestaurantCount = res.data.data.filter(
+        (application) => application.status === 'PENDING'
+      ).length;
+    } catch {
+      cachedRestaurantCount = 0;
     }
-    loadCounts();
+    setRestaurants(cachedRestaurantCount);
+  }
+
+  useEffect(() => {
+    reload();
   }, []);
 
-  return { restaurants, couriers, total: restaurants + couriers };
+  return { restaurants, couriers, total: restaurants + couriers, reload };
 }
 
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));
