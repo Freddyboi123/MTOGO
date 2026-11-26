@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { isLoggedIn } from '../utils/api';
+import { getUser, isLoggedIn } from '../utils/api';
 import cx from '../utils/cx';
 import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import useBasket from '../basket/useBasket';
@@ -12,6 +12,7 @@ export default function SiteHeader() {
   const ordering = useFeatureFlag('ordering');
   const { count } = useBasket();
   const loggedIn = isLoggedIn();
+  const isAdmin = loggedIn && (getUser().roles ?? []).includes('ADMIN');
 
   return (
     <header className={styles.header}>
@@ -30,9 +31,16 @@ export default function SiteHeader() {
             </Link>
           )}
           {loggedIn ? (
-            <Link to="/min-profil" className={cx(ui.btn, ui.btnPrimary)}>
-              {headerTexts.profile}
-            </Link>
+            <div className={styles.account}>
+              {isAdmin && (
+                <Link to="/admin" className={cx(ui.btn, ui.btnOutline)}>
+                  {headerTexts.admin}
+                </Link>
+              )}
+              <Link to="/min-profil" className={cx(ui.btn, ui.btnPrimary)}>
+                {headerTexts.profile}
+              </Link>
+            </div>
           ) : (
             <div className={styles.auth}>
               <Link to="/login" className={styles.strong}>
