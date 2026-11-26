@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import { restaurantMenu, restaurantOrderTexts } from '../../../data/mtogo';
-import { getRestaurantOrders } from '../../../utils/api';
+import { getRestaurantOrders, updateOrderStatus } from '../../../utils/api';
+import useFeatureFlag from '../../../featureFlags/useFeatureFlag';
 import Panel from '../../../components/Panel';
 import DataTable from '../../../components/DataTable';
+import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 
 const texts = restaurantOrderTexts;
+
+const nextStep = {
+  RECEIVED: { status: 'PREPARING', label: texts.startPreparing },
+  ACCEPTED: { status: 'PREPARING', label: texts.startPreparing },
+  PREPARING: { status: 'READY_FOR_PICKUP', label: texts.markReady }
+};
 
 function formatPrice(price) {
   return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
@@ -36,6 +44,8 @@ const orderColumns = [
 export default function ActiveOrders({ restaurantId }) {
   const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState('loading');
+  const [error, setError] = useState('');
+  const orderStatus = useFeatureFlag('orderStatus');
 
   useEffect(() => {
     setStatus('loading');
@@ -47,14 +57,42 @@ export default function ActiveOrders({ restaurantId }) {
       .catch(() => setStatus('error'));
   }, [restaurantId]);
 
+  async function changeStatus(order, next) {
+    setError('');
+    try {
+      const res = await updateOrderStatus(order.id, next);
+      setOrders((current) => current.map((item) => (item.id === order.id ? res.data : item)));
+    } catch {
+      setError(texts.statusError);
+    }
+  }
+
+  const actionColumn = {
+    key: 'action',
+    label: texts.columns.action,
+    render: (order) => {
+      const step = nextStep[order.status];
+      return step ? (
+        <button
+          type="button"
+          className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}
+          onClick={() => changeStatus(order, step.status)}
+        >
+          {step.label}
+        </button>
+      ) : null;
+    }
+  };
+
+  const columns = orderStatus ? [...orderColumns, actionColumn] : orderColumns;
+
   return (
     <Panel title={texts.title} right={`${orders.length} ${texts.count}`}>
       {status === 'loading' && <p className={ui.fieldHint}>{texts.loading}</p>}
       {status === 'error' && <p className={ui.fieldHint}>{texts.error}</p>}
+      {error && <p className={ui.fieldHint}>{error}</p>}
       {status === 'ready' && orders.length === 0 && <p className={ui.fieldHint}>{texts.empty}</p>}
-      {status === 'ready' && orders.length > 0 && (
-        <DataTable columns={orderColumns} rows={orders} rowKey="id" />
-      )}
+      {status === 'ready' && orders.length > 0 && <DataTable columns={columns} rows={orders} rowKey="id" />}
     </Panel>
   );
 }

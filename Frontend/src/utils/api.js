@@ -47,6 +47,8 @@ export const getAvailableDeliveries = () => api('/deliveries/available');
 export const placeOrder = (body) => api('/orders', { method: 'POST', body });
 export const getRestaurantOrders = (restaurantId) => api(`/my-restaurants/${restaurantId}/orders`);
 export const getMyOrders = () => api('/orders/mine');
+export const updateOrderStatus = (orderId, status) =>
+  api(`/orders/${orderId}/status`, { method: 'PUT', body: { status } });
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
 export const updateMenuItem = (itemId, body) =>

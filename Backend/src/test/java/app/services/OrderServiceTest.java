@@ -418,4 +418,79 @@ class OrderServiceTest {
 
         assertEquals(0, new BigDecimal("15.68").compareTo(order.getCommissionAmount()));
     }
+
+    // ________________________________________________________
+
+    @Test
+    void restaurantMarksOrderAsPreparingAndThenReady() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.PREPARING);
+        Order ready = orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.READY_FOR_PICKUP);
+
+        assertEquals(OrderStatus.READY_FOR_PICKUP, ready.getStatus());
+        assertEquals(3, ready.getStatusHistory().size());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void readyOrderShowsUpForDeliveryAgents() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+        DeliveryAssignmentService deliveries = new DeliveryAssignmentService(em);
+
+        orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.PREPARING);
+        assertFalse(deliveries.available().stream().anyMatch(d -> d.getOrderId().equals(order.getId())));
+
+        orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.READY_FOR_PICKUP);
+        assertTrue(deliveries.available().stream().anyMatch(d -> d.getOrderId().equals(order.getId())));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void otherUserCannotChangeTheOrderStatus() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(customer.getId(), order.getId(), OrderStatus.PREPARING));
+
+        assertEquals(403, exception.getStatus());
+        assertEquals(OrderStatus.RECEIVED, order.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void orderCannotBeReadyBeforeItIsPrepared() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.READY_FOR_PICKUP));
+
+        assertEquals(400, exception.getStatus());
+        assertEquals(OrderStatus.RECEIVED, order.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void restaurantCannotMarkOrderAsDelivered() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.DELIVERED));
+
+        assertEquals(400, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void statusOfUnknownOrderThrows404() {
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(owner.getId(), UUID.randomUUID(), OrderStatus.PREPARING));
+
+        assertEquals(404, exception.getStatus());
+    }
 }
