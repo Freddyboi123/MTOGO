@@ -106,3 +106,8 @@ export function saveSession({ token, data }) {
 export const getMyDeliveries = () => api('/deliveries/mine');
 export const acceptDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/accept`, { method: 'POST' });
+
+export const pickUpDelivery = (orderId) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/pickup`, { method: 'POST' });
+export const completeDelivery = (orderId) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/deliver`, { method: 'POST' });

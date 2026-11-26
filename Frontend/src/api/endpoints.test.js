@@ -22,6 +22,8 @@ const CALLS = {
     getRestaurantOrders: (m) => m.getRestaurantOrders('42'),
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
+    pickUpDelivery: (m) => m.pickUpDelivery('42'),
+    completeDelivery: (m) => m.completeDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),
     getRestaurantApplications: (m) => m.getRestaurantApplications(),
     getMyRestaurantApplications: (m) => m.getMyRestaurantApplications(),
@@ -79,6 +81,18 @@ describe('frontend API calls match backend routes', () => {
 
   it('finds backend routes to compare against', () => {
     expect(backendRoutes).toContainEqual({ method: 'POST', path: '/api/users/auth/register' });
+  });
+
+  it.each([
+    ['pickUpDelivery', 'pickup'],
+    ['completeDelivery', 'deliver']
+  ])('US-11 %s uses the matching status transition endpoint', async (fn, action) => {
+    const mod = await loaders['utils/api']();
+    await mod[fn]('42');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe(`${DEPLOYED_ORIGIN}/api/deliveries/42/${action}`);
+    expect(options.method).toBe('POST');
   });
 
   for (const [moduleName, calls] of Object.entries(CALLS)) {
