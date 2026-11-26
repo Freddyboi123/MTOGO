@@ -19,6 +19,14 @@ import AdminCouriers from './pages/AdminCouriers';
 import AdminRestaurantApplication from './pages/AdminRestaurantApplication/AdminRestaurantApplication';
 import AdminCourierApplication from './pages/AdminCourierApplication';
 
+function ApplyRestaurantRedirect() {
+  return isLoggedIn() ? (
+    <Navigate to="/min-profil" state={{ section: 'Mine ansøgninger' }} replace />
+  ) : (
+    <Navigate to="/login" replace />
+  );
+}
+
 export default function App() {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
   const deliveryOverview = useFeatureFlag('deliveryOverview');
@@ -37,13 +45,7 @@ export default function App() {
       {ordering && <Route path="/betaling" element={<Checkout />} />}
       <Route
         path="/ansoeg/restaurant"
-        element={
-          isLoggedIn() ? (
-            <Navigate to="/min-profil" state={{ section: 'Mine ansøgninger' }} replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
+        element={<ApplyRestaurantRedirect />}
       />
       <Route path="/ansoeg/chauffoer" element={<ApplyCourier />} />
       <Route path="/min-profil" element={<Profile />} />
