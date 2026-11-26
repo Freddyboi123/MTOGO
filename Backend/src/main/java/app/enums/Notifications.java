@@ -62,8 +62,9 @@ public enum Notifications {
     // PROFILE
     PROFILE_UPDATED("Your profile was updated"),
     PROFILE_NO_CHANGES("There was nothing to update"),
-    PROFILE_EMAIL_VERIFY("Your profile was updated. Check your new email to verify it"),
-    PROFILE_EMAIL_VERIFY_MAIL_FAILED("Your profile was updated, but we could not send the verification email. Try to resend the link"),
+    PROFILE_EMAIL_VERIFY("Your profile was updated. Check your new email and confirm it to change your email"),
+    EMAIL_CHANGED("Your email has been changed. You can now log in with the new email"),
+    PROFILE_EMAIL_VERIFY_MAIL_FAILED("We could not send the confirmation email to your new address. Try again"),
     PROFILE_EMAIL_INVALID("The email address is not valid"),
     PROFILE_PHONE_INVALID("The phone number is not valid"),
     PROFILE_ADDRESS_INCOMPLETE("The address must have a street, a postcode and a city"),

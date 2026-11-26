@@ -46,6 +46,9 @@ public class User {
 
     @Builder.Default
     private boolean verified = false;
+
+    private String pendingEmail;
+
     private String verifyToken;
     private LocalDateTime verifyTokenExpiresAt;
 

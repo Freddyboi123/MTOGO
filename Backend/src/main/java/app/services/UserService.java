@@ -142,6 +142,11 @@ public class UserService {
             Notifications.VERIFY_INVALID_TOKEN.getDisplayName()
         );
 
+        if (user.getPendingEmail() != null) {
+            confirmNewEmail(ctx, user);
+            return;
+        }
+
         if (user.isVerified()) {
             ctx.status(200).json(Map.of("message", Notifications.VERIFY_ALREADY.getDisplayName()));
             return;
@@ -157,6 +162,27 @@ public class UserService {
         userDAO.update(user);
 
         ctx.status(200).json(Map.of("message", Notifications.VERIFY_SUCCESS.getDisplayName()));
+    }
+
+    // ________________________________________________________
+
+    private void confirmNewEmail(Context ctx, User user) {
+        if (user.getVerifyTokenExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ApiException(400, Notifications.VERIFY_EXPIRED.getDisplayName());
+        }
+
+        String newEmail = user.getPendingEmail();
+        if (userDAO.existsByEmail(newEmail)) {
+            throw new ApiException(400, messageService.buildMessage(Notifications.EMAIL_EXISTS, newEmail));
+        }
+
+        user.setEmail(newEmail);
+        user.setPendingEmail(null);
+        user.setVerifyToken(null);
+        user.setVerifyTokenExpiresAt(null);
+        userDAO.update(user);
+
+        ctx.status(200).json(Map.of("message", Notifications.EMAIL_CHANGED.getDisplayName()));
     }
 
     // ________________________________________________________
@@ -302,14 +328,15 @@ public class UserService {
                 if (newAddress && userDAO.existsByEmail(email)) {
                     throw new ApiException(400, messageService.buildMessage(Notifications.EMAIL_EXISTS, email));
                 }
-                user.setEmail(email);
                 changed = true;
 
                 if (newAddress) {
-                    user.setVerified(false);
+                    user.setPendingEmail(email);
                     user.setVerifyToken(UUID.randomUUID().toString());
                     user.setVerifyTokenExpiresAt(LocalDateTime.now().plusMinutes(TOKEN_MINUTES));
                     emailChanged = true;
+                } else {
+                    user.setEmail(email);
                 }
             }
         }
@@ -387,7 +414,7 @@ public class UserService {
         Notifications result = changed ? Notifications.PROFILE_UPDATED : Notifications.PROFILE_NO_CHANGES;
 
         if (emailChanged) {
-            result = mailService.sendVerifyEmail(user).sent()
+            result = mailService.sendConfirmNewEmail(user).sent()
                 ? Notifications.PROFILE_EMAIL_VERIFY
                 : Notifications.PROFILE_EMAIL_VERIFY_MAIL_FAILED;
         }

@@ -140,47 +140,42 @@ test('a wrong current password shows the backend error and keeps the password', 
   expect(stillWorks.status()).toBe(200);
 });
 
-test('a new email asks the customer to verify it, and only the email is sent', async ({ page }) => {
+test('changing only the letter case of the email is done at once and needs no confirmation', async ({ page }) => {
   await loginAndOpenPersonalInfo(page);
 
-  let sentBody;
-  await page.route('**/api/users/profile', async (route) => {
-    if (route.request().method() !== 'PATCH') return route.continue();
-    sentBody = route.request().postDataJSON();
-    return route.fulfill({
-      json: {
-        message: 'Your profile was updated. Check your new email to verify it',
-        token: await page.evaluate(() => localStorage.getItem('token')),
-        data: { id: 'x', name: 'Template', lastName: 'Owner', email: 'new@mtogo.dk', roles: ['RESTAURANT_OWNER'] }
-      }
-    });
-  });
+  try {
+    await page.getByLabel('E-mail').fill('OWNER@mtogo.dk');
+    await save(page).click();
 
-  await page.getByLabel('E-mail').fill('new@mtogo.dk');
-  await save(page).click();
-
-  expect(sentBody).toEqual({ email: 'new@mtogo.dk' });
-  await expect(page.getByText('Vi har sendt en bekræftelsesmail til din nye e-mail')).toBeVisible();
-  await expect(page.getByLabel('E-mail')).toHaveValue('new@mtogo.dk');
+    await expect(page.getByText('Dine oplysninger er gemt.', { exact: true })).toBeVisible();
+    await expect(page.getByText('bekræftelsesmail')).toHaveCount(0);
+    await expect(page.getByLabel('E-mail')).toHaveValue('OWNER@mtogo.dk');
+  } finally {
+    await restoreProfile(page, { email: USER.email });
+  }
 });
 
-test('changing only the letter case of the email does not ask for a new verification', async ({ page }) => {
+test('a new email does not replace the current one before it has been confirmed', async ({ page }) => {
   await loginAndOpenPersonalInfo(page);
 
-  await page.route('**/api/users/profile', async (route) => {
-    if (route.request().method() !== 'PATCH') return route.continue();
-    return route.fulfill({
-      json: {
-        message: 'Your profile was updated',
-        token: await page.evaluate(() => localStorage.getItem('token')),
-        data: { id: 'x', name: 'Template', lastName: 'Owner', email: 'OWNER@mtogo.dk', roles: ['RESTAURANT_OWNER'] }
-      }
-    });
-  });
-
-  await page.getByLabel('E-mail').fill('OWNER@mtogo.dk');
+  const requestPromise = page.waitForRequest(
+    (request) => request.method() === 'PATCH' && request.url().endsWith('/users/profile')
+  );
+  await page.getByLabel('E-mail').fill('new-owner@mtogo.dk');
   await save(page).click();
 
-  await expect(page.getByText('Dine oplysninger er gemt.', { exact: true })).toBeVisible();
-  await expect(page.getByText('bekræftelsesmail')).toHaveCount(0);
+  expect((await requestPromise).postDataJSON()).toEqual({ email: 'new-owner@mtogo.dk' });
+  await expect(page.getByText('Vi har sendt en bekræftelsesmail til new-owner@mtogo.dk')).toBeVisible();
+  await expect(page.getByLabel('E-mail')).toHaveValue(USER.email);
+  await expect(page.getByText('Afventer bekræftelse: new-owner@mtogo.dk')).toBeVisible();
+
+  // Still pending after a reload, and the old email still logs in.
+  await page.reload();
+  await expect(page.getByText('Afventer bekræftelse: new-owner@mtogo.dk')).toBeVisible();
+  const oldLogin = await page.request.post(`${API}/users/auth/login`, { data: USER });
+  expect(oldLogin.status()).toBe(200);
+  const newLogin = await page.request.post(`${API}/users/auth/login`, {
+    data: { email: 'new-owner@mtogo.dk', password: USER.password }
+  });
+  expect(newLogin.status()).toBe(401);
 });

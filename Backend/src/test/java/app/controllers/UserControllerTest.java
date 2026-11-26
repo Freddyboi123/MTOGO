@@ -370,20 +370,6 @@ class UserControllerTest {
 
     // ________________________________________________________
 
-    @Test
-    void patchProfileWithANewEmailReturnsATokenThatStillWorks() throws Exception {
-        String email = newEmail();
-        String newEmail = newEmail();
-        registerVerified(email);
-
-        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("email", newEmail));
-
-        assertEquals(200, response.statusCode());
-        String newToken = JSON.readTree(response.body()).get("token").asText();
-        assertEquals(200, patchProfile(newToken, Map.of("first_name", "Test")).statusCode());
-        assertNotNull(findUser(newEmail));
-    }
-
     // ________________________________________________________
 
     @Test
@@ -574,8 +560,14 @@ class UserControllerTest {
 
     // ________________________________________________________
 
+    // ________________________________________________________
+
+    // ________________________________________________________
+
+    // ________________________________________________________
+
     @Test
-    void aNewEmailMustBeVerifiedBeforeTheNextLogin() throws Exception {
+    void aNewEmailIsOnlyPendingUntilItIsConfirmed() throws Exception {
         String email = newEmail();
         String newEmail = newEmail();
         registerVerified(email);
@@ -583,39 +575,71 @@ class UserControllerTest {
         HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("email", newEmail));
 
         assertEquals(200, response.statusCode());
-        User user = findUser(newEmail);
-        assertFalse(user.isVerified());
-        assertNotNull(user.getVerifyToken());
-        assertEquals(403, login(newEmail, PASSWORD).statusCode());
-
-        get("/users/auth/verify?token=" + user.getVerifyToken());
-
-        assertEquals(200, login(newEmail, PASSWORD).statusCode());
+        User user = findUser(email);
+        assertEquals(email, user.getEmail());
+        assertEquals(newEmail, user.getPendingEmail());
+        assertEquals(200, login(email, PASSWORD).statusCode());
+        assertEquals(401, login(newEmail, PASSWORD).statusCode());
+        assertEquals(newEmail, JSON.readTree(response.body()).get("data").get("pendingEmail").asText());
     }
 
     // ________________________________________________________
 
     @Test
-    void changingOnlyTheLetterCaseOfTheEmailDoesNotNeedANewVerification() throws Exception {
+    void confirmingTheNewEmailSwitchesTheLoginEmail() throws Exception {
+        String email = newEmail();
+        String newEmail = newEmail();
+        registerVerified(email);
+        patchProfile(loginToken(email, PASSWORD), Map.of("email", newEmail));
+
+        HttpResponse<String> confirmed = get("/users/auth/verify?token=" + findUser(email).getVerifyToken());
+
+        assertEquals(200, confirmed.statusCode());
+        assertEquals(200, login(newEmail, PASSWORD).statusCode());
+        assertEquals(401, login(email, PASSWORD).statusCode());
+        assertNull(findUser(newEmail).getPendingEmail());
+        assertNull(findUser(newEmail).getVerifyToken());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void theNewEmailCannotBeConfirmedIfSomeoneElseHasTakenItInTheMeantime() throws Exception {
+        String email = newEmail();
+        String newEmail = newEmail();
+        registerVerified(email);
+        patchProfile(loginToken(email, PASSWORD), Map.of("email", newEmail));
+        String token = findUser(email).getVerifyToken();
+        register(newEmail, PASSWORD);
+
+        assertEquals(400, get("/users/auth/verify?token=" + token).statusCode());
+        assertEquals(email, findUser(email).getEmail());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void changingOnlyTheLetterCaseOfTheEmailIsDoneAtOnce() throws Exception {
         String email = newEmail();
         registerVerified(email);
 
         HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("email", email.toUpperCase()));
 
         assertEquals(200, response.statusCode());
-        assertTrue(findUser(email).isVerified());
-        assertEquals(200, login(email, PASSWORD).statusCode());
+        User user = findUser(email);
+        assertEquals(email.toUpperCase(), user.getEmail());
+        assertNull(user.getPendingEmail());
     }
 
     // ________________________________________________________
 
     @Test
-    void changingOtherDetailsKeepsTheEmailVerified() throws Exception {
+    void changingOtherDetailsLeavesNoPendingEmail() throws Exception {
         String email = newEmail();
         registerVerified(email);
 
         patchProfile(loginToken(email, PASSWORD), Map.of("last_name", "Newname"));
 
-        assertTrue(findUser(email).isVerified());
+        assertNull(findUser(email).getPendingEmail());
     }
 }

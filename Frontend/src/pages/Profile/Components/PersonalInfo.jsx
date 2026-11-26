@@ -13,6 +13,7 @@ export default function PersonalInfo({ onSaved }) {
   const [feedback, setFeedback] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState(null);
 
   useEffect(() => {
     getProfile()
@@ -30,6 +31,7 @@ export default function PersonalInfo({ onSaved }) {
     };
     setSaved(values);
     setForm(values);
+    setPendingEmail(user.pendingEmail ?? null);
   }
 
   function handleChange(event) {
@@ -67,15 +69,15 @@ export default function PersonalInfo({ onSaved }) {
     setSaving(true);
     setFeedback({ type: '', text: '' });
     try {
-      const newAddress = body.email !== undefined && body.email.toLowerCase() !== saved.email.toLowerCase();
       const res = await updateProfile(body);
       saveSession(res);
       applyUser(res.data);
       setPasswords(emptyPasswords);
+      // A new email address does not replace the current one before it has been confirmed.
       setFeedback({
         type: 'success',
-        text: newAddress
-          ? 'Dine oplysninger er gemt. Vi har sendt en bekræftelsesmail til din nye e-mail. Du skal bekræfte den, før du kan logge ind igen.'
+        text: res.data.pendingEmail
+          ? `Dine oplysninger er gemt. Vi har sendt en bekræftelsesmail til ${res.data.pendingEmail}. Din e-mail skifter, når du har bekræftet den nye adresse.`
           : 'Dine oplysninger er gemt.'
       });
       onSaved?.();
@@ -124,6 +126,9 @@ export default function PersonalInfo({ onSaved }) {
               onChange={handleChange}
               disabled={loading}
             />
+            {pendingEmail && (
+              <span className={ui.fieldHint}>Afventer bekræftelse: {pendingEmail}</span>
+            )}
           </div>
           <div className={ui.field}>
             <label htmlFor="profile-phone">Telefonnummer (valgfrit)</label>

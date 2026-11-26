@@ -27,6 +27,7 @@ public class UserMapper implements IMapper<User, UserDTO> {
                 .name(entity.getFirstname())
                 .lastName(entity.getLastname())
                 .email(entity.getEmail())
+                .pendingEmail(entity.getPendingEmail())
                 .phoneNumber(entity.getPhoneNumber())
                 .street(entity.getStreet())
                 .postalCode(entity.getPostalCode())
