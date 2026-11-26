@@ -544,6 +544,7 @@ export const headerTexts = {
   partner: 'Bliv partner',
   basket: 'Kurv',
   profile: 'Profil',
+  admin: 'Admin',
   login: 'Log ind',
   signUp: 'Opret konto'
 };

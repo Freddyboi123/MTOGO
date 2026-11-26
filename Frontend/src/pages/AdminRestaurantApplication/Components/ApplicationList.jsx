@@ -2,7 +2,7 @@ import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../AdminRestaurantApplication.module.css';
 
-export default function ApplicationList({ applications, selectedId, statusLabels, onSelect }) {
+export default function ApplicationList({ applications, selectedId, statusLabels, statusTagClasses, onSelect }) {
   return (
     <div className={styles.listPanel}>
       <h2 className={styles.listTitle}>Restaurantansøgninger</h2>
@@ -22,7 +22,9 @@ export default function ApplicationList({ applications, selectedId, statusLabels
             <span>{application.applicantName}</span>
           </div>
           <span>{new Date(application.createdAt).toLocaleDateString('da-DK')}</span>
-          <span>{statusLabels[application.status]}</span>
+          <span className={statusTagClasses[application.status]}>
+            {statusLabels[application.status]}
+          </span>
         </div>
       ))}
       <p className={cx(ui.fieldHint, styles.listFoot)}>
