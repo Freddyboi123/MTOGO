@@ -306,6 +306,8 @@ export const orderHistoryTexts = {
   loading: 'Henter dine ordrer…',
   error: 'Dine ordrer kunne ikke hentes.',
   empty: 'Du har ikke bestilt noget endnu.',
+  statusChangedPrefix: 'Din ordre fra',
+  statusChangedMiddle: 'er nu:',
   columns: {
     date: 'Dato',
     restaurant: 'Restaurant',
