@@ -547,14 +547,53 @@ export const restaurantMenu = {
 };
 
 export const headerTexts = {
-  restaurants: 'Restauranter',
-  howItWorks: 'Sådan fungerer det',
-  partner: 'Bliv partner',
-  basket: 'Kurv',
-  profile: 'Profil',
-  admin: 'Admin',
-  login: 'Log ind',
-  signUp: 'Opret konto'
+  da: {
+    restaurants: 'Restauranter',
+    howItWorks: 'Sådan fungerer det',
+    partner: 'Bliv partner',
+    basket: 'Kurv',
+    profile: 'Profil',
+    admin: 'Admin',
+    login: 'Log ind',
+    signUp: 'Opret konto',
+    switchLanguage: 'EN',
+    switchLanguageLabel: 'Switch to English'
+  },
+  en: {
+    restaurants: 'Restaurants',
+    howItWorks: 'How it works',
+    partner: 'Become a partner',
+    basket: 'Basket',
+    profile: 'Profile',
+    admin: 'Admin',
+    login: 'Log in',
+    signUp: 'Sign up',
+    switchLanguage: 'DA',
+    switchLanguageLabel: 'Skift til dansk'
+  }
+};
+
+export const footerTexts = {
+  da: {
+    tagline: 'Gode måltider. Tættere på.',
+    rights: '© 2026 MTOGO Alle rettigheder forbeholdes.',
+    about: 'Om MTOGO',
+    help: 'Hjælp & kontakt',
+    partner: 'Bliv partner',
+    privacy: 'Privatliv',
+    terms: 'Handelsbetingelser',
+    cookies: 'Cookies'
+  },
+  en: {
+    tagline: 'Good meals. Closer to you.',
+    rights: '© 2026 MTOGO All rights reserved.',
+    about: 'About MTOGO',
+    help: 'Help & contact',
+    partner: 'Become a partner',
+    privacy: 'Privacy',
+    terms: 'Terms of sale',
+    cookies: 'Cookies'
+  }
 };
 
 export const roleLabels = {

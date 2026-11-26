@@ -1,16 +1,20 @@
 import { Link } from 'react-router-dom';
 import cx from '../utils/cx';
+import useTexts from '../language/useTexts';
+import { footerTexts } from '../data/mtogo';
 import ui from '../styles/shared.module.css';
 import styles from './SiteFooter.module.css';
 
 export default function SiteFooter({ variant = 'full' }) {
+  const texts = useTexts(footerTexts);
+
   if (variant === 'slim') {
     return (
       <footer className={styles.footer}>
         <div className={cx(ui.page, styles.slim)}>
           <span>© 2026 MTOGO</span>
           <span>
-            <Link to="/help">Hjælp &amp; kontakt</Link>     Privatliv     Handelsbetingelser
+            <Link to="/help">{texts.help}</Link>     {texts.privacy}     {texts.terms}
           </span>
         </div>
       </footer>
@@ -22,19 +26,19 @@ export default function SiteFooter({ variant = 'full' }) {
       <div className={cx(ui.page, styles.grid)}>
         <div>
           <div className={styles.brand}>MTOGO</div>
-          <p className={styles.sub}>Gode måltider. Tættere på.</p>
-          <p className={styles.sub}>© 2026 MTOGO Alle rettigheder forbeholdes.</p>
+          <p className={styles.sub}>{texts.tagline}</p>
+          <p className={styles.sub}>{texts.rights}</p>
         </div>
         <div>
           <div className={styles.links}>
-            <a href="#om">Om MTOGO</a>
-            <Link to="/help">Hjælp &amp; kontakt</Link>
-            <a href="#partner">Bliv partner</a>
+            <a href="#om">{texts.about}</a>
+            <Link to="/help">{texts.help}</Link>
+            <a href="#partner">{texts.partner}</a>
           </div>
           <div className={styles.linksSecondary}>
-            <a href="#privatliv">Privatliv</a>
-            <a href="#betingelser">Handelsbetingelser</a>
-            <a href="#cookies">Cookies</a>
+            <a href="#privatliv">{texts.privacy}</a>
+            <a href="#betingelser">{texts.terms}</a>
+            <a href="#cookies">{texts.cookies}</a>
           </div>
         </div>
       </div>

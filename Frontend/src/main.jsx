@@ -4,15 +4,18 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import FeatureFlagProvider from './featureFlags/FeatureFlagProvider';
 import BasketProvider from './basket/BasketProvider';
+import LanguageProvider from './language/LanguageProvider';
 import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <FeatureFlagProvider>
-        <BasketProvider>
-          <App />
-        </BasketProvider>
+        <LanguageProvider>
+          <BasketProvider>
+            <App />
+          </BasketProvider>
+        </LanguageProvider>
       </FeatureFlagProvider>
     </BrowserRouter>
   </React.StrictMode>
