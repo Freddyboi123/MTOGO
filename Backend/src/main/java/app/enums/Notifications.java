@@ -78,6 +78,10 @@ public enum Notifications {
     LOGIN_REQUIRED("You must be logged in"),
     DELIVERY_AGENT_NOT_ACTIVE("You are not an active delivery agent"),
     DELIVERY_ALREADY_TAKEN("This delivery has already been taken or is no longer available"),
+    DELIVERY_NOT_ASSIGNED("This order has no assigned delivery"),
+    DELIVERY_NOT_OWNED("Only the assigned delivery agent can update this delivery"),
+    DELIVERY_STATUS_INVALID("This delivery cannot be updated from its current status"),
+    DELIVERY_FEATURE_DISABLED("Not found"),
 
     // RESTAURANTS AND MENUS
     RESTAURANT_CREATED("Restaurant %s was created"),
