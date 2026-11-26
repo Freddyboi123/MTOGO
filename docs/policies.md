@@ -37,7 +37,8 @@ Not every issue is a user story. Technical work is tracked as tech stories.
 - We build the features in the order of the backlog and finish a feature before we start the next one
 - A feature is done when all its user stories are done and the feature is in production
 - Unfinished work can be merged and deployed behind a feature flag. The flag is turned off in production until the whole feature is done
-- In the backend feature flags are read from configuration, and in the frontend from Vite environment variables named `VITE_FEATURE_*`
+- Feature flags live in `Backend/src/main/resources/feature-flags.properties`, with a comment that says which user stories each flag belongs to. An environment variable with the same name overrides a flag on the server without a new deploy
+- The frontend reads the flags from `GET /api/features`, so a flag is only defined in one place
 
 ## Definition of Done
 
@@ -53,7 +54,7 @@ The Definition of Done is maintained in this repository. An issue may only be mo
 
 - CI measures backend test coverage with JaCoCo and shows a summary on every run. The full report is uploaded as the build artifact backend-reports
 - The build fails if line coverage of the backend is below the required minimum
-- The required minimum is 25% line coverage. It is set just below the coverage we had when the requirement was introduced (28.7%), so coverage can not fall
+- The required minimum is 60% line coverage. It was introduced at 25%, just below the coverage at that time (28.7%), and raised to 60% on 25 November 2026 when the coverage was 66.4%, so coverage can not fall
 - We raise the minimum as tests are added. The minimum is reviewed at the weekly flow review and is never lowered. It is set by `coverage.line.minimum` in `Backend/pom.xml`
 
 ### Static analysis
@@ -65,9 +66,12 @@ The Definition of Done is maintained in this repository. An issue may only be mo
 ## Collaboration
 
 - We never work directly on main. Branches are short lived, created from main and merged back into main through a pull request
+- A new branch is created from the newest main, so main is pulled first
+- Before a pull request is merged, main is merged into the branch and the tests are run again, because main requires branches to be up to date
+- Pull requests are not based on other unmerged branches. If work depends on an unmerged branch, that branch is merged first
 - Every pull request is reviewed by another team member, as soon as possible so that work does not wait
 - main must always be stable and ready to deploy
-- Releases follow Semantic Versioning
+- Releases follow Semantic Versioning. A new minor version is tagged when a feature is turned on in production
 - Documentation is written in English
 
 ## Flow measurements

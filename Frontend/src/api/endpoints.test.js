@@ -20,11 +20,14 @@ const CALLS = {
     getAvailableDeliveries: (m) => m.getAvailableDeliveries(),
     placeOrder: (m) => m.placeOrder({ restaurantId: '42', lines: [] }),
     getRestaurantOrders: (m) => m.getRestaurantOrders('42'),
+    getMyOrders: (m) => m.getMyOrders(),
+    updateOrderStatus: (m) => m.updateOrderStatus('42', 'PREPARING'),
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
     pickUpDelivery: (m) => m.pickUpDelivery('42'),
     completeDelivery: (m) => m.completeDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),
+    updateMenuItem: (m) => m.updateMenuItem('42', { price: 60 }),
     getRestaurantApplications: (m) => m.getRestaurantApplications(),
     getMyRestaurantApplications: (m) => m.getMyRestaurantApplications(),
     submitRestaurantApplication: (m) => m.submitRestaurantApplication({ restaurantName: 'X' }),
@@ -48,6 +51,7 @@ const NOT_ENDPOINTS = new Set([
   'logout', 
   'saveSession',
   'getUserName',
+  'getUser',
   'useApplicationCounts'
 ]);
 

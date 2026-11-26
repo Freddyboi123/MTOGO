@@ -30,6 +30,18 @@
   font-weight: 600;
 }
 
+.auth {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 @media (max-width: 760px) {
   .nav {
     gap: 18px;

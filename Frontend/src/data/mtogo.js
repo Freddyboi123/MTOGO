@@ -148,18 +148,6 @@ export const checkoutTexts = {
   more: 'Bestil mere →'
 };
 
-export const customer = {
-  firstName: 'Sofie',
-  lastName: 'Andersen',
-  email: 'sofie.a@email.dk',
-  phone: '+45 28 34 56 78',
-  street: 'Nørrebrogade 18',
-  postalCode: '2200',
-  city: 'København N',
-  floor: '2. tv.',
-  since: 'Kunde · siden november 2026'
-};
-
 export const applications = [
   {
     type: 'Restaurantpartner · A-026',
@@ -312,6 +300,22 @@ export const restaurantMenuRows = [
   { name: 'Funghi', price: '129 kr.', state: 'Aktiv' }
 ];
 
+export const orderHistoryTexts = {
+  title: 'Ordrehistorik',
+  hint: 'Her kan du se dine tidligere ordrer.',
+  loading: 'Henter dine ordrer…',
+  error: 'Dine ordrer kunne ikke hentes.',
+  empty: 'Du har ikke bestilt noget endnu.',
+  statusChangedPrefix: 'Din ordre fra',
+  statusChangedMiddle: 'er nu:',
+  columns: {
+    date: 'Dato',
+    restaurant: 'Restaurant',
+    total: 'Beløb',
+    status: 'Status'
+  }
+};
+
 export const restaurantOrderTexts = {
   title: 'Aktive ordrer',
   count: 'ordrer',
@@ -323,8 +327,12 @@ export const restaurantOrderTexts = {
     items: 'Indhold',
     address: 'Leveringsadresse',
     total: 'Beløb',
-    status: 'Status'
+    status: 'Status',
+    action: 'Handling'
   },
+  startPreparing: 'Start tilberedning',
+  markReady: 'Klar til afhentning',
+  statusError: 'Status kunne ikke opdateres.',
   statuses: {
     RECEIVED: 'Ny ordre',
     PENDING: 'Afventer',
@@ -376,15 +384,33 @@ export const courierTotals = {
 };
 
 export const restaurantPanelStats = {
-  ordersToday: 12,
-  activeOrders: 3,
-  revenueToday: '2.486 kr.',
-  rating: '4,8 / 5',
-  reviews: '240+',
-  menuCategory: 'Pizza',
-  menuItemsTotal: 12,
   minimumOrder: '99 kr.',
   deliveryRadius: '4 km'
+};
+
+export const menuPanelTexts = {
+  title: 'Menu & varer',
+  add: '+ Tilføj vare',
+  columns: {
+    name: 'Vare',
+    price: 'Pris',
+    available: 'Tilgængelig',
+    actions: 'Handling'
+  },
+  available: 'Aktiv',
+  unavailable: 'Udsolgt',
+  markUnavailable: 'Marker udsolgt',
+  markAvailable: 'Gør aktiv',
+  edit: 'Rediger',
+  name: 'Navn',
+  description: 'Beskrivelse',
+  price: 'Pris (kr.)',
+  saveNew: 'Gem vare',
+  saveChanges: 'Gem ændringer',
+  cancel: 'Annuller',
+  saved: 'er gemt',
+  categoryCount: 'kategorier',
+  itemCount: 'varer'
 };
 
 export const courierPanelStats = {
@@ -473,23 +499,6 @@ export const selectedAdminCourier = {
   record: 'Dokumenter godkendt  ·  128 leverancer  ·  Bedømmelse 4,9 / 5'
 };
 
-export const applyRestaurantSteps = [
-  {
-    number: '01',
-    title: 'Fortæl os om restauranten',
-    body: 'Udfyld oplysninger og upload dine registreringsdokumenter.'
-  },
-  {
-    number: '02',
-    title: 'Vi gennemgår din ansøgning',
-    body: 'Følg status direkte på din profil.'
-  },
-  {
-    number: '03',
-    title: 'Gør klar til første ordre',
-    body: 'Tilføj menu, billeder og åbningstider i dit restaurantpanel.'
-  }
-];
 
 export const applyCourierSteps = [
   {
@@ -523,8 +532,7 @@ export const restaurantOverview = {
   lead: 'Udforsk restauranterne på MTOGO, og vælg hvor du vil bestille fra.',
   loading: 'Henter restauranter…',
   error: 'Restauranterne kunne ikke hentes. Prøv igen om lidt.',
-  empty: 'Der er ingen restauranter endnu.',
-  placeholderImage: '/images/restaurant-cover.png'
+  empty: 'Der er ingen restauranter endnu.'
 };
 
 export const restaurantMenu = {
@@ -535,7 +543,37 @@ export const restaurantMenu = {
   emptyCategory: 'Der er ingen retter i denne kategori endnu.',
   unavailable: 'Udsolgt',
   currency: 'kr.',
-  cover: '/images/restaurant-cover.png'
+  phone: 'Tlf.'
+};
+
+export const headerTexts = {
+  restaurants: 'Restauranter',
+  howItWorks: 'Sådan fungerer det',
+  partner: 'Bliv partner',
+  basket: 'Kurv',
+  profile: 'Profil',
+  admin: 'Admin',
+  login: 'Log ind',
+  signUp: 'Opret konto'
+};
+
+export const roleLabels = {
+  CUSTOMER: 'Kunde',
+  RESTAURANT_OWNER: 'Restaurantejer',
+  DELIVERY_AGENT: 'Bud',
+  ADMIN: 'Administrator',
+  OWNER: 'Ejer'
+};
+
+export const restaurantPanelTexts = {
+  publicPage: 'Se offentlig side ↗',
+  logout: 'Log ud',
+  items: 'Varer på menuen',
+  itemsNote: 'Alle varer i dine kategorier',
+  unavailable: 'Udsolgte varer',
+  unavailableNote: 'Kan ikke bestilles lige nu',
+  categories: 'Kategorier',
+  categoriesNote: 'På din menu'
 };
 
 export const courierDeliveryStatusTexts = {

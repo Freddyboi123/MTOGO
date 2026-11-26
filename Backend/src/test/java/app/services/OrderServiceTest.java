@@ -359,4 +359,138 @@ class OrderServiceTest {
 
         assertEquals(404, exception.getStatus());
     }
+
+    // ________________________________________________________
+
+    @Test
+    void customerSeesTheirOwnOrderHistory() {
+        Order first = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+        Order second = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(burrata, 2))));
+
+        List<Order> orders = orderService.getMyOrders(customer.getId());
+
+        assertEquals(2, orders.size());
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(first.getId())));
+        assertTrue(orders.stream().anyMatch(o -> o.getId().equals(second.getId())));
+        assertEquals("Pizzeria", orders.get(0).getRestaurant().getName());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void customerDoesNotSeeOtherCustomersOrders() {
+        User otherCustomer = createUser(Role.CUSTOMER);
+        orderService.placeOrder(otherCustomer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        assertTrue(orderService.getMyOrders(customer.getId()).isEmpty());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void placedOrderKeepsOldPriceWhenTheRestaurantUpdatesTheItem() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        restaurantService.updateItem(owner.getId(), margherita.getId(), MenuItemDTO.builder().price(new BigDecimal("150.00")).build());
+        em.clear();
+
+        Order saved = orderDAO.getById(order.getId());
+        assertEquals(0, new BigDecimal("119.00").compareTo(saved.getLines().get(0).getUnitPrice()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void itemMarkedUnavailableByTheRestaurantCannotBeOrdered() {
+        restaurantService.updateItem(owner.getId(), burrata.getId(), MenuItemDTO.builder().available(false).build());
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.placeOrder(customer.getId(), orderDTO(List.of(line(burrata, 1)))));
+
+        assertEquals(400, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void placedOrderGetsCommissionFromTheSlidingScale() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 2), line(burrata, 1))));
+
+        assertEquals(0, new BigDecimal("15.68").compareTo(order.getCommissionAmount()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void restaurantMarksOrderAsPreparingAndThenReady() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.PREPARING);
+        Order ready = orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.READY_FOR_PICKUP);
+
+        assertEquals(OrderStatus.READY_FOR_PICKUP, ready.getStatus());
+        assertEquals(3, ready.getStatusHistory().size());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void readyOrderShowsUpForDeliveryAgents() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+        DeliveryAssignmentService deliveries = new DeliveryAssignmentService(em);
+
+        orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.PREPARING);
+        assertFalse(deliveries.available().stream().anyMatch(d -> d.getOrderId().equals(order.getId())));
+
+        orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.READY_FOR_PICKUP);
+        assertTrue(deliveries.available().stream().anyMatch(d -> d.getOrderId().equals(order.getId())));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void otherUserCannotChangeTheOrderStatus() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(customer.getId(), order.getId(), OrderStatus.PREPARING));
+
+        assertEquals(403, exception.getStatus());
+        assertEquals(OrderStatus.RECEIVED, order.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void orderCannotBeReadyBeforeItIsPrepared() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.READY_FOR_PICKUP));
+
+        assertEquals(400, exception.getStatus());
+        assertEquals(OrderStatus.RECEIVED, order.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void restaurantCannotMarkOrderAsDelivered() {
+        Order order = orderService.placeOrder(customer.getId(), orderDTO(List.of(line(margherita, 1))));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(owner.getId(), order.getId(), OrderStatus.DELIVERED));
+
+        assertEquals(400, exception.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void statusOfUnknownOrderThrows404() {
+        ApiException exception = assertThrows(ApiException.class,
+                () -> orderService.updateStatus(owner.getId(), UUID.randomUUID(), OrderStatus.PREPARING));
+
+        assertEquals(404, exception.getStatus());
+    }
 }

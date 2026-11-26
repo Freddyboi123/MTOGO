@@ -13,6 +13,7 @@ import MyApplications from './Components/MyApplications';
 import MyRestaurants from './Components/MyRestaurants';
 import OrderHistory from './Components/OrderHistory';
 import Security from './Components/Security';
+import useFeatureFlag from '../../featureFlags/useFeatureFlag';
 
 const profileSections = [
   'Personlige oplysninger',
@@ -25,6 +26,8 @@ const profileSections = [
 
 export default function Profile() {
   const location = useLocation();
+  const ordering = useFeatureFlag('ordering');
+  const sections = ordering ? profileSections : profileSections.filter((name) => name !== 'Ordrehistorik');
   const [section, setSection] = useState(location.state?.section ?? profileSections[0]);
   const navigate = useNavigate();
 
@@ -35,7 +38,7 @@ export default function Profile() {
 
   return (
     <>
-      <SiteHeader variant="app" />
+      <SiteHeader />
 
       <section className={cx(ui.page, styles.intro)}>
         <p className={ui.eyebrow}>Din MTOGO-konto</p>
@@ -47,7 +50,7 @@ export default function Profile() {
 
       <section className={cx(ui.page, styles.layout)}>
         <ProfileNav
-          sections={profileSections}
+          sections={sections}
           section={section}
           onSelect={setSection}
           onLogout={handleLogout}
@@ -58,7 +61,7 @@ export default function Profile() {
           {section === 'Leveringsadresse' && <DeliveryAddress />}
           {section === 'Mine ansøgninger' && <MyApplications />}
           {section === 'Mine restauranter' && <MyRestaurants />}
-          {section === 'Ordrehistorik' && <OrderHistory />}
+          {ordering && section === 'Ordrehistorik' && <OrderHistory />}
           {section === 'Sikkerhed' && <Security />}
         </div>
       </section>

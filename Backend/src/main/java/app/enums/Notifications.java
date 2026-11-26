@@ -72,6 +72,9 @@ public enum Notifications {
     PAYMENT_FAILED("The payment failed. No order was created"),
     ORDERS_FETCHED("You fetched %s orders"),
     ORDERS_NOT_OWNER("Only the owner of the restaurant can see its orders"),
+    ORDER_STATUS_UPDATED("Order %s is now %s"),
+    ORDER_STATUS_NOT_OWNER("Only the restaurant that received the order can change its status"),
+    ORDER_STATUS_INVALID("The order cannot change to that status"),
 
     // DELIVERIES
     ORDER_ID_INVALID("The order ID is not valid"),
@@ -95,6 +98,7 @@ public enum Notifications {
     CATEGORY_NOT_FOUND("The menu category was not found"),
     CATEGORY_NAME_REQUIRED("You must enter a name for the category"),
     MENU_ITEM_ADDED("Menu item %s was added"),
+    MENU_ITEM_UPDATED("Menu item %s was updated"),
     MENU_FETCHED("You fetched the menu"),
     MENU_ITEM_NAME_REQUIRED("You must enter a name for the menu item"),
     MENU_ITEM_PRICE_INVALID("The price must be a number greater than zero"),
@@ -114,7 +118,9 @@ public enum Notifications {
     APPLICATION_DECIDED("The application for %s is now %s"),
     APPLICATION_NOT_PENDING("Only a new application can get a decision"),
     APPLICATION_DECISION_INVALID("The decision must be APPROVED, REJECTED or MORE_INFORMATION_NEEDED"),
-    APPLICATION_MESSAGE_REQUIRED("You must write what information is missing")
+    APPLICATION_MESSAGE_REQUIRED("You must write what information is missing"),
+
+    MAIL_SENDER_BOOLEAN_FAILED("Mail sender failed!")
 
     ;
 

@@ -46,6 +46,23 @@
   color: var(--pale);
 }
 
+.sideLogout {
+  margin-top: auto;
+  border: none;
+  background: none;
+  color: var(--pale);
+  font-size: 14px;
+  text-align: left;
+  padding: 13px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sideLogout:hover {
+  background: rgba(250, 248, 242, 0.1);
+  color: var(--cream);
+}
+
 .navLinkActive {
   composes: navLink;
   background: rgba(250, 248, 242, 0.1);

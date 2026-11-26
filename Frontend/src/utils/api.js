@@ -46,8 +46,13 @@ export const setRestaurantVisibility = (id, active) =>
 export const getAvailableDeliveries = () => api('/deliveries/available');
 export const placeOrder = (body) => api('/orders', { method: 'POST', body });
 export const getRestaurantOrders = (restaurantId) => api(`/my-restaurants/${restaurantId}/orders`);
+export const getMyOrders = () => api('/orders/mine');
+export const updateOrderStatus = (orderId, status) =>
+  api(`/orders/${orderId}/status`, { method: 'PUT', body: { status } });
 export const addMenuItem = (categoryId, body) =>
   api(`/category/${categoryId}/items`, { method: 'POST', body });
+export const updateMenuItem = (itemId, body) =>
+  api(`/menu-item/${itemId}`, { method: 'PUT', body });
 
 export const getRestaurantApplications = () => api('/restaurant-applications');
 export const getMyRestaurantApplications = () => api('/my-restaurant-applications');
@@ -64,22 +69,23 @@ export function useApplicationCounts() {
   const [restaurants, setRestaurants] = useState(cachedRestaurantCount);
   const couriers = 0;
 
-  useEffect(() => {
-    async function loadCounts() {
-      try {
-        const res = await getRestaurantApplications();
-        cachedRestaurantCount = res.data.data.filter(
-          (application) => application.status === 'PENDING'
-        ).length;
-      } catch {
-        cachedRestaurantCount = 0;
-      }
-      setRestaurants(cachedRestaurantCount);
+  async function reload() {
+    try {
+      const res = await getRestaurantApplications();
+      cachedRestaurantCount = res.data.data.filter(
+        (application) => application.status === 'PENDING'
+      ).length;
+    } catch {
+      cachedRestaurantCount = 0;
     }
-    loadCounts();
+    setRestaurants(cachedRestaurantCount);
+  }
+
+  useEffect(() => {
+    reload();
   }, []);
 
-  return { restaurants, couriers, total: restaurants + couriers };
+  return { restaurants, couriers, total: restaurants + couriers, reload };
 }
 
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));
@@ -89,12 +95,16 @@ export function logout() {
   localStorage.removeItem('user');
 }
 
-export function getUserName() {
+export function getUser() {
   try {
-    return JSON.parse(localStorage.getItem('user'))?.name ?? null;
+    return JSON.parse(localStorage.getItem('user')) ?? {};
   } catch {
-    return null;
+    return {};
   }
+}
+
+export function getUserName() {
+  return getUser().name ?? null;
 }
 
 export function saveSession({ token, data }) {

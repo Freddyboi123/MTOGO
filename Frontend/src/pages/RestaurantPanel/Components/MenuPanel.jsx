@@ -1,108 +1,158 @@
 import { useState } from 'react';
-import { addMenuItem } from '../../../utils/api';
-import { restaurantPanelStats } from '../../../data/mtogo';
+import { addMenuItem, updateMenuItem } from '../../../utils/api';
+import { menuPanelTexts } from '../../../data/mtogo';
 import Panel from '../../../components/Panel';
 import DataTable from '../../../components/DataTable';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../RestaurantPanel.module.css';
 
-const menuColumns = [
-  { key: 'name', label: 'Vare' },
-  { key: 'price', label: 'Pris' },
-  { key: 'state', label: 'Tilgængelig', render: (row) => `${row.state} ▾` },
-  { key: 'actions', label: 'Handling', render: () => 'Rediger · Slet' }
-];
+const emptyForm = { name: '', description: '', price: '' };
 
-export default function MenuPanel({ categories, onItemAdded }) {
-  const [showForm, setShowForm] = useState(false);
-  const [itemName, setItemName] = useState('');
-  const [itemDescription, setItemDescription] = useState('');
-  const [itemPrice, setItemPrice] = useState('');
+export default function MenuPanel({ categories, onMenuChanged }) {
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
+  const [saved, setSaved] = useState('');
 
-  async function handleAddItem(event) {
+  const items = categories.flatMap((category) => category.items ?? []);
+
+  function closeForm() {
+    setEditing(null);
+    setForm(emptyForm);
+  }
+
+  function openAdd() {
+    setError('');
+    setSaved('');
+    if (editing === 'new') {
+      closeForm();
+      return;
+    }
+    setEditing('new');
+    setForm(emptyForm);
+  }
+
+  function openEdit(item) {
+    setError('');
+    setSaved('');
+    setEditing(item.id);
+    setForm({ name: item.name, description: item.description ?? '', price: String(item.price) });
+  }
+
+  function updateField(event) {
+    setForm({ ...form, [event.target.name]: event.target.value });
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault();
     setError('');
+    setSaved('');
     try {
-      await addMenuItem(categories[0].id, {
-        name: itemName,
-        description: itemDescription,
-        price: itemPrice
-      });
-      setItemName('');
-      setItemDescription('');
-      setItemPrice('');
-      setShowForm(false);
-      await onItemAdded();
+      if (editing === 'new') {
+        await addMenuItem(categories[0].id, form);
+      } else {
+        await updateMenuItem(editing, form);
+      }
+      setSaved(`${form.name} ${menuPanelTexts.saved}`);
+      closeForm();
+      await onMenuChanged();
     } catch (err) {
       setError(err.message);
     }
   }
 
-  const menuRows = categories.flatMap((category) =>
-    (category.items ?? []).map((item) => ({
-      name: item.name,
-      price: `${item.price} kr.`,
-      state: item.available ? 'Aktiv' : 'Ikke tilgængelig'
-    }))
-  );
+  async function toggleAvailable(item) {
+    setError('');
+    setSaved('');
+    try {
+      await updateMenuItem(item.id, { available: !item.available });
+      setSaved(`${item.name} ${menuPanelTexts.saved}`);
+      await onMenuChanged();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  const columns = [
+    { key: 'name', label: menuPanelTexts.columns.name },
+    { key: 'price', label: menuPanelTexts.columns.price, render: (item) => <span className={styles.nowrap}>{item.price} kr.</span> },
+    {
+      key: 'available',
+      label: menuPanelTexts.columns.available,
+      render: (item) => (
+        <div className={styles.availability}>
+          <span className={styles.status}>{item.available ? menuPanelTexts.available : menuPanelTexts.unavailable}</span>
+          <button
+            type="button"
+            className={cx(ui.btn, ui.btnOutline, ui.btnSmall, styles.toggle)}
+            onClick={() => toggleAvailable(item)}
+          >
+            {item.available ? menuPanelTexts.markUnavailable : menuPanelTexts.markAvailable}
+          </button>
+        </div>
+      )
+    },
+    {
+      key: 'actions',
+      label: menuPanelTexts.columns.actions,
+      render: (item) => (
+        <button
+          type="button"
+          className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}
+          onClick={() => openEdit(item)}
+        >
+          {menuPanelTexts.edit}
+        </button>
+      )
+    }
+  ];
 
   return (
     <div className={styles.panelFlat}>
       <Panel
-        title="Menu & varer"
-        subtitle={`${restaurantPanelStats.menuCategory} · ${menuRows.length} af ${restaurantPanelStats.menuItemsTotal} varer`}
+        title={menuPanelTexts.title}
+        subtitle={`${categories.length} ${menuPanelTexts.categoryCount} · ${items.length} ${menuPanelTexts.itemCount}`}
         controls={
           <button
             className={cx(ui.btn, ui.btnDark, ui.btnSmall, styles.addItem)}
-            onClick={() => setShowForm(!showForm)}
+            onClick={openAdd}
             disabled={categories.length === 0}
           >
-            + Tilføj vare
+            {menuPanelTexts.add}
           </button>
         }
       >
-        {showForm && (
-          <form onSubmit={handleAddItem} className={ui.stack}>
+        {editing && (
+          <form onSubmit={handleSubmit} className={cx(ui.stack, styles.menuForm)}>
             <div className={ui.field}>
-              <label htmlFor="item-name">Navn</label>
-              <input
-                id="item-name"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
-              />
+              <label htmlFor="item-name">{menuPanelTexts.name}</label>
+              <input id="item-name" name="name" value={form.name} onChange={updateField} />
             </div>
             <div className={ui.field}>
-              <label htmlFor="item-description">Beskrivelse</label>
-              <input
-                id="item-description"
-                value={itemDescription}
-                onChange={(e) => setItemDescription(e.target.value)}
-              />
+              <label htmlFor="item-description">{menuPanelTexts.description}</label>
+              <input id="item-description" name="description" value={form.description} onChange={updateField} />
             </div>
             <div className={ui.field}>
-              <label htmlFor="item-price">Pris (kr.)</label>
-              <input
-                id="item-price"
-                type="number"
-                step="0.01"
-                value={itemPrice}
-                onChange={(e) => setItemPrice(e.target.value)}
-              />
+              <label htmlFor="item-price">{menuPanelTexts.price}</label>
+              <input id="item-price" name="price" type="number" step="0.01" value={form.price} onChange={updateField} />
             </div>
-            <button type="submit" className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>
-              Gem vare
-            </button>
+            <div className={styles.formActions}>
+              <button type="submit" className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>
+                {editing === 'new' ? menuPanelTexts.saveNew : menuPanelTexts.saveChanges}
+              </button>
+              <button type="button" className={cx(ui.btn, ui.btnOutline, ui.btnSmall)} onClick={closeForm}>
+                {menuPanelTexts.cancel}
+              </button>
+            </div>
           </form>
         )}
-        {error && <p className={ui.fieldHint}>{error}</p>}
+        {error && <p className={cx(ui.fieldHint, styles.menuError)}>{error}</p>}
+        {saved && <p className={styles.saved}>{saved}</p>}
         <DataTable
-          columns={menuColumns}
-          rows={menuRows}
-          rowKey="name"
-          footLeft="Administrer kategorier →"
-          footRight={`Se alle ${restaurantPanelStats.menuItemsTotal} varer →`}
+          columns={columns}
+          rows={items}
+          rowKey="id"
         />
       </Panel>
     </div>
