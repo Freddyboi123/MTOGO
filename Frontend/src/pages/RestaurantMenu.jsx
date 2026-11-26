@@ -8,6 +8,7 @@ import styles from './RestaurantMenu.module.css';
 import { basketTexts, restaurantMenu } from '../data/mtogo';
 import { fetchMenu, fetchRestaurant } from '../api/restaurants';
 import useFeatureFlag from '../featureFlags/useFeatureFlag';
+import restaurantImage from '../utils/restaurantImage';
 import useBasket from '../basket/useBasket';
 
 function formatPrice(price) {
@@ -61,7 +62,7 @@ export default function RestaurantMenu() {
       <SiteHeader />
 
       <div className={styles.cover}>
-        <img src={restaurantMenu.cover} alt={restaurant?.name ?? ''} />
+        <img src={restaurantImage(restaurant)} alt={restaurant?.name ?? ''} />
         <Link to="/restauranter" className={styles.back}>
           {restaurantMenu.back}
         </Link>
@@ -84,7 +85,7 @@ export default function RestaurantMenu() {
               <p className={cx(ui.lead, styles.description)}>{restaurant.description}</p>
             )}
             <p className={styles.meta}>
-              {[address, restaurant.phoneNumber].filter(Boolean).join('     ·     ')}
+              {[address, restaurant.phoneNumber && `${restaurantMenu.phone} ${restaurant.phoneNumber}`].filter(Boolean).join('     ·     ')}
             </p>
           </div>
         </section>

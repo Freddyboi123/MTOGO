@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { restaurantPanelTexts } from '../../data/mtogo';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getMyRestaurant } from '../../utils/api';
 import cx from '../../utils/cx';
@@ -13,17 +14,24 @@ import OpeningHours from './Components/OpeningHours';
 import ActiveOrders from './Components/ActiveOrders';
 import useFeatureFlag from '../../featureFlags/useFeatureFlag';
 
-const buildItems = (id) => [
-  { to: `/restaurantpanel/${id}/overblik`, label: 'Overblik' },
-  { to: `/restaurantpanel/${id}/ordrer`, label: 'Ordrer' },
-  { to: `/restaurantpanel/${id}`, label: 'Min restaurant' },
-  { to: `/restaurantpanel/${id}/menu`, label: 'Menu & varer' },
-  { to: `/restaurantpanel/${id}/aabningstider`, label: 'Åbningstider' },
-  { to: `/restaurantpanel/${id}/udbetalinger`, label: 'Udbetalinger' }
-];
+const buildItems = (id, ordering) =>
+  [
+    { to: `/restaurantpanel/${id}/overblik`, label: 'Overblik' },
+    ordering && { to: `/restaurantpanel/${id}/ordrer`, label: 'Ordrer' },
+    { to: `/restaurantpanel/${id}`, label: 'Min restaurant' },
+    { to: `/restaurantpanel/${id}/menu`, label: 'Menu & varer' },
+    { to: `/restaurantpanel/${id}/aabningstider`, label: 'Åbningstider' }
+  ].filter(Boolean);
+
+const sectionIds = {
+  overblik: 'overblik',
+  ordrer: 'ordrer',
+  menu: 'menu',
+  aabningstider: 'menu'
+};
 
 export default function RestaurantPanel() {
-  const { id } = useParams();
+  const { id, '*': section } = useParams();
   const [myRestaurant, setMyRestaurant] = useState(null);
   const [error, setError] = useState('');
   const ordering = useFeatureFlag('ordering');
@@ -43,11 +51,21 @@ export default function RestaurantPanel() {
     loadRestaurant();
   }, [id]);
 
+  const loaded = Boolean(myRestaurant);
+
+  useEffect(() => {
+    if (!loaded) {
+      return;
+    }
+    const target = document.getElementById(sectionIds[section] ?? 'restaurant');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [section, loaded]);
+
   if (!myRestaurant) {
     return (
       <DashboardLayout
         role="Restaurantpartner"
-        items={buildItems(id)}
+        items={buildItems(id, ordering)}
         breadcrumb="Restaurantpanel"
         user="Restaurantpartner"
         helpLink
@@ -63,7 +81,7 @@ export default function RestaurantPanel() {
   return (
     <DashboardLayout
       role="Restaurantpartner"
-      items={buildItems(id)}
+      items={buildItems(id, ordering)}
       breadcrumb={`${myRestaurant.name}  /  Restaurantpanel`}
       user="Luca Moretti"
       helpLink
@@ -77,20 +95,29 @@ export default function RestaurantPanel() {
           </p>
         </div>
         <div className={dash.actions}>
-          <button className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>Se offentlig side ↗</button>
-          <button className={cx(ui.btn, ui.btnDark, ui.btnSmall)}>Gem ændringer</button>
+          <Link to={`/restaurant/${id}`} className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>
+            {restaurantPanelTexts.publicPage}
+          </Link>
         </div>
       </div>
 
-      <PanelStats />
-      <RestaurantInfo myRestaurant={myRestaurant} onRestaurantChanged={setMyRestaurant} />
+      <div id="overblik">
+        <PanelStats categories={myRestaurant.categories ?? []} />
+      </div>
+      <div id="restaurant">
+        <RestaurantInfo myRestaurant={myRestaurant} onRestaurantChanged={setMyRestaurant} />
+      </div>
 
-      <div className={styles.split}>
+      <div id="menu" className={styles.split}>
         <MenuPanel categories={myRestaurant.categories ?? []} onMenuChanged={loadRestaurant} />
         <OpeningHours />
       </div>
 
-      {ordering && <ActiveOrders restaurantId={id} />}
+      {ordering && (
+        <div id="ordrer">
+          <ActiveOrders restaurantId={id} />
+        </div>
+      )}
     </DashboardLayout>
   );
 }

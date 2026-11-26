@@ -38,7 +38,7 @@ export default function Profile() {
 
   return (
     <>
-      <SiteHeader variant="app" />
+      <SiteHeader />
 
       <section className={cx(ui.page, styles.intro)}>
         <p className={ui.eyebrow}>Din MTOGO-konto</p>

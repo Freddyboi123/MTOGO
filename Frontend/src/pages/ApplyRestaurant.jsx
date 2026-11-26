@@ -10,7 +10,7 @@ const cuisineOptions = cuisines.slice(1);
 export default function ApplyRestaurant() {
   return (
     <>
-      <SiteHeader variant="app" />
+      <SiteHeader />
 
       <section className={cx(ui.page, styles.intro)}>
         <p className={ui.eyebrow}>Bliv restaurantpartner</p>

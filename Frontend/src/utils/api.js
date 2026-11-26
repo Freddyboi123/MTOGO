@@ -94,12 +94,16 @@ export function logout() {
   localStorage.removeItem('user');
 }
 
-export function getUserName() {
+export function getUser() {
   try {
-    return JSON.parse(localStorage.getItem('user'))?.name ?? null;
+    return JSON.parse(localStorage.getItem('user')) ?? {};
   } catch {
-    return null;
+    return {};
   }
+}
+
+export function getUserName() {
+  return getUser().name ?? null;
 }
 
 export function saveSession({ token, data }) {

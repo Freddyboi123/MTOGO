@@ -49,6 +49,7 @@ const NOT_ENDPOINTS = new Set([
   'logout', 
   'saveSession',
   'getUserName',
+  'getUser',
   'useApplicationCounts'
 ]);
 

@@ -4,9 +4,9 @@ import { fetchRestaurants } from '../../../api/restaurants';
 import useFeatureFlag from '../../../featureFlags/useFeatureFlag';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
+import restaurantImage from '../../../utils/restaurantImage';
 import styles from '../Landing.module.css';
 
-const PLACEHOLDER_IMAGE = '/images/restaurant-cover.png';
 
 export default function LocalFavorites() {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
@@ -53,7 +53,7 @@ export default function LocalFavorites() {
               className={styles.card}
             >
               <div className={styles.cardPhoto}>
-                <img src={PLACEHOLDER_IMAGE} alt={restaurant.name} />
+                <img src={restaurantImage(restaurant)} alt={restaurant.name} />
               </div>
               <div className={styles.cardBody}>
                 <h3>{restaurant.name}</h3>
