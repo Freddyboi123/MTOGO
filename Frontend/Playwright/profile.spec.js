@@ -16,7 +16,6 @@ async function loginAndOpenPersonalInfo(page) {
 
 const save = (page) => page.getByRole('button', { name: 'Gem ændringer' });
 
-// The seeded user is shared with the other tests, so every test puts its changes back.
 async function restoreProfile(page, body) {
   const token = await page.evaluate(() => localStorage.getItem('token'));
   await page.request.patch(`${API}/users/profile`, {
