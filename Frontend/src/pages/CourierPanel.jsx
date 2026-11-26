@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import DashboardLayout from '../components/DashboardLayout';
-import { acceptDelivery, getAvailableDeliveries, getMyDeliveries, isLoggedIn } from '../utils/api';
+import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, isLoggedIn, pickUpDelivery } from '../utils/api';
+import { courierDeliveryStatusTexts } from '../data/mtogo';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import dash from '../components/DashboardLayout.module.css';
@@ -49,6 +50,8 @@ export default function CourierPanel() {
   const [reload, setReload] = useState(0);
   const [accepting, setAccepting] = useState(null);
   const [notice, setNotice] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [statusError, setStatusError] = useState('');
 
   useEffect(() => {
     if (!authorized) return;
@@ -56,6 +59,7 @@ export default function CourierPanel() {
     setLoading(true);
     setSelectedOrderId(null);
     setNotice('');
+    setStatusError('');
     (myDeliveries ? getMyDeliveries() : getAvailableDeliveries())
       .then((response) => {
         if (!active) return;
@@ -95,6 +99,25 @@ export default function CourierPanel() {
     }
   }
 
+  async function handleStatusUpdate(delivery) {
+    const completing = delivery.deliveryStatus === 'PICKED_UP';
+    setUpdatingStatus(delivery.orderId);
+    setStatusError('');
+    setNotice('');
+    try {
+      const response = await (completing ? completeDelivery(delivery.orderId) : pickUpDelivery(delivery.orderId));
+      setDeliveries((current) => completing
+        ? current.filter((item) => item.orderId !== delivery.orderId)
+        : current.map((item) => item.orderId === delivery.orderId ? response.data : item));
+      if (completing) setSelectedOrderId((current) => current === delivery.orderId ? null : current);
+      setNotice(completing ? courierDeliveryStatusTexts.completed : courierDeliveryStatusTexts.pickedUp);
+    } catch (err) {
+      setStatusError(err.message);
+    } finally {
+      setUpdatingStatus(null);
+    }
+  }
+
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
   if (!authorized) {
     return <p className={cx(ui.page, styles.message)}>Kun chaufførpartnere har adgang til leveringsoversigten.</p>;
@@ -122,7 +145,7 @@ export default function CourierPanel() {
           <button
             type="button"
             className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}
-            disabled={loading}
+            disabled={loading || updatingStatus !== null}
             onClick={() => { setLoading(true); setReload((value) => value + 1); }}
           >
             Opdater listen
@@ -130,6 +153,7 @@ export default function CourierPanel() {
         </div>
       </div>
 
+      {statusError && <p className={styles.message} role="alert">{statusError}</p>}
       {notice && <p className={styles.message} role="status">{notice}</p>}
       <div className={styles.split}>
         <section aria-label={myDeliveries ? 'Mine ture' : 'Ledige leverancer'}>
@@ -149,7 +173,7 @@ export default function CourierPanel() {
           {!loading && !error && deliveries.map((delivery) => (
             <article className={styles.delivery} key={delivery.orderId}>
               <div>
-                <div className={styles.deliveryLabel}>{myDeliveries ? `STATUS: ${delivery.deliveryStatus ?? delivery.orderStatus}` : 'LEDIG'} · ORDRE {delivery.orderId}</div>
+                <div className={styles.deliveryLabel}>{myDeliveries ? `STATUS: ${courierDeliveryStatusTexts.labels[delivery.deliveryStatus] ?? delivery.orderStatus}` : 'LEDIG'} · ORDRE {delivery.orderId}</div>
                 <h3 className={styles.deliveryName}>{delivery.restaurantName}</h3>
                 <p className={styles.deliveryRoute}>Forventet afhentning: {formatPickupTime(delivery.expectedPickupAt ?? delivery.expectedPickupTime)}</p>
               </div>
@@ -190,7 +214,15 @@ export default function CourierPanel() {
               {myDeliveries ? (
                 <div className={styles.detail}>
                   <span className={ui.sectionLabel}>LEVERINGSSTATUS</span>
-                  <p>{selected.deliveryStatus ?? selected.orderStatus}</p>
+                  <p>{courierDeliveryStatusTexts.labels[selected.deliveryStatus] ?? selected.orderStatus}</p>
+                  {((selected.deliveryStatus === 'ASSIGNED' && selected.orderStatus === 'READY_FOR_PICKUP') ||
+                    (selected.deliveryStatus === 'PICKED_UP' && selected.orderStatus === 'OUT_FOR_DELIVERY')) && (
+                    <button type="button" className={cx(ui.btn, ui.btnDark)}
+                      disabled={updatingStatus !== null} onClick={() => handleStatusUpdate(selected)}>
+                      {updatingStatus === selected.orderId ? courierDeliveryStatusTexts.updating :
+                        selected.deliveryStatus === 'ASSIGNED' ? courierDeliveryStatusTexts.pickUp : courierDeliveryStatusTexts.deliver}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <button type="button" className={cx(ui.btn, ui.btnDark)}
