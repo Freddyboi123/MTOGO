@@ -571,4 +571,51 @@ class UserControllerTest {
 
         assertEquals(400, register(email.toUpperCase(), PASSWORD).statusCode());
     }
+
+    // ________________________________________________________
+
+    @Test
+    void aNewEmailMustBeVerifiedBeforeTheNextLogin() throws Exception {
+        String email = newEmail();
+        String newEmail = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("email", newEmail));
+
+        assertEquals(200, response.statusCode());
+        User user = findUser(newEmail);
+        assertFalse(user.isVerified());
+        assertNotNull(user.getVerifyToken());
+        assertEquals(403, login(newEmail, PASSWORD).statusCode());
+
+        get("/users/auth/verify?token=" + user.getVerifyToken());
+
+        assertEquals(200, login(newEmail, PASSWORD).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void changingOnlyTheLetterCaseOfTheEmailDoesNotNeedANewVerification() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("email", email.toUpperCase()));
+
+        assertEquals(200, response.statusCode());
+        assertTrue(findUser(email).isVerified());
+        assertEquals(200, login(email, PASSWORD).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void changingOtherDetailsKeepsTheEmailVerified() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        patchProfile(loginToken(email, PASSWORD), Map.of("last_name", "Newname"));
+
+        assertTrue(findUser(email).isVerified());
+    }
 }

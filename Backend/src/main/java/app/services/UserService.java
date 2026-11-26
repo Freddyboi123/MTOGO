@@ -274,6 +274,7 @@ public class UserService {
         User user = ErrorHandler.tryEntity(userDAO.getById(userDTO.getId()), Notifications.USER_NOT_FOUND.getDisplayName());
 
         boolean changed = false;
+        boolean emailChanged = false;
 
         if (body.containsKey("first_name")) {
             String firstname = ErrorHandler.tryString(body.get("first_name"), Notifications.PROFILE_FIRSTNAME_EMPTY.getDisplayName()).trim();
@@ -297,11 +298,19 @@ public class UserService {
                 throw new ApiException(400, Notifications.PROFILE_EMAIL_INVALID.getDisplayName());
             }
             if (!email.equals(user.getEmail())) {
-                if (!email.equalsIgnoreCase(user.getEmail()) && userDAO.existsByEmail(email)) {
+                boolean newAddress = !email.equalsIgnoreCase(user.getEmail());
+                if (newAddress && userDAO.existsByEmail(email)) {
                     throw new ApiException(400, messageService.buildMessage(Notifications.EMAIL_EXISTS, email));
                 }
                 user.setEmail(email);
                 changed = true;
+
+                if (newAddress) {
+                    user.setVerified(false);
+                    user.setVerifyToken(UUID.randomUUID().toString());
+                    user.setVerifyTokenExpiresAt(LocalDateTime.now().plusMinutes(TOKEN_MINUTES));
+                    emailChanged = true;
+                }
             }
         }
 
@@ -376,6 +385,12 @@ public class UserService {
 
         UserDTO dto = toDtoWithRoles(user);
         Notifications result = changed ? Notifications.PROFILE_UPDATED : Notifications.PROFILE_NO_CHANGES;
+
+        if (emailChanged) {
+            result = mailService.sendVerifyEmail(user).sent()
+                ? Notifications.PROFILE_EMAIL_VERIFY
+                : Notifications.PROFILE_EMAIL_VERIFY_MAIL_FAILED;
+        }
 
         ctx.status(200).json(Map.of(
             "message", result.getDisplayName(),

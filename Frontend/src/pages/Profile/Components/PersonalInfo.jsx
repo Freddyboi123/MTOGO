@@ -40,7 +40,6 @@ export default function PersonalInfo({ onSaved }) {
     setPasswords({ ...passwords, [event.target.name]: event.target.value });
   }
 
-  // Only the fields that differ from the saved values are sent (PATCH).
   function changedFields() {
     const body = {};
     if (form.firstName !== saved.firstName) body.first_name = form.firstName;
@@ -68,11 +67,17 @@ export default function PersonalInfo({ onSaved }) {
     setSaving(true);
     setFeedback({ type: '', text: '' });
     try {
+      const newAddress = body.email !== undefined && body.email.toLowerCase() !== saved.email.toLowerCase();
       const res = await updateProfile(body);
       saveSession(res);
       applyUser(res.data);
       setPasswords(emptyPasswords);
-      setFeedback({ type: 'success', text: 'Dine oplysninger er gemt.' });
+      setFeedback({
+        type: 'success',
+        text: newAddress
+          ? 'Dine oplysninger er gemt. Vi har sendt en bekræftelsesmail til din nye e-mail. Du skal bekræfte den, før du kan logge ind igen.'
+          : 'Dine oplysninger er gemt.'
+      });
       onSaved?.();
     } catch (err) {
       setFeedback({ type: 'error', text: err.message });

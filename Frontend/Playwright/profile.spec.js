@@ -139,3 +139,48 @@ test('a wrong current password shows the backend error and keeps the password', 
   const stillWorks = await page.request.post(`${API}/users/auth/login`, { data: USER });
   expect(stillWorks.status()).toBe(200);
 });
+
+test('a new email asks the customer to verify it, and only the email is sent', async ({ page }) => {
+  await loginAndOpenPersonalInfo(page);
+
+  let sentBody;
+  await page.route('**/api/users/profile', async (route) => {
+    if (route.request().method() !== 'PATCH') return route.continue();
+    sentBody = route.request().postDataJSON();
+    return route.fulfill({
+      json: {
+        message: 'Your profile was updated. Check your new email to verify it',
+        token: await page.evaluate(() => localStorage.getItem('token')),
+        data: { id: 'x', name: 'Template', lastName: 'Owner', email: 'new@mtogo.dk', roles: ['RESTAURANT_OWNER'] }
+      }
+    });
+  });
+
+  await page.getByLabel('E-mail').fill('new@mtogo.dk');
+  await save(page).click();
+
+  expect(sentBody).toEqual({ email: 'new@mtogo.dk' });
+  await expect(page.getByText('Vi har sendt en bekræftelsesmail til din nye e-mail')).toBeVisible();
+  await expect(page.getByLabel('E-mail')).toHaveValue('new@mtogo.dk');
+});
+
+test('changing only the letter case of the email does not ask for a new verification', async ({ page }) => {
+  await loginAndOpenPersonalInfo(page);
+
+  await page.route('**/api/users/profile', async (route) => {
+    if (route.request().method() !== 'PATCH') return route.continue();
+    return route.fulfill({
+      json: {
+        message: 'Your profile was updated',
+        token: await page.evaluate(() => localStorage.getItem('token')),
+        data: { id: 'x', name: 'Template', lastName: 'Owner', email: 'OWNER@mtogo.dk', roles: ['RESTAURANT_OWNER'] }
+      }
+    });
+  });
+
+  await page.getByLabel('E-mail').fill('OWNER@mtogo.dk');
+  await save(page).click();
+
+  await expect(page.getByText('Dine oplysninger er gemt.', { exact: true })).toBeVisible();
+  await expect(page.getByText('bekræftelsesmail')).toHaveCount(0);
+});
