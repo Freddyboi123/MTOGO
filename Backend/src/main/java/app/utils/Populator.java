@@ -2,6 +2,7 @@ package app.utils;
 
 import app.configs.HibernateConfig;
 import app.entities.*;
+import app.enums.Cuisine;
 import app.enums.Role;
 import app.services.PasswordService;
 import jakarta.persistence.EntityManager;
@@ -67,7 +68,7 @@ public class Populator {
 
     private static Restaurant pizzaPlace(User owner) {
         Restaurant r = restaurant(owner, "Mamma Mia Pizza", "Classic Italian pizzas", "11111111",
-                "Nørrebrogade 10", "2200", "København N");
+                "Nørrebrogade 10", "2200", "København N", Cuisine.PIZZA, 55.6950, 12.5480);
 
         MenuCategory pizzas = category("Pizzas", 1);
         pizzas.addItem(item("Margherita", "Tomato, mozzarella, basil", "89.00"));
@@ -87,7 +88,7 @@ public class Populator {
 
     private static Restaurant sushiBar(User owner) {
         Restaurant r = restaurant(owner, "Tokyo Sushi", "Fresh sushi and rolls", "22222222",
-                "Vesterbrogade 50", "1620", "København V");
+                "Vesterbrogade 50", "1620", "København V", Cuisine.SUSHI, 55.6700, 12.5560);
 
         MenuCategory rolls = category("Rolls", 1);
         rolls.addItem(item("California Roll", "Crab, avocado, cucumber (8 pcs)", "85.00"));
@@ -111,7 +112,7 @@ public class Populator {
 
     private static Restaurant burgerJoint(User owner) {
         Restaurant r = restaurant(owner, "Burger Barn", "Smash burgers and fries", "33333333",
-                "Østerbrogade 100", "2100", "København Ø");
+                "Østerbrogade 100", "2100", "København Ø", Cuisine.BURGER, 55.7020, 12.5760);
 
         MenuCategory burgers = category("Burgers", 1);
         burgers.addItem(item("Classic Burger", "Beef, cheddar, pickles", "95.00"));
@@ -132,11 +133,15 @@ public class Populator {
     // ________________________________________________________
 
     private static Restaurant restaurant(User owner, String name, String description, String phone,
-                                         String street, String postalCode, String city) {
+                                         String street, String postalCode, String city,
+                                         Cuisine cuisine, double latitude, double longitude) {
         return Restaurant.builder()
                 .name(name)
                 .description(description)
                 .phoneNumber(phone)
+                .cuisine(cuisine)
+                .latitude(latitude)
+                .longitude(longitude)
                 .address(Address.builder().street(street).postalCode(postalCode).city(city).build())
                 .owner(owner)
                 .build();

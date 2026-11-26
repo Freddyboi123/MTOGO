@@ -5,6 +5,8 @@ import app.daos.RestaurantApplicationDAO;
 import app.daos.RestaurantDAO;
 import app.daos.UserDAO;
 import app.dtos.RestaurantApplicationDTO;
+import app.enums.Cuisine;
+import app.entities.Restaurant;
 import app.entities.RestaurantApplication;
 import app.entities.User;
 import app.enums.ApplicationStatus;
@@ -79,6 +81,9 @@ class RestaurantApplicationServiceTest {
                 .email("kontakt@testeria.dk")
                 .phoneNumber("12345678")
                 .description("Pizza og pasta")
+                .cuisine(Cuisine.ITALIENSK)
+                .latitude(55.7704)
+                .longitude(12.5038)
                 .build();
     }
 
@@ -89,6 +94,55 @@ class RestaurantApplicationServiceTest {
                 .status(status)
                 .adminMessage(message)
                 .build();
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void anApplicationWithoutACategoryIsRejected() {
+        RestaurantApplicationDTO dto = applicationDTO();
+        dto.setCuisine(null);
+
+        assertThrows(ApiException.class, () -> service.submitApplication(applicant.getId(), dto));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void anApplicationWithoutALocationIsRejected() {
+        RestaurantApplicationDTO dto = applicationDTO();
+        dto.setLatitude(null);
+        dto.setLongitude(null);
+
+        assertThrows(ApiException.class, () -> service.submitApplication(applicant.getId(), dto));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void anApplicationWithALocationOutsideTheEarthIsRejected() {
+        RestaurantApplicationDTO dto = applicationDTO();
+        dto.setLatitude(120.0);
+
+        assertThrows(ApiException.class, () -> service.submitApplication(applicant.getId(), dto));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void anApprovedRestaurantGetsTheCategoryAndLocationOfTheApplication() {
+        RestaurantApplicationDTO dto = applicationDTO();
+        RestaurantApplication application = service.submitApplication(applicant.getId(), dto);
+
+        service.decideApplication(application.getId(), decision(ApplicationStatus.APPROVED, null));
+
+        Restaurant restaurant = restaurantDAO.getAllActive().stream()
+                .filter(r -> r.getName().equals(dto.getRestaurantName()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(Cuisine.ITALIENSK, restaurant.getCuisine());
+        assertEquals(55.7704, restaurant.getLatitude());
+        assertEquals(12.5038, restaurant.getLongitude());
     }
 
     // ________________________________________________________

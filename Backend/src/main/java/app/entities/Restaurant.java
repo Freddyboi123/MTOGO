@@ -1,5 +1,6 @@
 package app.entities;
 
+import app.enums.Cuisine;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,13 @@ public class Restaurant {
     private String description;
 
     private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    private Cuisine cuisine;
+
+    private Double latitude;
+
+    private Double longitude;
 
     @Embedded
     private Address address;

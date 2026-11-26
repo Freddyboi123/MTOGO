@@ -42,6 +42,30 @@ export const resetPassword = (body) => api('/users/auth/reset-password', { metho
 export const getProfile = () => api('/users/profile');
 export const updateProfile = (body) => api('/users/profile', { method: 'PATCH', body });
 
+export async function fetchRestaurants({ cuisine, query, latitude, longitude } = {}) {
+  const params = new URLSearchParams();
+  if (cuisine) params.set('cuisine', cuisine);
+  if (query?.trim()) params.set('q', query.trim());
+  if (latitude !== undefined && longitude !== undefined) {
+    params.set('lat', latitude);
+    params.set('lon', longitude);
+  }
+
+  const queryString = params.toString();
+  const body = await api(queryString ? `/restaurants?${queryString}` : '/restaurants');
+  return body?.data?.data ?? [];
+}
+
+export async function fetchRestaurant(id) {
+  const body = await api(`/restaurant/${id}`);
+  return body.data.data;
+}
+
+export async function fetchMenu(restaurantId) {
+  const body = await api(`/restaurant/menu/${restaurantId}`);
+  return body?.data ?? [];
+}
+
 export const getMyRestaurants = () => api('/my-restaurants');
 export const getMyRestaurant = (id) => api(`/my-restaurants/${id}`);
 export const setRestaurantVisibility = (id, active) =>

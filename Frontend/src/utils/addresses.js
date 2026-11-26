@@ -12,6 +12,8 @@ export function toSuggestion(feature) {
   const city = p.city ?? p.town ?? p.village ?? p.locality ?? '';
   if (!streetName || !p.postcode || !city) return null;
 
+  const [longitude, latitude] = feature.geometry?.coordinates ?? [];
+
   const hasNumber = Boolean(p.housenumber);
   const street = hasNumber ? `${streetName} ${p.housenumber}` : streetName;
 
@@ -21,6 +23,8 @@ export function toSuggestion(feature) {
     hasNumber,
     postalCode: p.postcode,
     city,
+    latitude,
+    longitude,
     label: `${street}, ${p.postcode} ${city}`
   };
 }

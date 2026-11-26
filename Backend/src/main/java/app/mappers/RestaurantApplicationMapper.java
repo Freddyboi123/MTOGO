@@ -24,6 +24,9 @@ public class RestaurantApplicationMapper implements IMapper<RestaurantApplicatio
             .email(dto.getEmail())
             .phoneNumber(dto.getPhoneNumber())
             .description(dto.getDescription())
+            .cuisine(dto.getCuisine())
+            .latitude(dto.getLatitude())
+            .longitude(dto.getLongitude())
             .build();
     }
 
@@ -43,6 +46,9 @@ public class RestaurantApplicationMapper implements IMapper<RestaurantApplicatio
             .email(entity.getEmail())
             .phoneNumber(entity.getPhoneNumber())
             .description(entity.getDescription())
+            .cuisine(entity.getCuisine())
+            .latitude(entity.getLatitude())
+            .longitude(entity.getLongitude())
             .status(entity.getStatus())
             .adminMessage(entity.getAdminMessage())
             .createdAt(entity.getCreatedAt().toString())

@@ -11,6 +11,7 @@ import app.entities.MenuCategory;
 import app.entities.MenuItem;
 import app.entities.Restaurant;
 import app.entities.User;
+import app.enums.Cuisine;
 import app.enums.Notifications;
 import app.exceptions.ApiException;
 import app.mappers.MenuCategoryMapper;
@@ -20,10 +21,14 @@ import app.server.Setup;
 import app.utils.ErrorHandler;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 public class RestaurantService {
+
+    private static final double RANGE_KILOMETERS = 10.0;
 
     private final RestaurantDAO restaurantDAO;
     private final MenuCategoryDAO categoryDAO;
@@ -103,12 +108,71 @@ public class RestaurantService {
 
     // ________________________________________________________
 
+    public List<RestaurantDTO> searchActiveRestaurants(String cuisine, String query, Double latitude, Double longitude) {
+        Cuisine wantedCuisine = cuisine == null || cuisine.isBlank() ? null
+            : ErrorHandler.tryParseEnum(Cuisine.class, cuisine.trim(), Notifications.RESTAURANT_CUISINE_INVALID.getDisplayName());
+
+        if (!isValidLocation(latitude, longitude)) {
+            throw new ApiException(400, Notifications.RESTAURANT_LOCATION_INVALID.getDisplayName());
+        }
+
+        String text = query == null ? "" : query.trim().toLowerCase();
+        List<RestaurantDTO> result = new ArrayList<>();
+
+        for (Restaurant restaurant : restaurantDAO.getAllActive()) {
+            if (wantedCuisine != null && restaurant.getCuisine() != wantedCuisine) {
+                continue;
+            }
+            if (!text.isEmpty() && !matches(restaurant, text)) {
+                continue;
+            }
+
+            RestaurantDTO dto = restaurantMapper.toDTO(restaurant);
+
+            if (latitude != null && restaurant.getLatitude() != null && restaurant.getLongitude() != null) {
+                double kilometers = DistanceCalculator.kilometers(latitude, longitude, restaurant.getLatitude(), restaurant.getLongitude());
+                if (kilometers > RANGE_KILOMETERS) {
+                    continue;
+                }
+                dto.setDistanceKm(Math.round(kilometers * 10) / 10.0);
+            }
+
+            result.add(dto);
+        }
+
+        if (latitude != null) {
+            result.sort(Comparator.comparing(RestaurantDTO::getDistanceKm, Comparator.nullsLast(Comparator.naturalOrder())));
+        }
+
+        return result;
+    }
+
+    // ________________________________________________________
+
+    public static boolean isValidLocation(Double latitude, Double longitude) {
+        if (latitude == null && longitude == null) {
+            return true;
+        }
+        return latitude != null && longitude != null
+            && latitude >= -90 && latitude <= 90
+            && longitude >= -180 && longitude <= 180;
+    }
+
+    // ________________________________________________________
+
+    private static boolean matches(Restaurant restaurant, String text) {
+        return restaurant.getName().toLowerCase().contains(text)
+            || (restaurant.getDescription() != null && restaurant.getDescription().toLowerCase().contains(text));
+    }
+
+    // ________________________________________________________
+
     public Restaurant createRestaurant(UUID ownerId, RestaurantDTO dto) {
         ErrorHandler.tryString(dto.getName(), Notifications.RESTAURANT_NAME_REQUIRED.getDisplayName());
 
         User owner = ErrorHandler.tryEntity(
-                userDAO.getById(ownerId),
-                Notifications.OWNER_NOT_FOUND.getDisplayName()
+            userDAO.getById(ownerId),
+            Notifications.OWNER_NOT_FOUND.getDisplayName()
         );
 
         Restaurant restaurant = restaurantMapper.toEntity(dto);
@@ -135,8 +199,8 @@ public class RestaurantService {
 
     public MenuItem addItem(UUID userId, UUID categoryId, MenuItemDTO dto) {
         MenuCategory category = ErrorHandler.tryEntity(
-                categoryDAO.getById(categoryId),
-                Notifications.CATEGORY_NOT_FOUND.getDisplayName()
+            categoryDAO.getById(categoryId),
+            Notifications.CATEGORY_NOT_FOUND.getDisplayName()
         );
         checkOwner(category.getRestaurant(), userId);
 
@@ -154,8 +218,8 @@ public class RestaurantService {
 
     public MenuItem updateItem(UUID userId, UUID itemId, MenuItemDTO dto) {
         MenuItem item = ErrorHandler.tryEntity(
-                itemDAO.getById(itemId),
-                Notifications.MENU_ITEM_NOT_FOUND.getDisplayName()
+            itemDAO.getById(itemId),
+            Notifications.MENU_ITEM_NOT_FOUND.getDisplayName()
         );
         checkOwner(item.getCategory().getRestaurant(), userId);
 

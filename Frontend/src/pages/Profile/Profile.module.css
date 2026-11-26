@@ -152,50 +152,6 @@
   font-weight: 600;
 }
 
-.addressSearch {
-  position: relative;
-}
-
-.suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  margin-top: 4px;
-  padding: 6px;
-  list-style: none;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 8px 24px rgba(23, 60, 48, 0.12);
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.suggestion {
-  display: block;
-  width: 100%;
-  padding: 10px 12px;
-  text-align: left;
-  background: none;
-  border: 0;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.suggestion:hover,
-.suggestion:focus-visible {
-  background: var(--mint);
-  outline: none;
-}
-
-.suggestionInfo {
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
 .modalOverlay {
   position: fixed;
   inset: 0;
