@@ -64,7 +64,7 @@ public class UserService {
 
         Role role = Role.CUSTOMER;
 
-        if (userDAO.existByColumn(email, "email")) {
+        if (userDAO.existsByEmail(email)) {
             String message = messageService.buildMessage(Notifications.EMAIL_EXISTS, email);
             ctx.status(400).json(message);
             return;
@@ -297,7 +297,7 @@ public class UserService {
                 throw new ApiException(400, Notifications.PROFILE_EMAIL_INVALID.getDisplayName());
             }
             if (!email.equals(user.getEmail())) {
-                if (userDAO.existByColumn(email, "email")) {
+                if (!email.equalsIgnoreCase(user.getEmail()) && userDAO.existsByEmail(email)) {
                     throw new ApiException(400, messageService.buildMessage(Notifications.EMAIL_EXISTS, email));
                 }
                 user.setEmail(email);

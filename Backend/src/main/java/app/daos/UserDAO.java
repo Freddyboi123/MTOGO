@@ -13,7 +13,7 @@ public class UserDAO extends EntityManagerDAO<User> {
     // ________________________________________________________
 
     public User getByEmail(String email) {
-        String jpql = "SELECT u FROM User u WHERE u.email = :email";
+        String jpql = "SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)";
 
         return executeQuery(() ->
                 em.createQuery(jpql, User.class)
@@ -24,13 +24,26 @@ public class UserDAO extends EntityManagerDAO<User> {
 
     // ________________________________________________________
 
+    public boolean existsByEmail(String email) {
+        String jpql = "SELECT COUNT(u) FROM User u WHERE LOWER(u.email) = LOWER(:email)";
+
+        Long count = executeQuery(() ->
+            em.createQuery(jpql, Long.class)
+                .setParameter("email", email)
+                .getSingleResult()
+        );
+        return count != null && count > 0;
+    }
+
+    // ________________________________________________________
+
     public User getByToken(String token, String column) {
         String jpql = "SELECT u FROM User u WHERE u." + column + " = :token";
 
         return executeQuery(() ->
-                em.createQuery(jpql, User.class)
-                        .setParameter("token", token)
-                        .getSingleResult()
+            em.createQuery(jpql, User.class)
+                .setParameter("token", token)
+                .getSingleResult()
         );
     }
 

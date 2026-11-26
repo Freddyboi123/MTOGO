@@ -541,4 +541,34 @@ class UserControllerTest {
         assertNull(user.getCity());
         assertNull(user.getFloorDoor());
     }
+
+    // ________________________________________________________
+
+    @Test
+    void loginIgnoresTheLetterCaseOfTheEmail() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        assertEquals(200, login(email.toUpperCase(), PASSWORD).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void loginStillRequiresTheExactCaseOfThePassword() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        assertEquals(401, login(email, PASSWORD.toUpperCase()).statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void registerWithTheSameEmailInAnotherCaseReturns400() throws Exception {
+        String email = newEmail();
+        register(email, PASSWORD);
+
+        assertEquals(400, register(email.toUpperCase(), PASSWORD).statusCode());
+    }
 }
