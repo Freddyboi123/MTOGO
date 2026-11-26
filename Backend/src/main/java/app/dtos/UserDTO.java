@@ -18,6 +18,10 @@ public class UserDTO {
     private String email;
     private String lastName;
     private String phoneNumber;
+    private String street;
+    private String postalCode;
+    private String city;
+    private String floorDoor;
     private Set<Role> roles;
 
 }

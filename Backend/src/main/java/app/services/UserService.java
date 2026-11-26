@@ -28,6 +28,7 @@ public class UserService {
     private final MailService mailService = new MailService();
     private static final int TOKEN_MINUTES = 30;
     private static final String EMAIL_PATTERN = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+    private static final String POSTCODE_PATTERN = "\\d{4}";
     private static final String PHONE_PATTERN = "\\+?\\d{8,12}";
 
     // ________________________________________________________
@@ -316,6 +317,45 @@ public class UserService {
             }
         }
 
+        if (body.containsKey("street") || body.containsKey("postal_code") || body.containsKey("city")) {
+            String street = body.containsKey("street") ? clean(body.get("street")) : user.getStreet();
+            String postalCode = body.containsKey("postal_code") ? clean(body.get("postal_code")) : user.getPostalCode();
+            String city = body.containsKey("city") ? clean(body.get("city")) : user.getCity();
+
+            boolean removing = body.containsKey("street") && body.containsKey("postal_code") && body.containsKey("city") && street == null && postalCode == null && city == null;
+
+            if (removing) {
+                if (user.getStreet() != null) {
+                    user.setStreet(null);
+                    user.setPostalCode(null);
+                    user.setCity(null);
+                    user.setFloorDoor(null);
+                    changed = true;
+                }
+            } else {
+                if (street == null || postalCode == null || city == null) {
+                    throw new ApiException(400, Notifications.PROFILE_ADDRESS_INCOMPLETE.getDisplayName());
+                }
+                if (!postalCode.matches(POSTCODE_PATTERN)) {
+                    throw new ApiException(400, Notifications.PROFILE_POSTCODE_INVALID.getDisplayName());
+                }
+                if (!street.equals(user.getStreet()) || !postalCode.equals(user.getPostalCode()) || !city.equals(user.getCity())) {
+                    user.setStreet(street);
+                    user.setPostalCode(postalCode);
+                    user.setCity(city);
+                    changed = true;
+                }
+            }
+        }
+
+        if (body.containsKey("floor_door")) {
+            String floorDoor = clean(body.get("floor_door"));
+            if (!Objects.equals(floorDoor, user.getFloorDoor())) {
+                user.setFloorDoor(floorDoor);
+                changed = true;
+            }
+        }
+
         String newPassword = body.get("new_password");
         if (newPassword != null && !newPassword.isBlank()) {
             String currentPassword = ErrorHandler.tryString(body.get("current_password"), Notifications.PROFILE_CURRENT_PASSWORD_REQUIRED.getDisplayName());
@@ -342,6 +382,12 @@ public class UserService {
             "token", securityService.createToken(dto),
             "data", dto
         ));
+    }
+
+    // ________________________________________________________
+
+    private static String clean(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     // ________________________________________________________

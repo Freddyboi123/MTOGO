@@ -28,6 +28,11 @@ public class User {
 
     private String phoneNumber;
 
+    private String street;
+    private String postalCode;
+    private String city;
+    private String floorDoor;
+
     @Column(nullable = false, unique = true)
     private String email;
 

@@ -14,6 +14,10 @@ public class UserMapper implements IMapper<User, UserDTO> {
                 .lastname(dto.getLastName())
                 .email(dto.getEmail())
                 .phoneNumber(dto.getPhoneNumber())
+                .street(dto.getStreet())
+                .postalCode(dto.getPostalCode())
+                .city(dto.getCity())
+                .floorDoor(dto.getFloorDoor())
                 .build();
     }
 
@@ -24,6 +28,10 @@ public class UserMapper implements IMapper<User, UserDTO> {
                 .lastName(entity.getLastname())
                 .email(entity.getEmail())
                 .phoneNumber(entity.getPhoneNumber())
+                .street(entity.getStreet())
+                .postalCode(entity.getPostalCode())
+                .city(entity.getCity())
+                .floorDoor(entity.getFloorDoor())
                 .build();
     }
 }

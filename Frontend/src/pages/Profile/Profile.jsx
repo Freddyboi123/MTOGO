@@ -57,7 +57,7 @@ export default function Profile() {
 
         <div>
           {section === 'Personlige oplysninger' && <PersonalInfo onSaved={() => setVersion((version) => version + 1)} />}
-          {section === 'Leveringsadresse' && <DeliveryAddress />}
+          {section === 'Leveringsadresse' && <DeliveryAddress onSaved={() => setVersion((version) => version + 1)} />}
           {section === 'Mine ansøgninger' && <MyApplications />}
           {section === 'Mine restauranter' && <MyRestaurants />}
           {ordering && section === 'Ordrehistorik' && <OrderHistory />}

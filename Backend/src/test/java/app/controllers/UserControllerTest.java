@@ -268,7 +268,7 @@ class UserControllerTest {
 
     // ________________________________________________________
 
-    private static HttpResponse<String> patchMe(String token, Map<String, String> body) throws IOException, InterruptedException {
+    private static HttpResponse<String> patchProfile(String token, Map<String, String> body) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/users/profile"))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + token)
@@ -286,7 +286,7 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeWithoutATokenReturns401() throws Exception {
+    void patchProfileWithoutATokenReturns401() throws Exception {
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/users/profile"))
                 .header("Content-Type", "application/json")
                 .method("PATCH", HttpRequest.BodyPublishers.ofString("{}"))
@@ -298,12 +298,12 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeUpdatesOnlyTheFieldsThatChanged() throws Exception {
+    void patchProfileUpdatesOnlyTheFieldsThatChanged() throws Exception {
         String email = newEmail();
         registerVerified(email);
         String token = loginToken(email, PASSWORD);
 
-        HttpResponse<String> response = patchMe(token, Map.of(
+        HttpResponse<String> response = patchProfile(token, Map.of(
                 "first_name", "Test",
                 "last_name", "Newname",
                 "phone_number", "12345678"
@@ -319,12 +319,12 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeWithTheSameValuesReportsNoChanges() throws Exception {
+    void patchProfileWithTheSameValuesReportsNoChanges() throws Exception {
         String email = newEmail();
         registerVerified(email);
         String token = loginToken(email, PASSWORD);
 
-        HttpResponse<String> response = patchMe(token, Map.of("first_name", "Test", "email", email));
+        HttpResponse<String> response = patchProfile(token, Map.of("first_name", "Test", "email", email));
 
         assertEquals(200, response.statusCode());
         assertEquals("There was nothing to update", JSON.readTree(response.body()).get("message").asText());
@@ -333,13 +333,13 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeWithAnEmptyPhoneNumberRemovesIt() throws Exception {
+    void patchProfileWithAnEmptyPhoneNumberRemovesIt() throws Exception {
         String email = newEmail();
         registerVerified(email);
         String token = loginToken(email, PASSWORD);
-        patchMe(token, Map.of("phone_number", "12345678"));
+        patchProfile(token, Map.of("phone_number", "12345678"));
 
-        HttpResponse<String> response = patchMe(token, Map.of("phone_number", ""));
+        HttpResponse<String> response = patchProfile(token, Map.of("phone_number", ""));
 
         assertEquals(200, response.statusCode());
         assertNull(findUser(email).getPhoneNumber());
@@ -348,50 +348,50 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeWithAnInvalidPhoneNumberReturns400() throws Exception {
+    void patchProfileWithAnInvalidPhoneNumberReturns400() throws Exception {
         String email = newEmail();
         registerVerified(email);
 
-        assertEquals(400, patchMe(loginToken(email, PASSWORD), Map.of("phone_number", "abc")).statusCode());
+        assertEquals(400, patchProfile(loginToken(email, PASSWORD), Map.of("phone_number", "abc")).statusCode());
     }
 
     // ________________________________________________________
 
     @Test
-    void patchMeWithAnEmailInUseReturns400() throws Exception {
+    void patchProfileWithAnEmailInUseReturns400() throws Exception {
         String email = newEmail();
         String other = newEmail();
         registerVerified(email);
         register(other, PASSWORD);
 
-        assertEquals(400, patchMe(loginToken(email, PASSWORD), Map.of("email", other)).statusCode());
+        assertEquals(400, patchProfile(loginToken(email, PASSWORD), Map.of("email", other)).statusCode());
         assertNotNull(findUser(email));
     }
 
     // ________________________________________________________
 
     @Test
-    void patchMeWithANewEmailReturnsATokenThatStillWorks() throws Exception {
+    void patchProfileWithANewEmailReturnsATokenThatStillWorks() throws Exception {
         String email = newEmail();
         String newEmail = newEmail();
         registerVerified(email);
 
-        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of("email", newEmail));
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("email", newEmail));
 
         assertEquals(200, response.statusCode());
         String newToken = JSON.readTree(response.body()).get("token").asText();
-        assertEquals(200, patchMe(newToken, Map.of("first_name", "Test")).statusCode());
+        assertEquals(200, patchProfile(newToken, Map.of("first_name", "Test")).statusCode());
         assertNotNull(findUser(newEmail));
     }
 
     // ________________________________________________________
 
     @Test
-    void patchMeChangesThePasswordWhenTheCurrentOneIsCorrect() throws Exception {
+    void patchProfileChangesThePasswordWhenTheCurrentOneIsCorrect() throws Exception {
         String email = newEmail();
         registerVerified(email);
 
-        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of(
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of(
                 "current_password", PASSWORD,
                 "new_password", "NewPassword1!",
                 "repeat_password", "NewPassword1!"
@@ -405,11 +405,11 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeWithAWrongCurrentPasswordReturns400() throws Exception {
+    void patchProfileWithAWrongCurrentPasswordReturns400() throws Exception {
         String email = newEmail();
         registerVerified(email);
 
-        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of(
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of(
                 "current_password", "Wrong123!",
                 "new_password", "NewPassword1!",
                 "repeat_password", "NewPassword1!"
@@ -422,16 +422,123 @@ class UserControllerTest {
     // ________________________________________________________
 
     @Test
-    void patchMeWithAWeakNewPasswordReturns400() throws Exception {
+    void patchProfileWithAWeakNewPasswordReturns400() throws Exception {
         String email = newEmail();
         registerVerified(email);
 
-        HttpResponse<String> response = patchMe(loginToken(email, PASSWORD), Map.of(
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of(
                 "current_password", PASSWORD,
                 "new_password", "abc",
                 "repeat_password", "abc"
         ));
 
         assertEquals(400, response.statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchProfileSavesTheDeliveryAddress() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of(
+                "street", "Bytoften 1",
+                "postal_code", "2650",
+                "city", "Hvidovre",
+                "floor_door", "2. th"
+        ));
+
+        assertEquals(200, response.statusCode());
+        User user = findUser(email);
+        assertEquals("Bytoften 1", user.getStreet());
+        assertEquals("2650", user.getPostalCode());
+        assertEquals("Hvidovre", user.getCity());
+        assertEquals("2. th", user.getFloorDoor());
+        assertEquals("Bytoften 1", JSON.readTree(response.body()).get("data").get("street").asText());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void getProfileReturnsTheSavedDeliveryAddress() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+        String token = loginToken(email, PASSWORD);
+        patchProfile(token, Map.of("street", "Bytoften 1", "postal_code", "2650", "city", "Hvidovre"));
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/users/profile"))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertEquals("Hvidovre", JSON.readTree(response.body()).get("data").get("city").asText());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchProfileWithAnIncompleteAddressReturns400() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of("street", "Bytoften 1"));
+
+        assertEquals(400, response.statusCode());
+        assertNull(findUser(email).getStreet());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchProfileWithAnInvalidPostcodeReturns400() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+
+        HttpResponse<String> response = patchProfile(loginToken(email, PASSWORD), Map.of(
+                "street", "Bytoften 1",
+                "postal_code", "12",
+                "city", "Hvidovre"
+        ));
+
+        assertEquals(400, response.statusCode());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchProfileCanChangeTheFloorAndDoorWithoutTouchingTheAddress() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+        String token = loginToken(email, PASSWORD);
+        patchProfile(token, Map.of("street", "Bytoften 1", "postal_code", "2650", "city", "Hvidovre"));
+
+        HttpResponse<String> response = patchProfile(token, Map.of("floor_door", "st. tv"));
+
+        assertEquals(200, response.statusCode());
+        User user = findUser(email);
+        assertEquals("st. tv", user.getFloorDoor());
+        assertEquals("Bytoften 1", user.getStreet());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void patchProfileWithAnEmptyAddressRemovesIt() throws Exception {
+        String email = newEmail();
+        registerVerified(email);
+        String token = loginToken(email, PASSWORD);
+        patchProfile(token, Map.of("street", "Bytoften 1", "postal_code", "2650", "city", "Hvidovre", "floor_door", "2. th"));
+
+        HttpResponse<String> response = patchProfile(token, Map.of("street", "", "postal_code", "", "city", ""));
+
+        assertEquals(200, response.statusCode());
+        User user = findUser(email);
+        assertNull(user.getStreet());
+        assertNull(user.getPostalCode());
+        assertNull(user.getCity());
+        assertNull(user.getFloorDoor());
     }
 }

@@ -64,6 +64,8 @@ public enum Notifications {
     PROFILE_NO_CHANGES("There was nothing to update"),
     PROFILE_EMAIL_INVALID("The email address is not valid"),
     PROFILE_PHONE_INVALID("The phone number is not valid"),
+    PROFILE_ADDRESS_INCOMPLETE("The address must have a street, a postcode and a city"),
+    PROFILE_POSTCODE_INVALID("The postcode must be 4 digits"),
     PROFILE_FIRSTNAME_EMPTY("The first name cannot be empty"),
     PROFILE_LASTNAME_EMPTY("The last name cannot be empty"),
     PROFILE_CURRENT_PASSWORD_REQUIRED("You must enter your current password to change it"),
