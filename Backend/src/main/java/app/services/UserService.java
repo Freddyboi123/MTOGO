@@ -56,6 +56,8 @@ public class UserService {
             return;
         }
 
+        PasswordService.passwordValidation(password);
+
         Role role = Role.CUSTOMER;
 
         if (userDAO.existByColumn(email, "email")) {

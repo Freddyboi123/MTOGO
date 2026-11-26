@@ -54,7 +54,7 @@ The Definition of Done is maintained in this repository. An issue may only be mo
 
 - CI measures backend test coverage with JaCoCo and shows a summary on every run. The full report is uploaded as the build artifact backend-reports
 - The build fails if line coverage of the backend is below the required minimum
-- The required minimum is 25% line coverage. It is set just below the coverage we had when the requirement was introduced (28.7%), so coverage can not fall
+- The required minimum is 60% line coverage. It was introduced at 25%, just below the coverage at that time (28.7%), and raised to 60% on 25 November 2026 when the coverage was 66.4%, so coverage can not fall
 - We raise the minimum as tests are added. The minimum is reviewed at the weekly flow review and is never lowered. It is set by `coverage.line.minimum` in `Backend/pom.xml`
 
 ### Static analysis

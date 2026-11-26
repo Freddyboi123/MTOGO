@@ -54,7 +54,6 @@ public class Setup {
                 })
         );
         config.bundledPlugins.enableHttpAllowedMethodsOnRoutes();
-        //TODO: Add more configs maybe???
     }
 
     // ________________________________________________________
