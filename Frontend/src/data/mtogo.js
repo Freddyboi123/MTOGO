@@ -497,23 +497,6 @@ export const selectedAdminCourier = {
   record: 'Dokumenter godkendt  ·  128 leverancer  ·  Bedømmelse 4,9 / 5'
 };
 
-export const applyRestaurantSteps = [
-  {
-    number: '01',
-    title: 'Fortæl os om restauranten',
-    body: 'Udfyld oplysninger og upload dine registreringsdokumenter.'
-  },
-  {
-    number: '02',
-    title: 'Vi gennemgår din ansøgning',
-    body: 'Følg status direkte på din profil.'
-  },
-  {
-    number: '03',
-    title: 'Gør klar til første ordre',
-    body: 'Tilføj menu, billeder og åbningstider i dit restaurantpanel.'
-  }
-];
 
 export const applyCourierSteps = [
   {
