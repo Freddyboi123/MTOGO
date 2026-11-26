@@ -518,14 +518,6 @@ export const applyCourierSteps = [
   }
 ];
 
-export const profileSections = [
-  'Personlige oplysninger',
-  'Leveringsadresse',
-  'Mine ansøgninger',
-  'Ordrehistorik',
-  'Sikkerhed'
-];
-
 export const restaurantOverview = {
   eyebrow: 'Alle restauranter',
   title: 'Find dit næste måltid',

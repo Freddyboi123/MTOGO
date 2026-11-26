@@ -12,7 +12,6 @@ import DeliveryAddress from './Components/DeliveryAddress';
 import MyApplications from './Components/MyApplications';
 import MyRestaurants from './Components/MyRestaurants';
 import OrderHistory from './Components/OrderHistory';
-import Security from './Components/Security';
 import useFeatureFlag from '../../featureFlags/useFeatureFlag';
 
 const profileSections = [
@@ -20,8 +19,7 @@ const profileSections = [
   'Leveringsadresse',
   'Mine ansøgninger',
   'Mine restauranter',
-  'Ordrehistorik',
-  'Sikkerhed'
+  'Ordrehistorik'
 ];
 
 export default function Profile() {
@@ -29,6 +27,7 @@ export default function Profile() {
   const ordering = useFeatureFlag('ordering');
   const sections = ordering ? profileSections : profileSections.filter((name) => name !== 'Ordrehistorik');
   const [section, setSection] = useState(location.state?.section ?? profileSections[0]);
+  const [, setVersion] = useState(0);
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -57,12 +56,11 @@ export default function Profile() {
         />
 
         <div>
-          {section === 'Personlige oplysninger' && <PersonalInfo />}
+          {section === 'Personlige oplysninger' && <PersonalInfo onSaved={() => setVersion((version) => version + 1)} />}
           {section === 'Leveringsadresse' && <DeliveryAddress />}
           {section === 'Mine ansøgninger' && <MyApplications />}
           {section === 'Mine restauranter' && <MyRestaurants />}
           {ordering && section === 'Ordrehistorik' && <OrderHistory />}
-          {section === 'Sikkerhed' && <Security />}
         </div>
       </section>
 

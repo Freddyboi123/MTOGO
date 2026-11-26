@@ -39,6 +39,9 @@ export const resendVerify = (email) => api('/users/auth/resend-verify', { method
 export const forgotPassword = (email) => api('/users/auth/forgot-password', { method: 'POST', body: { email } });
 export const resetPassword = (body) => api('/users/auth/reset-password', { method: 'POST', body });
 
+export const getProfile = () => api('/users/profile');
+export const updateProfile = (body) => api('/users/profile', { method: 'PATCH', body });
+
 export const getMyRestaurants = () => api('/my-restaurants');
 export const getMyRestaurant = (id) => api(`/my-restaurants/${id}`);
 export const setRestaurantVisibility = (id, active) =>
