@@ -63,7 +63,6 @@ test('a changed name and phone number are saved and still there after a reload',
     await expect(page.getByLabel('Efternavn')).toHaveValue('Changed');
     await expect(page.getByLabel('Telefonnummer (valgfrit)')).toHaveValue('12345678');
 
-    // The phone number is optional: emptying it removes it.
     await page.getByLabel('Telefonnummer (valgfrit)').fill('');
     await save(page).click();
     await expect(page.getByText('Dine oplysninger er gemt.')).toBeVisible();
