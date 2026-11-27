@@ -9,6 +9,8 @@ import * as auth from '../../src/utils/api';
 const { fetchMenu, fetchRestaurant, fetchRestaurants } = auth;
 import { readBackendRoutes } from '../backendRoutes';
 
+globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+
 const origin = API_URL.replace(/\/api$/, '');
 
 // A missing route fails with Javalin's "Endpoint <METHOD> <path> not found" (404).
