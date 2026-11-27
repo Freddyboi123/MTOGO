@@ -118,6 +118,9 @@ public class RestaurantApplicationService {
         application.setEmail(dto.getEmail());
         application.setPhoneNumber(dto.getPhoneNumber());
         application.setDescription(dto.getDescription());
+        application.setCuisine(dto.getCuisine());
+        application.setLatitude(dto.getLatitude());
+        application.setLongitude(dto.getLongitude());
         application.setStatus(ApplicationStatus.PENDING);
 
         return applicationDAO.update(application);
@@ -175,6 +178,9 @@ public class RestaurantApplicationService {
             .name(application.getRestaurantName())
             .description(application.getDescription())
             .phoneNumber(application.getPhoneNumber())
+            .cuisine(application.getCuisine())
+            .latitude(application.getLatitude())
+            .longitude(application.getLongitude())
             .address(address)
             .owner(owner)
             .build();
@@ -193,6 +199,13 @@ public class RestaurantApplicationService {
         ErrorHandler.tryString(dto.getStreet(), Notifications.APPLICATION_ADDRESS_REQUIRED.getDisplayName());
         ErrorHandler.tryString(dto.getPostalCode(), Notifications.APPLICATION_ADDRESS_REQUIRED.getDisplayName());
         ErrorHandler.tryString(dto.getCity(), Notifications.APPLICATION_ADDRESS_REQUIRED.getDisplayName());
+
+        if (dto.getCuisine() == null) {
+            throw new ApiException(400, Notifications.APPLICATION_CUISINE_REQUIRED.getDisplayName());
+        }
+        if (dto.getLatitude() == null || !RestaurantService.isValidLocation(dto.getLatitude(), dto.getLongitude())) {
+            throw new ApiException(400, Notifications.APPLICATION_LOCATION_REQUIRED.getDisplayName());
+        }
 
         String cvr = ErrorHandler.tryString(dto.getCvr(), Notifications.APPLICATION_CVR_INVALID.getDisplayName());
         if (!cvr.matches("\\d{8}")) {

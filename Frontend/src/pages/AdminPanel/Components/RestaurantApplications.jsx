@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import AdminLayout from '../../components/AdminLayout';
-import {
-  decideRestaurantApplication,
-  getRestaurantApplications,
-  useApplicationCounts
-} from '../../utils/api';
-import ui from '../../styles/shared.module.css';
-import dash from '../../components/DashboardLayout.module.css';
-import styles from './AdminRestaurantApplication.module.css';
-import ApplicationList from './Components/ApplicationList';
-import ApplicationDetail from './Components/ApplicationDetail';
+import { decideRestaurantApplication, getRestaurantApplications } from '../../../utils/api';
+import styles from '../AdminPanel.module.css';
+import ApplicationList from './ApplicationList';
+import ApplicationDetail from './ApplicationDetail';
 
 const statusLabels = {
   PENDING: 'Ny',
@@ -44,27 +36,17 @@ const statusTagClasses = {
   MORE_INFORMATION_NEEDED: styles.statusInfo
 };
 
-export default function AdminRestaurantApplication() {
+export default function RestaurantApplications({ onDecided }) {
   const [applications, setApplications] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [error, setError] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const counts = useApplicationCounts();
-
-  async function loadApplications() {
-    try {
-      const res = await getRestaurantApplications();
-      setApplications(res.data.data);
-      return res.data.data;
-    } catch (err) {
-      setError(err.message);
-      return [];
-    }
-  }
 
   useEffect(() => {
-    loadApplications();
+    getRestaurantApplications()
+      .then((res) => setApplications(res.data.data))
+      .catch((err) => setError(err.message));
   }, []);
 
   useEffect(() => {
@@ -106,7 +88,7 @@ export default function AdminRestaurantApplication() {
           : 'Status er gemt, men mailen til ansøgeren kunne ikke sendes.'
       });
 
-      counts.reload();
+      onDecided();
     } catch (err) {
       setApplications(previous);
       setError(err.message);
@@ -118,32 +100,10 @@ export default function AdminRestaurantApplication() {
   const selected = applications.find((application) => application.id === selectedId) ?? applications[0];
 
   return (
-    <AdminLayout breadcrumb="Administration  /  Ansøgninger">
-      <div className={dash.head}>
-        <div>
-          <p className={ui.eyebrow}>Partneradministration</p>
-          <h1 className={dash.title}>Ansøgninger</h1>
-          <p className={dash.subtitle}>
-            Gennemgå oplysninger og dokumenter, før du giver adgang til MTOGO.
-          </p>
-        </div>
-      </div>
-
-      <div className={styles.tabs}>
-        <button className={styles.tabActive}>Restauranter · {counts.restaurants}</button>
-        <Link to="/admin/ansoegninger/chauffoer" className={styles.tab}>
-          Chauffører · {counts.couriers}
-        </Link>
-        <span className={styles.tabsRight}>{counts.total} ansøgninger afventer handling</span>
-      </div>
-
+    <>
       {error && <p className={styles.errorText}>{error}</p>}
       {feedback && (
-        <div
-          key={feedback.id}
-          role="status"
-          className={feedbackClasses[feedback.status]}
-        >
+        <div key={feedback.id} role="status" className={feedbackClasses[feedback.status]}>
           <span className={styles.feedbackIcon}>{feedbackIcons[feedback.status]}</span>
           <div>
             <strong>{feedback.title}</strong>
@@ -181,6 +141,6 @@ export default function AdminRestaurantApplication() {
           />
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 }

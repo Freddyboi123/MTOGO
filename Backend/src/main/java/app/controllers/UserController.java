@@ -41,6 +41,8 @@ public class UserController extends BaseController<User, UserDTO> {
             post("users/auth/forgot-password", controller::forgotPassword, Role.ANYONE);
             post("users/auth/reset-password", controller::resetPassword, Role.ANYONE);
             post("/user/{id}/roles", controller::assignRole, Role.ADMIN);
+            get("/users/profile", controller::getProfile, Role.CUSTOMER, Role.RESTAURANT_OWNER, Role.DELIVERY_AGENT, Role.ADMIN);
+            patch("/users/profile", controller::updateProfile, Role.CUSTOMER, Role.RESTAURANT_OWNER, Role.DELIVERY_AGENT, Role.ADMIN);
         };
     }
 
@@ -98,6 +100,18 @@ public class UserController extends BaseController<User, UserDTO> {
 
     private void assignRole(Context ctx) {
         userService.assignRole(ctx);
+    }
+
+    // ________________________________________________________
+
+    private void getProfile(Context ctx) {
+        userService.getProfile(ctx, getUser(ctx));
+    }
+
+    // ________________________________________________________
+
+    private void updateProfile(Context ctx) {
+        userService.updateProfile(ctx, getUser(ctx));
     }
 
     // ________________________________________________________

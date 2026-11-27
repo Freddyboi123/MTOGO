@@ -107,6 +107,14 @@ public class EntityManagerDAO<T> implements IDAO<T> {
 
     // ________________________________________________________
 
+    public long count() {
+        String JPQL = "SELECT COUNT(x) FROM " + classSpecific.getSimpleName() + " x";
+        Long count = executeQuery(() -> em.createQuery(JPQL, Long.class).getSingleResult());
+        return count == null ? 0 : count;
+    }
+
+    // ________________________________________________________
+
     protected <R> R executeQuery(Supplier<R> query) {
         synchronized (em) {
             boolean startedTransaction = false;

@@ -1,6 +1,7 @@
 package app.entities;
 
 import app.enums.ApplicationStatus;
+import app.enums.Cuisine;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,13 @@ public class RestaurantApplication {
     private String phoneNumber;
 
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    private Cuisine cuisine;
+
+    private Double latitude;
+
+    private Double longitude;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

@@ -39,6 +39,33 @@ export const resendVerify = (email) => api('/users/auth/resend-verify', { method
 export const forgotPassword = (email) => api('/users/auth/forgot-password', { method: 'POST', body: { email } });
 export const resetPassword = (body) => api('/users/auth/reset-password', { method: 'POST', body });
 
+export const getProfile = () => api('/users/profile');
+export const updateProfile = (body) => api('/users/profile', { method: 'PATCH', body });
+
+export async function fetchRestaurants({ cuisine, query, latitude, longitude } = {}) {
+  const params = new URLSearchParams();
+  if (cuisine) params.set('cuisine', cuisine);
+  if (query?.trim()) params.set('q', query.trim());
+  if (latitude !== undefined && longitude !== undefined) {
+    params.set('lat', latitude);
+    params.set('lon', longitude);
+  }
+
+  const queryString = params.toString();
+  const body = await api(queryString ? `/restaurants?${queryString}` : '/restaurants');
+  return body?.data?.data ?? [];
+}
+
+export async function fetchRestaurant(id) {
+  const body = await api(`/restaurant/${id}`);
+  return body.data.data;
+}
+
+export async function fetchMenu(restaurantId) {
+  const body = await api(`/restaurant/menu/${restaurantId}`);
+  return body?.data ?? [];
+}
+
 export const getMyRestaurants = () => api('/my-restaurants');
 export const getMyRestaurant = (id) => api(`/my-restaurants/${id}`);
 export const setRestaurantVisibility = (id, active) =>
@@ -64,28 +91,55 @@ export const decideRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}/decision`, { method: 'PUT', body });
 
 
-let cachedRestaurantCount = 0;
+export const getAdminOverview = () => api('/admin/overview');
+
+export const getAdminRestaurants = () => api('/admin/restaurants');
+export const updateAdminRestaurant = (id, body) =>
+  api(`/admin/restaurants/${id}`, { method: 'PUT', body });
+export const setAdminRestaurantVisibility = (id, active) =>
+  api(`/admin/restaurants/${id}/visibility`, { method: 'PUT', body: { active } });
+export const lockAdminRestaurant = (id, reason) =>
+  api(`/admin/restaurants/${id}/lock`, { method: 'POST', body: { reason } });
+export const unlockAdminRestaurant = (id) =>
+  api(`/admin/restaurants/${id}/unlock`, { method: 'POST' });
+export const deleteAdminRestaurant = (id) => api(`/admin/restaurants/${id}`, { method: 'DELETE' });
+
+export const getAdminCouriers = () => api('/admin/couriers');
+export const updateAdminCourier = (id, body) =>
+  api(`/admin/couriers/${id}`, { method: 'PUT', body });
+export const lockAdminCourier = (id, reason) =>
+  api(`/admin/couriers/${id}/lock`, { method: 'POST', body: { reason } });
+export const unlockAdminCourier = (id) => api(`/admin/couriers/${id}/unlock`, { method: 'POST' });
+export const banAdminCourier = (id, reason) =>
+  api(`/admin/couriers/${id}/ban`, { method: 'POST', body: { reason } });
+export const deleteAdminCourier = (id) => api(`/admin/couriers/${id}`, { method: 'DELETE' });
+
+export const getAdminCourierApplications = () => api('/admin/courier-applications');
+export const getAdminOrders = (status) =>
+  api(status ? `/admin/orders?status=${encodeURIComponent(status)}` : '/admin/orders');
+
+let cachedCounts = { restaurants: 0, couriers: 0 };
 export function useApplicationCounts() {
-  const [restaurants, setRestaurants] = useState(cachedRestaurantCount);
-  const couriers = 0;
+  const [counts, setCounts] = useState(cachedCounts);
 
   async function reload() {
-    try {
-      const res = await getRestaurantApplications();
-      cachedRestaurantCount = res.data.data.filter(
-        (application) => application.status === 'PENDING'
-      ).length;
-    } catch {
-      cachedRestaurantCount = 0;
-    }
-    setRestaurants(cachedRestaurantCount);
+    const [restaurants, couriers] = await Promise.all([
+      getRestaurantApplications()
+        .then((res) => res.data.data.filter((application) => application.status === 'PENDING').length)
+        .catch(() => 0),
+      getAdminCourierApplications()
+        .then((res) => res.data.filter((application) => application.status === 'PENDING').length)
+        .catch(() => 0)
+    ]);
+    cachedCounts = { restaurants, couriers };
+    setCounts(cachedCounts);
   }
 
   useEffect(() => {
     reload();
   }, []);
 
-  return { restaurants, couriers, total: restaurants + couriers, reload };
+  return { ...counts, total: counts.restaurants + counts.couriers, reload };
 }
 
 export const isLoggedIn = () => Boolean(localStorage.getItem('token'));

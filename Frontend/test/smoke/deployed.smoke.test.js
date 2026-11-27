@@ -4,10 +4,12 @@
 // Usage: VITE_API_URL=https://mtogo.api.roneu.dk npm run test:smoke
 import { describe, expect, it } from 'vitest';
 import { fetchFeatureFlags } from '../../src/api/featureFlags';
-import { fetchMenu, fetchRestaurant, fetchRestaurants } from '../../src/api/restaurants';
 import { API_URL } from '../../src/api/config';
 import * as auth from '../../src/utils/api';
+const { fetchMenu, fetchRestaurant, fetchRestaurants } = auth;
 import { readBackendRoutes } from '../backendRoutes';
+
+globalThis.localStorage ??= { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 
 const origin = API_URL.replace(/\/api$/, '');
 

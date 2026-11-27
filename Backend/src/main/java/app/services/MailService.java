@@ -27,7 +27,7 @@ public class MailService {
     private static final String DEV_FRONTEND_URL = "http://localhost:5173";
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    // Looks up a config key and returns null when it is missing. Tests pass their own lookup.
+
     private final UnaryOperator<String> config;
 
     public MailService() {
@@ -73,6 +73,37 @@ public class MailService {
         );
 
         return send(user.getEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendConfirmNewEmail(User user) {
+        String companyName = getCompanyName();
+        String link = getBackendUrl() + "/api/users/auth/verify?token=" + user.getVerifyToken();
+
+        String subject = String.format("%s: Godkend ny e-mail", companyName);
+        String body = String.format("""
+            Hej %s %s,
+
+            Du har bedt om at skifte din e-mail hos %s til denne adresse.
+            Tryk på linket herunder for at godkende den. Din e-mail bliver først ændret, når du har trykket på linket.
+
+            Linket udløber automatisk om 30 minutter:
+            %s
+
+            Hvis det ikke var dig, kan du bare ignorere denne mail.
+
+            Venlig hilsen
+            %s
+            """,
+            user.getFirstname(),
+            user.getLastname(),
+            companyName,
+            link,
+            companyName
+        );
+
+        return send(user.getPendingEmail(), subject, body);
     }
 
     // ________________________________________________________
@@ -158,6 +189,61 @@ public class MailService {
         );
 
         return send(applicant.getEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendLockedEmail(User recipient, String subjectName, String kind, String reason) {
+        String companyName = getCompanyName();
+
+        String subject = String.format("%s: %s er låst", companyName, subjectName);
+        String body = String.format("""
+            Hej %s %s,
+
+            %s "%s" er blevet låst af en administrator hos %s. Du kan ikke foretage ændringer, før en administrator har låst op igen.
+
+            Årsag og hvad der skal ændres:
+            %s
+
+            Svar på denne mail, når ændringerne er på plads, så låser vi op igen.
+
+            Venlig hilsen
+            %s
+            """,
+            recipient.getFirstname(),
+            recipient.getLastname(),
+            kind,
+            subjectName,
+            companyName,
+            reason,
+            companyName
+        );
+
+        return send(recipient.getEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendUnlockedEmail(User recipient, String subjectName, String kind) {
+        String companyName = getCompanyName();
+
+        String subject = String.format("%s: %s er låst op", companyName, subjectName);
+        String body = String.format("""
+            Hej %s %s,
+
+            %s "%s" er nu låst op igen, og du kan fortsætte som før.
+
+            Venlig hilsen
+            %s
+            """,
+            recipient.getFirstname(),
+            recipient.getLastname(),
+            kind,
+            subjectName,
+            companyName
+        );
+
+        return send(recipient.getEmail(), subject, body);
     }
 
     // ________________________________________________________

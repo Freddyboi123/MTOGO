@@ -28,4 +28,8 @@ public class OrderDTO {
     private LocalDateTime createdAt;
     private List<OrderLineDTO> lines;
 
+    // Admin only
+    private UserDTO customer;
+    private String adminStatus;
+
 }

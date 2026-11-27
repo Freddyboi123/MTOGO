@@ -6,7 +6,7 @@ import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './RestaurantMenu.module.css';
 import { basketTexts, restaurantMenu } from '../data/mtogo';
-import { fetchMenu, fetchRestaurant } from '../api/restaurants';
+import { fetchMenu, fetchRestaurant } from '../utils/api';
 import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import restaurantImage from '../utils/restaurantImage';
 import useBasket from '../basket/useBasket';

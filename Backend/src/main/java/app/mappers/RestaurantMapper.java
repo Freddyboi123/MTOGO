@@ -8,23 +8,24 @@ import app.mappers.generic.IMapper;
 public class RestaurantMapper implements IMapper<Restaurant, RestaurantDTO> {
 
     private final MenuCategoryMapper categoryMapper = new MenuCategoryMapper();
+    private final UserMapper userMapper = new UserMapper();
 
     // ________________________________________________________
 
     @Override
     public Restaurant toEntity(RestaurantDTO dto) {
         Address address = Address.builder()
-                .street(dto.getStreet())
-                .postalCode(dto.getPostalCode())
-                .city(dto.getCity())
-                .build();
+            .street(dto.getStreet())
+            .postalCode(dto.getPostalCode())
+            .city(dto.getCity())
+            .build();
 
         return Restaurant.builder()
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .phoneNumber(dto.getPhoneNumber())
-                .address(address)
-                .build();
+            .name(dto.getName())
+            .description(dto.getDescription())
+            .phoneNumber(dto.getPhoneNumber())
+            .address(address)
+            .build();
     }
 
     // ________________________________________________________
@@ -41,8 +42,33 @@ public class RestaurantMapper implements IMapper<Restaurant, RestaurantDTO> {
                 .street(address == null ? null : address.getStreet())
                 .postalCode(address == null ? null : address.getPostalCode())
                 .city(address == null ? null : address.getCity())
+                .cuisine(entity.getCuisine())
+                .latitude(entity.getLatitude())
+                .longitude(entity.getLongitude())
                 .active(entity.isActive())
                 .categories(entity.getCategories().stream().map(categoryMapper::toDTO).toList())
                 .build();
+    }
+
+    // ________________________________________________________
+
+    public RestaurantDTO toAdminDTO(Restaurant entity, String status) {
+        Address address = entity.getAddress();
+
+        return RestaurantDTO.builder()
+            .id(entity.getId())
+            .name(entity.getName())
+            .description(entity.getDescription())
+            .phoneNumber(entity.getPhoneNumber())
+            .street(address == null ? null : address.getStreet())
+            .postalCode(address == null ? null : address.getPostalCode())
+            .city(address == null ? null : address.getCity())
+            .cuisine(entity.getCuisine())
+            .active(entity.isActive())
+            .owner(userMapper.toDTO(entity.getOwner()))
+            .locked(entity.isLocked())
+            .lockReason(entity.getLockReason())
+            .status(status)
+            .build();
     }
 }

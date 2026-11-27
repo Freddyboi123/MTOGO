@@ -14,6 +14,11 @@ const CALLS = {
     resendVerify: (m) => m.resendVerify('a@b.dk'),
     forgotPassword: (m) => m.forgotPassword('a@b.dk'),
     resetPassword: (m) => m.resetPassword({ token: 't', password: 'x' }),
+    getProfile: (m) => m.getProfile(),
+    updateProfile: (m) => m.updateProfile({ first_name: 'A' }),
+    fetchRestaurants: (m) => m.fetchRestaurants(),
+    fetchRestaurant: (m) => m.fetchRestaurant('42'),
+    fetchMenu: (m) => m.fetchMenu('42'),
     getMyRestaurants: (m) => m.getMyRestaurants(),
     getMyRestaurant: (m) => m.getMyRestaurant('42'),
     setRestaurantVisibility: (m) => m.setRestaurantVisibility('42', true),
@@ -32,15 +37,25 @@ const CALLS = {
     getMyRestaurantApplications: (m) => m.getMyRestaurantApplications(),
     submitRestaurantApplication: (m) => m.submitRestaurantApplication({ restaurantName: 'X' }),
     resubmitRestaurantApplication: (m) => m.resubmitRestaurantApplication('42', { restaurantName: 'X' }),
-    decideRestaurantApplication: (m) => m.decideRestaurantApplication('42', { status: 'APPROVED' })
+    decideRestaurantApplication: (m) => m.decideRestaurantApplication('42', { status: 'APPROVED' }),
+    getAdminOverview: (m) => m.getAdminOverview(),
+    getAdminRestaurants: (m) => m.getAdminRestaurants(),
+    updateAdminRestaurant: (m) => m.updateAdminRestaurant('42', { name: 'X' }),
+    setAdminRestaurantVisibility: (m) => m.setAdminRestaurantVisibility('42', false),
+    lockAdminRestaurant: (m) => m.lockAdminRestaurant('42', 'Mangler oplysninger'),
+    unlockAdminRestaurant: (m) => m.unlockAdminRestaurant('42'),
+    deleteAdminRestaurant: (m) => m.deleteAdminRestaurant('42'),
+    getAdminCouriers: (m) => m.getAdminCouriers(),
+    updateAdminCourier: (m) => m.updateAdminCourier('42', { firstname: 'A' }),
+    lockAdminCourier: (m) => m.lockAdminCourier('42', 'Mangler dokument'),
+    unlockAdminCourier: (m) => m.unlockAdminCourier('42'),
+    banAdminCourier: (m) => m.banAdminCourier('42', 'Svindel'),
+    deleteAdminCourier: (m) => m.deleteAdminCourier('42'),
+    getAdminCourierApplications: (m) => m.getAdminCourierApplications(),
+    getAdminOrders: (m) => m.getAdminOrders('COMPLETED')
   },
   'api/featureFlags': {
     fetchFeatureFlags: (m) => m.fetchFeatureFlags()
-  },
-  'api/restaurants': {
-    fetchRestaurants: (m) => m.fetchRestaurants(),
-    fetchRestaurant: (m) => m.fetchRestaurant('42'),
-    fetchMenu: (m) => m.fetchMenu('42')
   }
 };
 
@@ -57,8 +72,7 @@ const NOT_ENDPOINTS = new Set([
 
 const loaders = {
   'utils/api': () => import('../utils/api'),
-  'api/featureFlags': () => import('./featureFlags'),
-  'api/restaurants': () => import('./restaurants')
+  'api/featureFlags': () => import('./featureFlags')
 };
 
 const okResponse = () =>

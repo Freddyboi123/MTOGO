@@ -1,5 +1,6 @@
 package app.dtos;
 
+import app.enums.Cuisine;
 import lombok.*;
 
 import java.util.List;
@@ -19,7 +20,17 @@ public class RestaurantDTO {
     private String street;
     private String postalCode;
     private String city;
+    private Cuisine cuisine;
+    private Double latitude;
+    private Double longitude;
+    private Double distanceKm;
     private boolean active;
     private List<MenuCategoryDTO> categories;
+
+    // Admin only
+    private UserDTO owner;
+    private Boolean locked;
+    private String lockReason;
+    private String status;
 
 }
