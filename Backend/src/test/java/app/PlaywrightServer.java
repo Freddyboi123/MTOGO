@@ -1,10 +1,14 @@
 package app;
 
 import app.configs.TestHibernateConfig;
+import app.dtos.UserDTO;
 import app.entities.Address;
 import app.entities.Delivery;
 import app.entities.DeliveryAgent;
+import app.entities.MenuItem;
 import app.entities.Order;
+import app.entities.OrderLine;
+import app.entities.OrderStatusHistory;
 import app.entities.Restaurant;
 import app.entities.User;
 import app.enums.FeatureFlag;
@@ -17,9 +21,10 @@ import app.utils.Populator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class PlaywrightServer {
 
@@ -33,33 +38,58 @@ public class PlaywrightServer {
 
         EntityManagerFactory emf = TestHibernateConfig.getTestEmf();
         Populator.populate(emf);
-        seedDeliveryStatusFixtures(emf);
+        seedDeliveryUsers(emf);
 
-        new Setup(emf.createEntityManager(), port).initialize();
+        Setup setup = new Setup(emf.createEntityManager(), port);
+        setup.getApp().post("/api/test-fixtures/delivery", ctx -> {
+            UserDTO user = ctx.attribute("user");
+            ctx.status(201).json(Map.of("orderId", createDeliveryFixture(emf, user.getId())));
+        }, Role.DELIVERY_AGENT);
+        setup.initialize();
 
         Thread.currentThread().join();
     }
-    private static void seedDeliveryStatusFixtures(EntityManagerFactory emf) {
+
+    private static void seedDeliveryUsers(EntityManagerFactory emf) {
         try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
             String password = PasswordService.hashHelper(Populator.OWNER_PASSWORD);
-            User customer = createUser(em, "delivery-customer@mtogo.dk", Role.CUSTOMER, password);
+            createUser(em, "delivery-customer@mtogo.dk", Role.CUSTOMER, password);
             User courier = createUser(em, "delivery-courier@mtogo.dk", Role.DELIVERY_AGENT, password);
             User otherCourier = createUser(em, "delivery-other@mtogo.dk", Role.DELIVERY_AGENT, password);
-            DeliveryAgent agent = DeliveryAgent.builder().user(courier).build();
-            em.persist(agent);
+            em.persist(DeliveryAgent.builder().user(courier).build());
             em.persist(DeliveryAgent.builder().user(otherCourier).build());
-            Restaurant restaurant = em.createQuery("SELECT r FROM Restaurant r WHERE r.name = :name", Restaurant.class)
-                    .setParameter("name", "Mamma Mia Pizza").getSingleResult();
-            for (int i = 0; i < 3; i++) {
+            em.getTransaction().commit();
+        }
+    }
+
+    private static UUID createDeliveryFixture(EntityManagerFactory emf, UUID courierId) {
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+            try {
+                User customer = em.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+                        .setParameter("email", "delivery-customer@mtogo.dk").getSingleResult();
+                DeliveryAgent agent = em.createQuery("SELECT a FROM DeliveryAgent a WHERE a.user.id = :id", DeliveryAgent.class)
+                        .setParameter("id", courierId).getSingleResult();
+                Restaurant restaurant = em.createQuery("SELECT r FROM Restaurant r WHERE r.name = :name", Restaurant.class)
+                        .setParameter("name", "Mamma Mia Pizza").getSingleResult();
+                MenuItem item = em.createQuery("SELECT i FROM MenuItem i WHERE i.category.restaurant.id = :id AND i.name = :name", MenuItem.class)
+                        .setParameter("id", restaurant.getId()).setParameter("name", "Margherita").getSingleResult();
                 Order order = Order.builder().customer(customer).restaurant(restaurant)
                         .deliveryAddress(Address.builder().street("Testvej 10").postalCode("2200").city("København N").build())
                         .status(OrderStatus.READY_FOR_PICKUP).expectedPickupAt(LocalDateTime.now().plusMinutes(15))
-                        .totalInclVat(new BigDecimal("89.00")).build();
+                        .totalInclVat(item.getPrice()).build();
+                order.addLine(OrderLine.builder().menuItem(item).itemName(item.getName())
+                        .unitPrice(item.getPrice()).quantity(1).build());
+                order.addStatusHistory(OrderStatusHistory.builder().status(OrderStatus.READY_FOR_PICKUP).build());
                 em.persist(order);
                 em.persist(Delivery.builder().order(order).agent(agent).assignedAt(LocalDateTime.now()).build());
+                em.getTransaction().commit();
+                return order.getId();
+            } catch (RuntimeException exception) {
+                if (em.getTransaction().isActive()) em.getTransaction().rollback();
+                throw exception;
             }
-            em.getTransaction().commit();
         }
     }
 
