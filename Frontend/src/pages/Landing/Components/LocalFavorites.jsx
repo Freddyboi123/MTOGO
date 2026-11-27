@@ -1,26 +1,38 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchRestaurants } from '../../../api/restaurants';
+import { fetchRestaurants } from '../../../utils/api';
 import useFeatureFlag from '../../../featureFlags/useFeatureFlag';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import restaurantImage from '../../../utils/restaurantImage';
 import styles from '../Landing.module.css';
 
+const SEARCH_DELAY_MS = 250;
 
-export default function LocalFavorites() {
+export default function LocalFavorites({ cuisine = '', query = '' }) {
   const restaurantOverview = useFeatureFlag('restaurantOverview');
   const [restaurants, setRestaurants] = useState([]);
   const [status, setStatus] = useState('loading');
 
   useEffect(() => {
-    fetchRestaurants()
-      .then((data) => {
-        setRestaurants(data);
-        setStatus('ready');
-      })
-      .catch(() => setStatus('error'));
-  }, []);
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetchRestaurants({ cuisine, query })
+        .then((data) => {
+          if (cancelled) return;
+          setRestaurants(data);
+          setStatus('ready');
+        })
+        .catch(() => !cancelled && setStatus('error'));
+    }, SEARCH_DELAY_MS);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [cuisine, query]);
+
+  const filtered = cuisine !== '' || query.trim() !== '';
 
   return (
     <section className={cx(ui.page, styles.section)}>
@@ -32,7 +44,7 @@ export default function LocalFavorites() {
           </p>
         </div>
         {restaurantOverview && (
-          <Link to="/restauranter" className={ui.linkAccent}>
+          <Link to={cuisine ? `/restauranter?cuisine=${cuisine}` : '/restauranter'} className={ui.linkAccent}>
             Se alle restauranter →
           </Link>
         )}
@@ -41,7 +53,9 @@ export default function LocalFavorites() {
       {status === 'loading' && <p className={ui.fieldHint}>Henter restauranter…</p>}
       {status === 'error' && <p className={ui.fieldHint}>Restauranterne kunne ikke hentes.</p>}
       {status === 'ready' && restaurants.length === 0 && (
-        <p className={ui.fieldHint}>Der er ingen restauranter lige nu.</p>
+        <p className={ui.fieldHint}>
+          {filtered ? 'Ingen restauranter matcher dit valg.' : 'Der er ingen restauranter lige nu.'}
+        </p>
       )}
 
       {status === 'ready' && restaurants.length > 0 && (

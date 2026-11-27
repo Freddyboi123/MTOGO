@@ -25,7 +25,10 @@ const emptyForm = {
   city: '',
   email: '',
   phoneNumber: '',
-  description: ''
+  description: '',
+  cuisine: '',
+  latitude: null,
+  longitude: null
 };
 
 export default function MyApplications() {
@@ -53,6 +56,18 @@ export default function MyApplications() {
     setForm({ ...form, [event.target.name]: event.target.value });
   }
 
+  // The address comes from a suggestion, so the coordinates follow with it.
+  function handleAddressSelect(suggestion) {
+    setForm({
+      ...form,
+      street: suggestion.street,
+      postalCode: suggestion.postalCode,
+      city: suggestion.city,
+      latitude: suggestion.latitude,
+      longitude: suggestion.longitude
+    });
+  }
+
   function handleEdit(application) {
     setForm({ ...emptyForm, ...application });
     setEditingId(application.id);
@@ -64,9 +79,11 @@ export default function MyApplications() {
     setError('');
     setInfo('');
     try {
+      // No category chosen is sent as null, so the backend answers that a category is required.
+      const body = { ...form, cuisine: form.cuisine || null };
       const res = editingId
-        ? await resubmitRestaurantApplication(editingId, form)
-        : await submitRestaurantApplication(form);
+        ? await resubmitRestaurantApplication(editingId, body)
+        : await submitRestaurantApplication(body);
       setInfo(res.message);
       setForm(emptyForm);
       setEditingId(null);
@@ -100,9 +117,11 @@ export default function MyApplications() {
 
       {showForm && (
         <ApplicationForm
+          key={editingId ?? 'new'}
           form={form}
           editing={Boolean(editingId)}
           onChange={handleChange}
+          onAddressSelect={handleAddressSelect}
           onSubmit={handleSubmit}
         />
       )}

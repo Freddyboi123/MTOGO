@@ -59,6 +59,21 @@ public enum Notifications {
     ROLE_INVALID("The role does not exist"),
     ROLE_ASSIGNED("The role %s was given to %s"),
 
+    // PROFILE
+    PROFILE_UPDATED("Your profile was updated"),
+    PROFILE_NO_CHANGES("There was nothing to update"),
+    PROFILE_EMAIL_VERIFY("Your profile was updated. Check your new email and confirm it to change your email"),
+    EMAIL_CHANGED("Your email has been changed. You can now log in with the new email"),
+    PROFILE_EMAIL_VERIFY_MAIL_FAILED("We could not send the confirmation email to your new address. Try again"),
+    PROFILE_EMAIL_INVALID("The email address is not valid"),
+    PROFILE_PHONE_INVALID("The phone number is not valid"),
+    PROFILE_ADDRESS_INCOMPLETE("The address must have a street, a postcode and a city"),
+    PROFILE_POSTCODE_INVALID("The postcode must be 4 digits"),
+    PROFILE_FIRSTNAME_EMPTY("The first name cannot be empty"),
+    PROFILE_LASTNAME_EMPTY("The last name cannot be empty"),
+    PROFILE_CURRENT_PASSWORD_REQUIRED("You must enter your current password to change it"),
+    PROFILE_CURRENT_PASSWORD_WRONG("The current password is wrong"),
+
     // ORDERS
     ORDER_PLACED("Order %s was placed"),
     ORDER_NOT_FOUND("The order was not found"),
@@ -106,6 +121,10 @@ public enum Notifications {
     APPLICATION_NAME_REQUIRED("You must enter a name for the restaurant"),
     APPLICATION_CVR_INVALID("The CVR number must be 8 digits"),
     APPLICATION_ADDRESS_REQUIRED("You must enter the street, postal code and city of the restaurant"),
+    APPLICATION_CUISINE_REQUIRED("You must choose a category for the restaurant"),
+    APPLICATION_LOCATION_REQUIRED("You must choose the address from the suggestions"),
+    RESTAURANT_CUISINE_INVALID("The category does not exist"),
+    RESTAURANT_LOCATION_INVALID("The location is not valid"),
     APPLICATION_EMAIL_INVALID("The email address is not valid"),
     APPLICATION_PHONE_INVALID("The phone number is not valid"),
     APPLICATION_NAME_TAKEN("A restaurant with this name already exists in this city. Choose another name"),

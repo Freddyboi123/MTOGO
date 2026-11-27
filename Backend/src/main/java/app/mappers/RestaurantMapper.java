@@ -41,6 +41,9 @@ public class RestaurantMapper implements IMapper<Restaurant, RestaurantDTO> {
                 .street(address == null ? null : address.getStreet())
                 .postalCode(address == null ? null : address.getPostalCode())
                 .city(address == null ? null : address.getCity())
+                .cuisine(entity.getCuisine())
+                .latitude(entity.getLatitude())
+                .longitude(entity.getLongitude())
                 .active(entity.isActive())
                 .categories(entity.getCategories().stream().map(categoryMapper::toDTO).toList())
                 .build();
