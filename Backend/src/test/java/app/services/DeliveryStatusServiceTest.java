@@ -168,6 +168,38 @@ class DeliveryStatusServiceTest {
     }
 
     @Test
+    void statusTransitionsDoNotTouchAnotherPersistenceContextTransaction() {
+        User unrelated = em.find(User.class, otherId);
+        String originalName = unrelated.getFirstname();
+        em.getTransaction().begin();
+        try {
+            unrelated.setFirstname("Uncommitted change");
+            ApiException error = assertThrows(ApiException.class, () -> service.pickUp(orderId, otherId));
+            assertEquals(403, error.getStatus());
+            assertEquals(Notifications.DELIVERY_NOT_OWNED.getDisplayName(), error.getMessage());
+            assertTrue(em.getTransaction().isActive());
+            assertTrue(em.contains(unrelated));
+            assertEquals(DeliveryStatus.ASSIGNED, state().delivery());
+
+            service.pickUp(orderId, ownerId);
+            service.deliver(orderId, ownerId);
+            assertTrue(em.getTransaction().isActive());
+            assertTrue(em.contains(unrelated));
+            assertEquals("Uncommitted change", unrelated.getFirstname());
+            assertEquals(DeliveryStatus.DELIVERED, state().delivery());
+            try (EntityManager reader = emf.createEntityManager()) {
+                assertEquals(originalName, reader.find(User.class, otherId).getFirstname());
+            }
+        } finally {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+        }
+        try (EntityManager reader = emf.createEntityManager()) {
+            assertEquals(originalName, reader.find(User.class, otherId).getFirstname());
+        }
+        assertEquals(DeliveryStatus.DELIVERED, state().delivery());
+    }
+
+    @Test
     void cannotSkipPickupOrRepeatPickup() {
         rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.deliver(orderId, ownerId));
         service.pickUp(orderId, ownerId);
