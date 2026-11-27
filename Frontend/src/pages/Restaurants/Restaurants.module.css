@@ -75,3 +75,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+.results {
+  margin-top: 36px;
+}
+
+.near {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.nearClear {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cardCuisine {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cardDistance {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green);
+  margin-top: 6px;
+}

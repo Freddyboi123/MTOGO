@@ -77,6 +77,37 @@ public class MailService {
 
     // ________________________________________________________
 
+    public MailResult sendConfirmNewEmail(User user) {
+        String companyName = getCompanyName();
+        String link = getBackendUrl() + "/api/users/auth/verify?token=" + user.getVerifyToken();
+
+        String subject = String.format("%s: Godkend ny e-mail", companyName);
+        String body = String.format("""
+            Hej %s %s,
+
+            Du har bedt om at skifte din e-mail hos %s til denne adresse.
+            Tryk på linket herunder for at godkende den. Din e-mail bliver først ændret, når du har trykket på linket.
+
+            Linket udløber automatisk om 30 minutter:
+            %s
+
+            Hvis det ikke var dig, kan du bare ignorere denne mail.
+
+            Venlig hilsen
+            %s
+            """,
+            user.getFirstname(),
+            user.getLastname(),
+            companyName,
+            link,
+            companyName
+        );
+
+        return send(user.getPendingEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
     public void sendResetPasswordEmail(User user) {
         String companyName = getCompanyName();
         String link = getFrontendUrl() + "/reset-password?token=" + user.getResetToken();

@@ -26,6 +26,13 @@ public class User {
 
     private String lastname;
 
+    private String phoneNumber;
+
+    private String street;
+    private String postalCode;
+    private String city;
+    private String floorDoor;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -39,6 +46,9 @@ public class User {
 
     @Builder.Default
     private boolean verified = false;
+
+    private String pendingEmail;
+
     private String verifyToken;
     private LocalDateTime verifyTokenExpiresAt;
 

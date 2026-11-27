@@ -89,10 +89,12 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
     private void getAllVisible(Context ctx) {
 
-        List<RestaurantDTO> list = restaurantService.getActiveRestaurants()
-            .stream()
-            .map(mapper::toDTO)
-            .toList();
+        List<RestaurantDTO> list = restaurantService.searchActiveRestaurants(
+            ctx.queryParam("cuisine"),
+            ctx.queryParam("q"),
+            parseCoordinate(ctx.queryParam("lat")),
+            parseCoordinate(ctx.queryParam("lon"))
+        );
 
         String message = messageService.buildMessage(
             Notifications.GET_ALL,
@@ -102,6 +104,19 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
         respond(ctx, 200, message, Map.of("data", list));
 
+    }
+
+    // ________________________________________________________
+
+    private static Double parseCoordinate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Double.valueOf(value);
+        } catch (NumberFormatException e) {
+            throw new ApiException(400, Notifications.RESTAURANT_LOCATION_INVALID.getDisplayName());
+        }
     }
 
     // ________________________________________________________

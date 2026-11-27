@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { isLoggedIn } from './utils/api';
 import Landing from './pages/Landing/Landing';
 import useFeatureFlag from './featureFlags/useFeatureFlag';
-import Restaurants from './pages/Restaurants';
+import Restaurants from './pages/Restaurants/Restaurants';
 import RestaurantMenu from './pages/RestaurantMenu';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';

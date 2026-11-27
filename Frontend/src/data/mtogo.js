@@ -1,14 +1,3 @@
-export const cuisines = [
-  'Alle køkkener',
-  'Pizza',
-  'Burger',
-  'Sushi',
-  'Asiatisk',
-  'Grønt & sundt',
-  'Italiensk',
-  'Indisk'
-];
-
 export const restaurants = [
   {
     id: 'osteria-noerrebro',
@@ -517,23 +506,6 @@ export const applyCourierSteps = [
     body: 'Gå online, og vælg en ledig tur.'
   }
 ];
-
-export const profileSections = [
-  'Personlige oplysninger',
-  'Leveringsadresse',
-  'Mine ansøgninger',
-  'Ordrehistorik',
-  'Sikkerhed'
-];
-
-export const restaurantOverview = {
-  eyebrow: 'Alle restauranter',
-  title: 'Find dit næste måltid',
-  lead: 'Udforsk restauranterne på MTOGO, og vælg hvor du vil bestille fra.',
-  loading: 'Henter restauranter…',
-  error: 'Restauranterne kunne ikke hentes. Prøv igen om lidt.',
-  empty: 'Der er ingen restauranter endnu.'
-};
 
 export const restaurantMenu = {
   back: '← Alle restauranter',

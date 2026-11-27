@@ -14,6 +14,11 @@ const CALLS = {
     resendVerify: (m) => m.resendVerify('a@b.dk'),
     forgotPassword: (m) => m.forgotPassword('a@b.dk'),
     resetPassword: (m) => m.resetPassword({ token: 't', password: 'x' }),
+    getProfile: (m) => m.getProfile(),
+    updateProfile: (m) => m.updateProfile({ first_name: 'A' }),
+    fetchRestaurants: (m) => m.fetchRestaurants(),
+    fetchRestaurant: (m) => m.fetchRestaurant('42'),
+    fetchMenu: (m) => m.fetchMenu('42'),
     getMyRestaurants: (m) => m.getMyRestaurants(),
     getMyRestaurant: (m) => m.getMyRestaurant('42'),
     setRestaurantVisibility: (m) => m.setRestaurantVisibility('42', true),
@@ -34,11 +39,6 @@ const CALLS = {
   },
   'api/featureFlags': {
     fetchFeatureFlags: (m) => m.fetchFeatureFlags()
-  },
-  'api/restaurants': {
-    fetchRestaurants: (m) => m.fetchRestaurants(),
-    fetchRestaurant: (m) => m.fetchRestaurant('42'),
-    fetchMenu: (m) => m.fetchMenu('42')
   }
 };
 
@@ -55,8 +55,7 @@ const NOT_ENDPOINTS = new Set([
 
 const loaders = {
   'utils/api': () => import('../utils/api'),
-  'api/featureFlags': () => import('./featureFlags'),
-  'api/restaurants': () => import('./restaurants')
+  'api/featureFlags': () => import('./featureFlags')
 };
 
 const okResponse = () =>
