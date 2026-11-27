@@ -2,6 +2,7 @@ package app.daos;
 
 import app.daos.generic.EntityManagerDAO;
 import app.entities.RestaurantApplication;
+import app.enums.ApplicationStatus;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
@@ -23,6 +24,17 @@ public class RestaurantApplicationDAO extends EntityManagerDAO<RestaurantApplica
                 .setParameter("applicantId", applicantId)
                 .getResultList()
         );
+    }
+
+    // ________________________________________________________
+
+    public long countByStatus(ApplicationStatus status) {
+
+        String jpql = "SELECT COUNT(a) FROM RestaurantApplication a WHERE a.status = :status";
+
+        return executeQuery(() -> em.createQuery(jpql, Long.class)
+            .setParameter("status", status)
+            .getSingleResult());
     }
 
 }

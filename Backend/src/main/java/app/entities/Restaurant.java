@@ -41,6 +41,12 @@ public class Restaurant {
     @Builder.Default
     private boolean active = true;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean locked = false;
+
+    private String lockReason;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;

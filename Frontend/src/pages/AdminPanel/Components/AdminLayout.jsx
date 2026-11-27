@@ -1,5 +1,5 @@
-import DashboardLayout from './DashboardLayout';
-import { useApplicationCounts } from '../utils/api';
+import DashboardLayout from '../../../components/DashboardLayout';
+import { useApplicationCounts } from '../../../utils/api';
 
 export default function AdminLayout({ breadcrumb, children }) {
   const counts = useApplicationCounts();
@@ -14,17 +14,11 @@ export default function AdminLayout({ breadcrumb, children }) {
       activePath: '/admin/ansoegninger',
       count: counts.total
     },
-    { to: '/admin/ordrer', label: 'Ordrer' },
-    { to: '/admin/indstillinger', label: 'Indstillinger' }
+    { to: '/admin/ordrer', label: 'Ordrer' }
   ];
 
   return (
-    <DashboardLayout
-      role="Administration"
-      items={items}
-      breadcrumb={breadcrumb}
-      user="Administrator"
-    >
+    <DashboardLayout role="Administration" items={items} breadcrumb={breadcrumb} user="Administrator">
       {children}
     </DashboardLayout>
   );

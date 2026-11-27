@@ -156,132 +156,6 @@ export const applications = [
   }
 ];
 
-export const adminRestaurants = [
-  {
-    name: 'Osteria Nørrebro',
-    contact: 'Luca Moretti',
-    area: 'København N',
-    status: 'Aktiv'
-  },
-  {
-    name: 'Buns & Friends',
-    contact: 'Emma Larsen',
-    area: 'København V',
-    status: 'Aktiv'
-  },
-  {
-    name: 'Green Kitchen',
-    contact: 'Oliver Holm',
-    area: 'København K',
-    status: 'Aktiv'
-  },
-  {
-    name: 'Sakura Sushi',
-    contact: 'Mei Tanaka',
-    area: 'Frederiksberg',
-    status: 'Pauset'
-  },
-  {
-    name: 'Spice House',
-    contact: 'Arjun Patel',
-    area: 'København Ø',
-    status: 'Aktiv'
-  },
-  {
-    name: 'Pasta & Co.',
-    contact: 'Mads Jensen',
-    area: 'København S',
-    status: 'Aktiv'
-  }
-];
-
-export const adminCouriers = [
-  {
-    name: 'Jonas Nielsen',
-    email: 'jonas.n@email.dk',
-    vehicle: 'Cykel',
-    status: 'På levering'
-  },
-  {
-    name: 'Freja Møller',
-    email: 'freja.m@email.dk',
-    vehicle: 'Elcykel',
-    status: 'Tilgængelig'
-  },
-  {
-    name: 'Noah Hansen',
-    email: 'noah.h@email.dk',
-    vehicle: 'Bil',
-    status: 'Offline'
-  },
-  {
-    name: 'Ida Petersen',
-    email: 'ida.p@email.dk',
-    vehicle: 'Cykel',
-    status: 'Tilgængelig'
-  },
-  {
-    name: 'Oscar Lund',
-    email: 'oscar.l@email.dk',
-    vehicle: 'Scooter',
-    status: 'Pauset'
-  },
-  {
-    name: 'Clara Berg',
-    email: 'clara.b@email.dk',
-    vehicle: 'Elcykel',
-    status: 'På levering'
-  }
-];
-
-export const restaurantApplications = [
-  {
-    id: 'A-026',
-    name: 'Nabo Trattoria',
-    applicant: 'Sofie Andersen',
-    received: '10. nov.',
-    status: 'Under behandling'
-  },
-  {
-    id: 'A-028',
-    name: 'Seoul Table',
-    applicant: 'Min Park',
-    received: '11. nov.',
-    status: 'Ny'
-  },
-  {
-    id: 'A-029',
-    name: 'Café Morgen',
-    applicant: 'Anna Dahl',
-    received: '11. nov.',
-    status: 'Ny'
-  }
-];
-
-export const courierApplications = [
-  {
-    id: 'A-027',
-    name: 'Sofie Andersen',
-    detail: 'Cykel · København N',
-    received: '10. nov.',
-    status: 'Mangler dokument'
-  },
-  {
-    id: 'A-030',
-    name: 'Amalie Sørensen',
-    detail: 'Elcykel · København K',
-    received: '11. nov.',
-    status: 'Ny'
-  },
-  {
-    id: 'A-031',
-    name: 'Ali Hassan',
-    detail: 'Bil · Frederiksberg',
-    received: '11. nov.',
-    status: 'Ny'
-  }
-];
-
 export const restaurantMenuRows = [
   { name: 'Margherita', price: '119 kr.', state: 'Aktiv' },
   { name: 'Burrata', price: '129 kr.', state: 'Aktiv' },
@@ -358,20 +232,6 @@ export const openDeliveries = [
   }
 ];
 
-export const restaurantTotals = {
-  all: 24,
-  active: 21,
-  paused: 3,
-  area: 'På tværs af København'
-};
-
-export const courierTotals = {
-  approved: 18,
-  online: 12,
-  onTrip: 8,
-  available: 4
-};
-
 export const restaurantPanelStats = {
   minimumOrder: '99 kr.',
   deliveryRadius: '4 km'
@@ -438,54 +298,6 @@ export const activeDelivery = {
       note: 'Ring på ved ankomst.'
     }
   ]
-};
-
-export const restaurantApplicationDetail = {
-  applicantEmail: 'sofie.a@email.dk',
-  applicantPhone: '+45 28 34 56 78',
-  address: 'Nørrebrogade 88, 2200 København N',
-  registration: 'CVR 12345678 · Italiensk · 11.00–22.00',
-  documents: [
-    { name: 'CVR-registrering.pdf', state: 'Kontrolleret  ·  Se →' },
-    { name: 'Fødevaregistrering.pdf', state: 'Vedhæftet  ·  Se →' }
-  ],
-  activity: [
-    { when: '10. nov. · 14.32', text: 'Ansøgning modtaget fra Sofie Andersen.' },
-    { when: '11. nov. · 09.10', text: 'CVR-oplysninger kontrolleret.' },
-    { when: '11. nov. · 09.15', text: 'Sagen er klar til din vurdering.' }
-  ]
-};
-
-export const courierApplicationDetail = {
-  applicantEmail: 'sofie.a@email.dk',
-  applicantPhone: '+45 28 34 56 78',
-  requirements: '18+ bekræftet · Ret til at arbejde i Danmark',
-  documents: [
-    { name: 'Arbejdstilladelse.pdf', state: 'Vedhæftet  ·  Se →' },
-    { name: 'Billedlegitimation', state: 'Mangler  ·  Påmind →' }
-  ],
-  activity: [
-    { when: '10. nov. · 15.04', text: 'Chaufføransøgning modtaget.' },
-    { when: '11. nov. · 09.20', text: 'Legitimation mangler i ansøgningen.' },
-    { when: '11. nov. · 09.25', text: 'Sofie er bedt om at uploade dokumentet.' }
-  ]
-};
-
-export const selectedAdminRestaurant = {
-  name: 'Osteria Nørrebro',
-  id: 'R-001',
-  address: 'Nørrebrogade 42, 2200 København N',
-  contact: 'luca@osteria.dk  ·  +45 22 34 56 78',
-  opening: 'Åbent i dag 11.00–22.00  ·  Leveringsområde: 4 km'
-};
-
-export const selectedAdminCourier = {
-  name: 'Jonas Nielsen',
-  id: 'D-014',
-  area: 'København N',
-  approved: 'Godkendt 2. november 2026',
-  contact: 'jonas.n@email.dk  ·  +45 23 45 67 89',
-  record: 'Dokumenter godkendt  ·  128 leverancer  ·  Bedømmelse 4,9 / 5'
 };
 
 

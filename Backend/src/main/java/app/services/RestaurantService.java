@@ -94,6 +94,7 @@ public class RestaurantService {
     public Restaurant setVisibility(UUID ownerId, UUID restaurantId, boolean visible) {
 
         Restaurant restaurant = getMyRestaurant(ownerId, restaurantId);
+        checkNotLocked(restaurant);
         restaurant.setActive(visible);
 
         return restaurantDAO.update(restaurant);
@@ -186,6 +187,7 @@ public class RestaurantService {
     public MenuCategory addCategory(UUID userId, UUID restaurantId, MenuCategoryDTO dto) {
         Restaurant restaurant = getRestaurant(restaurantId);
         checkOwner(restaurant, userId);
+        checkNotLocked(restaurant);
 
         ErrorHandler.tryString(dto.getName(), Notifications.CATEGORY_NAME_REQUIRED.getDisplayName());
 
@@ -203,6 +205,7 @@ public class RestaurantService {
             Notifications.CATEGORY_NOT_FOUND.getDisplayName()
         );
         checkOwner(category.getRestaurant(), userId);
+        checkNotLocked(category.getRestaurant());
 
         ErrorHandler.tryString(dto.getName(), Notifications.MENU_ITEM_NAME_REQUIRED.getDisplayName());
 
@@ -222,6 +225,7 @@ public class RestaurantService {
             Notifications.MENU_ITEM_NOT_FOUND.getDisplayName()
         );
         checkOwner(item.getCategory().getRestaurant(), userId);
+        checkNotLocked(item.getCategory().getRestaurant());
 
         if (dto.getName() != null) {
             ErrorHandler.tryString(dto.getName(), Notifications.MENU_ITEM_NAME_REQUIRED.getDisplayName());
@@ -255,6 +259,14 @@ public class RestaurantService {
     private void checkPrice(BigDecimal price) {
         if (price == null || price.signum() <= 0) {
             throw new ApiException(400, Notifications.MENU_ITEM_PRICE_INVALID.getDisplayName());
+        }
+    }
+
+    // ________________________________________________________
+
+    private void checkNotLocked(Restaurant restaurant) {
+        if (restaurant.isLocked()) {
+            throw new ApiException(403, Notifications.ADMIN_RESTAURANT_LOCKED.getDisplayName());
         }
     }
 

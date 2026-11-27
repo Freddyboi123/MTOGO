@@ -27,7 +27,7 @@ public class MailService {
     private static final String DEV_FRONTEND_URL = "http://localhost:5173";
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    // Looks up a config key and returns null when it is missing. Tests pass their own lookup.
+
     private final UnaryOperator<String> config;
 
     public MailService() {
@@ -189,6 +189,61 @@ public class MailService {
         );
 
         return send(applicant.getEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendLockedEmail(User recipient, String subjectName, String kind, String reason) {
+        String companyName = getCompanyName();
+
+        String subject = String.format("%s: %s er låst", companyName, subjectName);
+        String body = String.format("""
+            Hej %s %s,
+
+            %s "%s" er blevet låst af en administrator hos %s. Du kan ikke foretage ændringer, før en administrator har låst op igen.
+
+            Årsag og hvad der skal ændres:
+            %s
+
+            Svar på denne mail, når ændringerne er på plads, så låser vi op igen.
+
+            Venlig hilsen
+            %s
+            """,
+            recipient.getFirstname(),
+            recipient.getLastname(),
+            kind,
+            subjectName,
+            companyName,
+            reason,
+            companyName
+        );
+
+        return send(recipient.getEmail(), subject, body);
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendUnlockedEmail(User recipient, String subjectName, String kind) {
+        String companyName = getCompanyName();
+
+        String subject = String.format("%s: %s er låst op", companyName, subjectName);
+        String body = String.format("""
+            Hej %s %s,
+
+            %s "%s" er nu låst op igen, og du kan fortsætte som før.
+
+            Venlig hilsen
+            %s
+            """,
+            recipient.getFirstname(),
+            recipient.getLastname(),
+            kind,
+            subjectName,
+            companyName
+        );
+
+        return send(recipient.getEmail(), subject, body);
     }
 
     // ________________________________________________________

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
-import styles from '../AdminRestaurantApplication.module.css';
+import styles from '../AdminPanel.module.css';
 
 export default function ApplicationDetail({ application, statusLabels, statusTagClasses, submitting, onDecide }) {
   const [message, setMessage] = useState('');
