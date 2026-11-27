@@ -8,6 +8,7 @@ import app.enums.Notifications;
 import app.enums.OrderStatus;
 import app.exceptions.ApiException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.LockModeType;
 
 import java.time.LocalDateTime;
@@ -16,9 +17,11 @@ import java.util.UUID;
 
 public class DeliveryAssignmentService {
     private final EntityManager em;
+    private final EntityManagerFactory emf;
 
     public DeliveryAssignmentService(EntityManager em) {
         this.em = em;
+        this.emf = em.getEntityManagerFactory();
     }
 
     public List<DeliveryAssignmentDTO> available() {
@@ -36,11 +39,9 @@ public class DeliveryAssignmentService {
     }
 
     public List<DeliveryAssignmentDTO> mine(UUID userId) {
-        synchronized (em) {
-            try (EntityManager reader = em.getEntityManagerFactory().createEntityManager()) {
-                return new DeliveryStatusDAO(reader).findActiveByUser(userId).stream()
-                        .map(delivery -> toDTO(delivery.getOrder(), delivery)).toList();
-            }
+        try (EntityManager reader = emf.createEntityManager()) {
+            return new DeliveryStatusDAO(reader).findActiveByUser(userId).stream()
+                    .map(delivery -> toDTO(delivery.getOrder(), delivery)).toList();
         }
     }
 
@@ -97,10 +98,10 @@ public class DeliveryAssignmentService {
     private DeliveryAssignmentDTO transition(UUID orderId, UUID userId,
             DeliveryStatus expectedDelivery, OrderStatus expectedOrder,
             DeliveryStatus nextDelivery, OrderStatus nextOrder) {
-        synchronized (em) {
+        try (EntityManager transactionEm = emf.createEntityManager()) {
             try {
-                em.getTransaction().begin();
-                DeliveryStatusDAO dao = new DeliveryStatusDAO(em);
+                transactionEm.getTransaction().begin();
+                DeliveryStatusDAO dao = new DeliveryStatusDAO(transactionEm);
                 Order order = dao.findLockedOrder(orderId);
                 if (order == null) {
                     throw new ApiException(404, Notifications.ORDER_NOT_FOUND.getDisplayName());
@@ -128,12 +129,12 @@ public class DeliveryAssignmentService {
                 }
                 order.setStatus(nextOrder);
                 order.addStatusHistory(OrderStatusHistory.builder().status(nextOrder).changedAt(now).build());
-                em.flush();
+                transactionEm.flush();
                 DeliveryAssignmentDTO result = toDTO(order, delivery);
-                em.getTransaction().commit();
+                transactionEm.getTransaction().commit();
                 return result;
             } catch (RuntimeException exception) {
-                if (em.getTransaction().isActive()) em.getTransaction().rollback();
+                if (transactionEm.getTransaction().isActive()) transactionEm.getTransaction().rollback();
                 throw exception;
             }
         }
