@@ -29,6 +29,13 @@ public class DeliveryAgent {
     @Builder.Default
     private boolean active = true;
 
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean locked = false;
+
+    private String lockReason;
+
     @Builder.Default
     @OneToMany(mappedBy = "agent")
     private List<Delivery> deliveries = new ArrayList<>();

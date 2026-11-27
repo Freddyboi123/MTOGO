@@ -135,6 +135,16 @@ public enum Notifications {
     APPLICATION_DECISION_INVALID("The decision must be APPROVED, REJECTED or MORE_INFORMATION_NEEDED"),
     APPLICATION_MESSAGE_REQUIRED("You must write what information is missing"),
 
+    // ADMIN
+    ADMIN_LOCK_REASON_REQUIRED("You must write why it is locked and what must be changed"),
+    ADMIN_RESTAURANT_LOCKED("The restaurant is locked by an administrator and cannot be changed"),
+    ADMIN_RESTAURANT_HAS_ORDERS("The restaurant has orders and cannot be deleted. Lock it instead"),
+    ADMIN_COURIER_NOT_FOUND("The courier was not found"),
+    ADMIN_COURIER_HAS_DELIVERIES("The courier has deliveries and cannot be deleted. Lock or ban them instead"),
+    ADMIN_ORDER_FILTER_INVALID("The order status filter does not exist"),
+    ADMIN_NAME_REQUIRED("The name cannot be empty"),
+    ADMIN_EMAIL_TAKEN("Another user already uses this email"),
+
     MAIL_SENDER_BOOLEAN_FAILED("Mail sender failed!")
 
     ;

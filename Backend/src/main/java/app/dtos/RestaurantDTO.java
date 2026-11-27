@@ -27,4 +27,10 @@ public class RestaurantDTO {
     private boolean active;
     private List<MenuCategoryDTO> categories;
 
+    // Admin only
+    private UserDTO owner;
+    private Boolean locked;
+    private String lockReason;
+    private String status;
+
 }

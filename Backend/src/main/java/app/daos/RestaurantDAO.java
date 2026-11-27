@@ -69,9 +69,20 @@ public class RestaurantDAO extends EntityManagerDAO<Restaurant> {
         return value.toLowerCase().replaceAll("[\\s,.\\-]", "");
     }
 
+    String jpql = "SELECT r FROM Restaurant r WHERE r.active = true ORDER BY r.name";
+
     public List<Restaurant> getAllActive() {
-        return executeQuery(() -> em.createQuery(
-                        "SELECT r FROM Restaurant r WHERE r.active = true ORDER BY r.name", Restaurant.class)
-                .getResultList());
+        return executeQuery(() -> em.createQuery(jpql, Restaurant.class)
+            .getResultList());
+    }
+
+    // ________________________________________________________
+
+    public List<Restaurant> getAllWithOwner() {
+
+        String jpql = "SELECT r FROM Restaurant r JOIN FETCH r.owner ORDER BY r.name";
+
+        return executeQuery(() -> em.createQuery(jpql, Restaurant.class)
+            .getResultList());
     }
 }

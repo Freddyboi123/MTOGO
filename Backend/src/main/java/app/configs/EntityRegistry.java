@@ -12,6 +12,8 @@ final class EntityRegistry {
         configuration.addAnnotatedClass(Address.class);
         configuration.addAnnotatedClass(User.class);
         configuration.addAnnotatedClass(Bonus.class);
+        configuration.addAnnotatedClass(BannedEmail.class);
+        configuration.addAnnotatedClass(DriverApplication.class);
         configuration.addAnnotatedClass(Delivery.class);
         configuration.addAnnotatedClass(DeliveryAgent.class);
         configuration.addAnnotatedClass(Feedback.class);
