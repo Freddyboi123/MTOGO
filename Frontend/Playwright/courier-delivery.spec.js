@@ -68,7 +68,7 @@ test('courier picks up and completes only their own delivery, with persisted sta
     response.url() === `${API}/deliveries/${orderId}/pickup` && response.request().method() === 'POST');
   await details.getByRole('button', { name: 'Markér som afhentet' }).click();
   const pickup = await pickupResponse;
-  await expect(pickup).toBeOK();
+  expect(pickup.status()).toBe(200);
   expect((await pickup.json()).data).toMatchObject({ orderId, deliveryStatus: 'PICKED_UP', orderStatus: 'OUT_FOR_DELIVERY' });
   await expect(card).toContainText('På vej');
   await expect(details.getByRole('button', { name: 'Markér som leveret' })).toBeVisible();
@@ -84,7 +84,7 @@ test('courier picks up and completes only their own delivery, with persisted sta
     response.url() === `${API}/deliveries/${orderId}/deliver` && response.request().method() === 'POST');
   await details.getByRole('button', { name: 'Markér som leveret' }).click();
   const completion = await completionResponse;
-  await expect(completion).toBeOK();
+  expect(completion.status()).toBe(200);
   expect((await completion.json()).data).toMatchObject({ orderId, deliveryStatus: 'DELIVERED', orderStatus: 'DELIVERED' });
   await expect(page.getByText('Leveringen er gennemført.', { exact: true })).toBeVisible();
   await expect(card).toHaveCount(0);
