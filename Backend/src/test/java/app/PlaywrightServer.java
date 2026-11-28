@@ -5,12 +5,14 @@ import app.dtos.UserDTO;
 import app.entities.Address;
 import app.entities.Delivery;
 import app.entities.DeliveryAgent;
+import app.entities.DriverApplication;
 import app.entities.MenuItem;
 import app.entities.Order;
 import app.entities.OrderLine;
 import app.entities.OrderStatusHistory;
 import app.entities.Restaurant;
 import app.entities.User;
+import app.enums.ApplicationStatus;
 import app.enums.FeatureFlag;
 import app.enums.OrderStatus;
 import app.enums.Role;
@@ -45,6 +47,11 @@ public class PlaywrightServer {
             UserDTO user = ctx.attribute("user");
             ctx.status(201).json(Map.of("orderId", createDeliveryFixture(emf, user.getId())));
         }, Role.DELIVERY_AGENT);
+        setup.getApp().post("/api/test-fixtures/driver-application/request-information", ctx -> {
+            UserDTO user = ctx.attribute("user");
+            requestMoreInformation(emf, user.getId());
+            ctx.status(204);
+        }, Role.CUSTOMER);
         setup.initialize();
 
         Thread.currentThread().join();
@@ -60,6 +67,24 @@ public class PlaywrightServer {
             em.persist(DeliveryAgent.builder().user(courier).build());
             em.persist(DeliveryAgent.builder().user(otherCourier).build());
             em.getTransaction().commit();
+        }
+    }
+
+    private static void requestMoreInformation(EntityManagerFactory emf, UUID applicantId) {
+        try (EntityManager em = emf.createEntityManager()) {
+            em.getTransaction().begin();
+            try {
+                DriverApplication application = em.createQuery(
+                                "SELECT a FROM DriverApplication a WHERE a.applicant.id = :id ORDER BY a.createdAt DESC",
+                                DriverApplication.class)
+                        .setParameter("id", applicantId).setMaxResults(1).getSingleResult();
+                application.setStatus(ApplicationStatus.MORE_INFORMATION_NEEDED);
+                application.setAdminMessage("Vælg den region, du kører i");
+                em.getTransaction().commit();
+            } catch (RuntimeException exception) {
+                if (em.getTransaction().isActive()) em.getTransaction().rollback();
+                throw exception;
+            }
         }
     }
 
