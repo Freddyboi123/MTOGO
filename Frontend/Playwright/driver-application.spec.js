@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const API = 'http://localhost:6970/api';
 const CUSTOMER = { email: 'delivery-customer@mtogo.dk', password: 'Password123!' };
+const ADMIN = { email: 'admin@mtogo.dk', password: 'Password123!' };
 
 async function logIn(page) {
   await page.goto('/login');
@@ -31,6 +32,12 @@ async function fillApplication(page, { vehicle, region, hours, times }) {
 
 async function submit(page) {
   await page.getByRole('button', { name: 'Indsend ansøgning' }).click();
+}
+
+async function adminAuthorization(request) {
+  const response = await request.post(`${API}/users/auth/login`, { data: ADMIN });
+  await expect(response).toBeOK();
+  return { Authorization: `Bearer ${(await response.json()).token}` };
 }
 
 async function token(page) {
@@ -183,10 +190,15 @@ test('an application that needs more information shows the request and can be co
   await submit(page);
   await expect(page.getByText('Your application as a delivery agent was submitted')).toBeVisible();
 
-  const fixture = await page.request.post(`${API}/test-fixtures/driver-application/request-information`, {
+  const mine = await page.request.get(`${API}/my-driver-applications`, {
     headers: { Authorization: `Bearer ${await token(page)}` }
   });
-  expect(fixture.status()).toBe(204);
+  const { id } = (await mine.json()).data.data[0];
+  const decision = await page.request.put(`${API}/driver-application/${id}/decision`, {
+    headers: await adminAuthorization(page.request),
+    data: { status: 'MORE_INFORMATION_NEEDED', adminMessage: 'Vælg den region, du kører i' }
+  });
+  expect(decision.status()).toBe(200);
   await page.reload();
   await page.getByRole('button', { name: 'Mine ansøgninger' }).click();
   await page.getByRole('tab', { name: 'Driver ansøgninger' }).click();
@@ -241,4 +253,12 @@ test('the driver applications are only for logged in customers and the admin lis
 
   expect((await page.request.get(`${API}/my-driver-applications`, { headers })).status()).toBe(200);
   expect((await page.request.get(`${API}/driver-applications`, { headers })).status()).toBe(401);
+  expect(
+    (
+      await page.request.put(`${API}/driver-application/00000000-0000-0000-0000-000000000000/decision`, {
+        headers,
+        data: { status: 'APPROVED' }
+      })
+    ).status()
+  ).toBe(401);
 });

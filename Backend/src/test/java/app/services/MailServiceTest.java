@@ -1,5 +1,6 @@
 package app.services;
 
+import app.entities.DriverApplication;
 import app.entities.RestaurantApplication;
 import app.entities.User;
 import app.enums.ApplicationStatus;
@@ -225,6 +226,66 @@ class MailServiceTest {
                 .build();
 
         MailService.MailResult result = mailService().sendApplicationStatusEmail(application);
+
+        assertFalse(result.sent());
+        assertEquals(0, greenMail.getReceivedMessages().length);
+    }
+
+    // ________________________________________________________
+
+    private DriverApplication driverApplication(ApplicationStatus status, String adminMessage) {
+        return DriverApplication.builder()
+                .status(status)
+                .adminMessage(adminMessage)
+                .applicant(user())
+                .build();
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void driverApplicationApprovedEmailTellsWhereTheDeliveryPageIs() throws Exception {
+        MailService.MailResult result = mailService()
+                .sendApplicationStatusEmail(driverApplication(ApplicationStatus.APPROVED, null));
+
+        assertTrue(result.sent());
+        String body = onlyReceivedMessage().getContent().toString();
+        assertTrue(body.contains("Din ansøgning som chauffør er blevet godkendt"));
+        assertTrue(body.contains("leveringsside"));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void driverApplicationRejectedEmailIncludesTheReason() throws Exception {
+        MailService.MailResult result = mailService()
+                .sendApplicationStatusEmail(driverApplication(ApplicationStatus.REJECTED, "Vehicle is not allowed"));
+
+        assertTrue(result.sent());
+        String body = onlyReceivedMessage().getContent().toString();
+        assertTrue(body.contains("afvist"));
+        assertTrue(body.contains("Vehicle is not allowed"));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void driverApplicationEmailContainsWhatTheAdminAskedFor() throws Exception {
+        MailService.MailResult result = mailService()
+                .sendApplicationStatusEmail(driverApplication(ApplicationStatus.MORE_INFORMATION_NEEDED, "Choose a region"));
+
+        assertTrue(result.sent());
+        String body = onlyReceivedMessage().getContent().toString();
+        assertTrue(body.contains("Choose a region"));
+        assertTrue(body.contains("ret din ansøgning"));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void driverApplicationEmailIsNotSentForPendingStatus() {
+        MailService.MailResult result = mailService()
+                .sendApplicationStatusEmail(driverApplication(ApplicationStatus.PENDING, null));
 
         assertFalse(result.sent());
         assertEquals(0, greenMail.getReceivedMessages().length);

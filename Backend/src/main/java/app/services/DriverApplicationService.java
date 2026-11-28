@@ -1,12 +1,15 @@
 package app.services;
 
+import app.daos.DeliveryAgentDAO;
 import app.daos.DriverApplicationDAO;
 import app.daos.UserDAO;
 import app.dtos.DriverApplicationDTO;
+import app.entities.DeliveryAgent;
 import app.entities.DriverApplication;
 import app.entities.User;
 import app.enums.ApplicationStatus;
 import app.enums.Notifications;
+import app.enums.Role;
 import app.exceptions.ApiException;
 import app.mappers.DriverApplicationMapper;
 import app.server.Setup;
@@ -14,6 +17,7 @@ import app.utils.ErrorHandler;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class DriverApplicationService {
@@ -22,19 +26,22 @@ public class DriverApplicationService {
     private static final int MAX_WEEKLY_HOURS = 80;
 
     private final DriverApplicationDAO applicationDAO;
+    private final DeliveryAgentDAO agentDAO;
     private final UserDAO userDAO;
     private final DriverApplicationMapper applicationMapper = new DriverApplicationMapper();
+    private final MailService mailService = new MailService();
 
     // ________________________________________________________
 
     public DriverApplicationService() {
-        this(new DriverApplicationDAO(Setup.em), new UserDAO(Setup.em));
+        this(new DriverApplicationDAO(Setup.em), new DeliveryAgentDAO(Setup.em), new UserDAO(Setup.em));
     }
 
     // ________________________________________________________
 
-    public DriverApplicationService(DriverApplicationDAO applicationDAO, UserDAO userDAO) {
+    public DriverApplicationService(DriverApplicationDAO applicationDAO, DeliveryAgentDAO agentDAO, UserDAO userDAO) {
         this.applicationDAO = applicationDAO;
+        this.agentDAO = agentDAO;
         this.userDAO = userDAO;
     }
 
@@ -103,6 +110,63 @@ public class DriverApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         return applicationDAO.update(application);
+    }
+
+    // ________________________________________________________
+
+    public DriverApplication decideApplication(UUID applicationId, DriverApplicationDTO dto) {
+        DriverApplication application = getApplication(applicationId);
+
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw new ApiException(400, Notifications.APPLICATION_NOT_PENDING.getDisplayName());
+        }
+
+        ApplicationStatus decision = dto.getStatus();
+        if (decision == null || decision == ApplicationStatus.PENDING) {
+            throw new ApiException(400, Notifications.APPLICATION_DECISION_INVALID.getDisplayName());
+        }
+
+        if (decision == ApplicationStatus.MORE_INFORMATION_NEEDED) {
+            ErrorHandler.tryString(dto.getAdminMessage(), Notifications.APPLICATION_MESSAGE_REQUIRED.getDisplayName());
+            application.setAdminMessage(dto.getAdminMessage());
+        } else if (decision == ApplicationStatus.REJECTED) {
+            application.setAdminMessage(dto.getAdminMessage());
+        }
+
+        if (decision == ApplicationStatus.APPROVED) {
+            createDeliveryAgent(application);
+        }
+
+        application.setStatus(decision);
+
+        return applicationDAO.update(application);
+    }
+
+    // ________________________________________________________
+
+    public MailService.MailResult notifyApplicant(DriverApplication application) {
+        return mailService.sendApplicationStatusEmail(application);
+    }
+
+    // ________________________________________________________
+
+    private void createDeliveryAgent(DriverApplication application) {
+        User applicant = ErrorHandler.tryEntity(
+            application.getApplicant(),
+            Notifications.USER_NOT_FOUND.getDisplayName()
+        );
+
+        if (!agentDAO.existsByUserId(applicant.getId())) {
+            agentDAO.create(DeliveryAgent.builder()
+                .user(applicant)
+                .phoneNumber(application.getPhoneNumber())
+                .build());
+        }
+
+        Set<Role> roles = new HashSet<>(applicant.getRoles());
+        roles.add(Role.DELIVERY_AGENT);
+        applicant.setRoles(roles);
+        userDAO.update(applicant);
     }
 
     // ________________________________________________________

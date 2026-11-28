@@ -5,14 +5,12 @@ import app.dtos.UserDTO;
 import app.entities.Address;
 import app.entities.Delivery;
 import app.entities.DeliveryAgent;
-import app.entities.DriverApplication;
 import app.entities.MenuItem;
 import app.entities.Order;
 import app.entities.OrderLine;
 import app.entities.OrderStatusHistory;
 import app.entities.Restaurant;
 import app.entities.User;
-import app.enums.ApplicationStatus;
 import app.enums.FeatureFlag;
 import app.enums.OrderStatus;
 import app.enums.Role;
@@ -47,11 +45,6 @@ public class PlaywrightServer {
             UserDTO user = ctx.attribute("user");
             ctx.status(201).json(Map.of("orderId", createDeliveryFixture(emf, user.getId())));
         }, Role.DELIVERY_AGENT);
-        setup.getApp().post("/api/test-fixtures/driver-application/request-information", ctx -> {
-            UserDTO user = ctx.attribute("user");
-            requestMoreInformation(emf, user.getId());
-            ctx.status(204);
-        }, Role.CUSTOMER);
         setup.initialize();
 
         Thread.currentThread().join();
@@ -62,29 +55,16 @@ public class PlaywrightServer {
             em.getTransaction().begin();
             String password = PasswordService.hashHelper(Populator.OWNER_PASSWORD);
             createUser(em, "delivery-customer@mtogo.dk", Role.CUSTOMER, password);
+            createUser(em, "admin@mtogo.dk", Role.ADMIN, password, "Admin", "Test");
+            createUser(em, "applicant-approve@mtogo.dk", Role.CUSTOMER, password, "Approve", "Applicant");
+            createUser(em, "applicant-reject@mtogo.dk", Role.CUSTOMER, password, "Reject", "Applicant");
+            createUser(em, "applicant-info@mtogo.dk", Role.CUSTOMER, password, "Info", "Applicant");
+            createUser(em, "applicant-resubmit@mtogo.dk", Role.CUSTOMER, password, "Resubmit", "Applicant");
             User courier = createUser(em, "delivery-courier@mtogo.dk", Role.DELIVERY_AGENT, password);
             User otherCourier = createUser(em, "delivery-other@mtogo.dk", Role.DELIVERY_AGENT, password);
             em.persist(DeliveryAgent.builder().user(courier).build());
             em.persist(DeliveryAgent.builder().user(otherCourier).build());
             em.getTransaction().commit();
-        }
-    }
-
-    private static void requestMoreInformation(EntityManagerFactory emf, UUID applicantId) {
-        try (EntityManager em = emf.createEntityManager()) {
-            em.getTransaction().begin();
-            try {
-                DriverApplication application = em.createQuery(
-                                "SELECT a FROM DriverApplication a WHERE a.applicant.id = :id ORDER BY a.createdAt DESC",
-                                DriverApplication.class)
-                        .setParameter("id", applicantId).setMaxResults(1).getSingleResult();
-                application.setStatus(ApplicationStatus.MORE_INFORMATION_NEEDED);
-                application.setAdminMessage("Vælg den region, du kører i");
-                em.getTransaction().commit();
-            } catch (RuntimeException exception) {
-                if (em.getTransaction().isActive()) em.getTransaction().rollback();
-                throw exception;
-            }
         }
     }
 
@@ -119,7 +99,11 @@ public class PlaywrightServer {
     }
 
     private static User createUser(EntityManager em, String email, Role role, String password) {
-        User user = User.builder().firstname("Delivery").lastname("Test")
+        return createUser(em, email, role, password, "Delivery", "Test");
+    }
+
+    private static User createUser(EntityManager em, String email, Role role, String password, String firstname, String lastname) {
+        User user = User.builder().firstname(firstname).lastname(lastname)
                 .email(email).password(password).roles(Set.of(role)).verified(true).build();
         em.persist(user);
         return user;

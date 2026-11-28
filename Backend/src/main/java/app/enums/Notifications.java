@@ -142,6 +142,7 @@ public enum Notifications {
     // DRIVER APPLICATIONS
     DRIVER_APPLICATION_SUBMITTED("Your application as a delivery agent was submitted"),
     DRIVER_APPLICATION_UPDATED("Your application as a delivery agent was sent in again"),
+    DRIVER_APPLICATION_DECIDED("The application of %s as a delivery agent is now %s"),
     DRIVER_APPLICATION_NAME_REQUIRED("You must enter your first and last name"),
     DRIVER_APPLICATION_VEHICLE_REQUIRED("You must choose a vehicle"),
     DRIVER_APPLICATION_REGION_REQUIRED("You must choose a region"),

@@ -29,5 +29,6 @@ public class DriverApplicationDTO {
     private ApplicationStatus status;
     private String adminMessage;
     private LocalDateTime createdAt;
+    private Boolean mailSent;
 
 }

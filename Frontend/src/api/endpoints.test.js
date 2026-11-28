@@ -41,6 +41,7 @@ const CALLS = {
     getDriverApplications: (m) => m.getDriverApplications(),
     getDriverApplication: (m) => m.getDriverApplication('42'),
     getMyDriverApplications: (m) => m.getMyDriverApplications(),
+    decideDriverApplication: (m) => m.decideDriverApplication('42', { status: 'APPROVED' }),
     submitDriverApplication: (m) => m.submitDriverApplication({ vehicle: 'BIKE' }),
     resubmitDriverApplication: (m) => m.resubmitDriverApplication('42', { vehicle: 'BIKE' }),
     getAdminOverview: (m) => m.getAdminOverview(),

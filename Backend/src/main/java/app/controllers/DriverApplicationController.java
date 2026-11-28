@@ -8,6 +8,7 @@ import app.enums.Notifications;
 import app.enums.Role;
 import app.mappers.DriverApplicationMapper;
 import app.services.DriverApplicationService;
+import app.services.MailService;
 import app.utils.ErrorHandler;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
@@ -40,6 +41,7 @@ public class DriverApplicationController extends BaseController<DriverApplicatio
             get("/driver-application/{id}", controller::getByID, Role.ADMIN);
             get("/my-driver-applications", controller::getMyApplications, Role.CUSTOMER, Role.RESTAURANT_OWNER);
             put("/driver-application/{id}", controller::resubmitApplication, Role.CUSTOMER, Role.RESTAURANT_OWNER);
+            put("/driver-application/{id}/decision", controller::decideApplication, Role.ADMIN);
         };
     }
 
@@ -98,5 +100,25 @@ public class DriverApplicationController extends BaseController<DriverApplicatio
 
         String message = messageService.buildMessage(Notifications.DRIVER_APPLICATION_UPDATED);
         respond(ctx, 200, message, mapper.toDTO(application));
+    }
+
+    // ________________________________________________________
+
+    private void decideApplication(Context ctx) {
+        UUID applicationId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.APPLICATION_NOT_FOUND.getDisplayName());
+        DriverApplicationDTO body = ErrorHandler.tryBody(ctx, DriverApplicationDTO.class, Notifications.BODY_EMPTY.getDisplayName());
+
+        DriverApplication application = applicationService.decideApplication(applicationId, body);
+        MailService.MailResult mailResult = applicationService.notifyApplicant(application);
+
+        String message = messageService.buildMessage(
+            Notifications.DRIVER_APPLICATION_DECIDED,
+            application.getFirstname() + " " + application.getLastname(),
+            application.getStatus().name()
+        );
+
+        DriverApplicationDTO dto = mapper.toDTO(application);
+        dto.setMailSent(mailResult.sent());
+        respond(ctx, 200, message, dto);
     }
 }

@@ -1,9 +1,11 @@
 package app.services;
 
 import app.configs.TestHibernateConfig;
+import app.daos.DeliveryAgentDAO;
 import app.daos.DriverApplicationDAO;
 import app.daos.UserDAO;
 import app.dtos.DriverApplicationDTO;
+import app.entities.DeliveryAgent;
 import app.entities.DriverApplication;
 import app.entities.User;
 import app.enums.ApplicationStatus;
@@ -57,7 +59,7 @@ class DriverApplicationServiceTest {
     void setUp() {
         userDAO = new UserDAO(em);
         applicationDAO = new DriverApplicationDAO(em);
-        service = new DriverApplicationService(applicationDAO, userDAO);
+        service = new DriverApplicationService(applicationDAO, new DeliveryAgentDAO(em), userDAO);
         applicant = createUser("Sofie", "Andersen", "+4528345678");
     }
 
@@ -337,5 +339,169 @@ class DriverApplicationServiceTest {
         invalid.setTimesOfDay(Set.of());
 
         assertEquals(400, statusOf(() -> service.resubmitApplication(applicant.getId(), application.getId(), invalid)));
+    }
+
+    // ________________________________________________________
+
+    private DriverApplicationDTO decision(ApplicationStatus status, String adminMessage) {
+        return DriverApplicationDTO.builder().status(status).adminMessage(adminMessage).build();
+    }
+
+    // ________________________________________________________
+
+    private boolean hasAgent(UUID userId) {
+        return new DeliveryAgentDAO(em).existsByUserId(userId);
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void approveCreatesTheDeliveryAgentAndGivesTheRole() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        DriverApplication result = service.decideApplication(application.getId(), decision(ApplicationStatus.APPROVED, null));
+
+        assertEquals(ApplicationStatus.APPROVED, result.getStatus());
+        assertTrue(hasAgent(applicant.getId()));
+        assertTrue(userDAO.getById(applicant.getId()).getRoles().contains(Role.DELIVERY_AGENT));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void approveKeepsTheRolesTheApplicantAlreadyHas() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        service.decideApplication(application.getId(), decision(ApplicationStatus.APPROVED, null));
+
+        assertTrue(userDAO.getById(applicant.getId()).getRoles().contains(Role.CUSTOMER));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void approveCopiesThePhoneNumberToTheDeliveryAgent() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        service.decideApplication(application.getId(), decision(ApplicationStatus.APPROVED, null));
+
+        DeliveryAgent agent = new DeliveryAgentDAO(em).getAllWithUser().stream()
+                .filter(candidate -> candidate.getUser().getId().equals(applicant.getId()))
+                .findFirst().orElseThrow();
+        assertEquals("+4528345678", agent.getPhoneNumber());
+        assertTrue(agent.isActive());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void approveDoesNotCreateASecondAgentForTheSameUser() {
+        DriverApplication first = service.submitApplication(applicant.getId(), applicationDTO());
+        service.decideApplication(first.getId(), decision(ApplicationStatus.APPROVED, null));
+        DriverApplication second = service.submitApplication(applicant.getId(), applicationDTO());
+
+        DriverApplication result = service.decideApplication(second.getId(), decision(ApplicationStatus.APPROVED, null));
+
+        assertEquals(ApplicationStatus.APPROVED, result.getStatus());
+        long agents = new DeliveryAgentDAO(em).getAllWithUser().stream()
+                .filter(candidate -> candidate.getUser().getId().equals(applicant.getId()))
+                .count();
+        assertEquals(1, agents);
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void rejectKeepsTheReasonAndGivesNoRole() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        DriverApplication result = service.decideApplication(
+                application.getId(), decision(ApplicationStatus.REJECTED, "Vehicle is not allowed"));
+
+        assertEquals(ApplicationStatus.REJECTED, result.getStatus());
+        assertEquals("Vehicle is not allowed", result.getAdminMessage());
+        assertFalse(hasAgent(applicant.getId()));
+        assertFalse(userDAO.getById(applicant.getId()).getRoles().contains(Role.DELIVERY_AGENT));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void rejectDoesNotRequireAReason() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        DriverApplication result = service.decideApplication(application.getId(), decision(ApplicationStatus.REJECTED, null));
+
+        assertEquals(ApplicationStatus.REJECTED, result.getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void requestMoreInformationKeepsTheMessageAndGivesNoRole() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        DriverApplication result = service.decideApplication(
+                application.getId(), decision(ApplicationStatus.MORE_INFORMATION_NEEDED, "Choose a region"));
+
+        assertEquals(ApplicationStatus.MORE_INFORMATION_NEEDED, result.getStatus());
+        assertEquals("Choose a region", result.getAdminMessage());
+        assertFalse(hasAgent(applicant.getId()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void requestMoreInformationRequiresAMessage() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        assertEquals(400, statusOf(() -> service.decideApplication(
+                application.getId(), decision(ApplicationStatus.MORE_INFORMATION_NEEDED, " "))));
+        assertEquals(ApplicationStatus.PENDING, service.getApplication(application.getId()).getStatus());
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void decideRejectsPendingAndMissingDecisions() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+
+        assertEquals(400, statusOf(() -> service.decideApplication(
+                application.getId(), decision(ApplicationStatus.PENDING, null))));
+        assertEquals(400, statusOf(() -> service.decideApplication(application.getId(), decision(null, null))));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void decideIsRejectedWhenTheApplicationIsNotPending() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+        service.decideApplication(application.getId(), decision(ApplicationStatus.REJECTED, null));
+
+        assertEquals(400, statusOf(() -> service.decideApplication(
+                application.getId(), decision(ApplicationStatus.APPROVED, null))));
+        assertFalse(hasAgent(applicant.getId()));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void decideFailsForAnUnknownApplication() {
+        assertEquals(404, statusOf(() -> service.decideApplication(
+                UUID.randomUUID(), decision(ApplicationStatus.APPROVED, null))));
+    }
+
+    // ________________________________________________________
+
+    @Test
+    void anApplicationThatNeededInformationCanBeDecidedAfterItIsSentAgain() {
+        DriverApplication application = service.submitApplication(applicant.getId(), applicationDTO());
+        service.decideApplication(application.getId(), decision(ApplicationStatus.MORE_INFORMATION_NEEDED, "Choose a region"));
+        service.resubmitApplication(applicant.getId(), application.getId(), applicationDTO());
+
+        DriverApplication result = service.decideApplication(application.getId(), decision(ApplicationStatus.APPROVED, null));
+
+        assertEquals(ApplicationStatus.APPROVED, result.getStatus());
+        assertTrue(hasAgent(applicant.getId()));
     }
 }

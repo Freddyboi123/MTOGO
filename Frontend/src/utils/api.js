@@ -92,6 +92,8 @@ export const decideRestaurantApplication = (id, body) =>
 export const getDriverApplications = () => api('/driver-applications');
 export const getDriverApplication = (id) => api(`/driver-application/${id}`);
 export const getMyDriverApplications = () => api('/my-driver-applications');
+export const decideDriverApplication = (id, body) =>
+  api(`/driver-application/${id}/decision`, { method: 'PUT', body });
 export const submitDriverApplication = (body) =>
   api('/driver-applications', { method: 'POST', body });
 export const resubmitDriverApplication = (id, body) =>
