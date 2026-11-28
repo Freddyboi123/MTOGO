@@ -89,6 +89,13 @@ export const resubmitRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}`, { method: 'PUT', body });
 export const decideRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}/decision`, { method: 'PUT', body });
+export const getDriverApplications = () => api('/driver-applications');
+export const getDriverApplication = (id) => api(`/driver-application/${id}`);
+export const getMyDriverApplications = () => api('/my-driver-applications');
+export const submitDriverApplication = (body) =>
+  api('/driver-applications', { method: 'POST', body });
+export const resubmitDriverApplication = (id, body) =>
+  api(`/driver-application/${id}`, { method: 'PUT', body });
 
 
 export const getAdminOverview = () => api('/admin/overview');

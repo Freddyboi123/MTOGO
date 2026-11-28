@@ -3,6 +3,7 @@ import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../AdminPanel.module.css';
 import { getAdminCourierApplications } from '../../../utils/api';
+import { regionLabels, vehicleLabels } from '../../DriverApplication/DriverApplication';
 import StatusTag from './StatusTag';
 
 export default function CourierApplications() {
@@ -39,7 +40,7 @@ export default function CourierApplications() {
             >
               <div>
                 <strong>{fullName(application)}</strong>
-                <span>{[application.vehicle, application.area].filter(Boolean).join(' · ')}</span>
+                <span>{[vehicleLabels[application.vehicle], regionLabels[application.region]].filter(Boolean).join(' · ')}</span>
               </div>
               <span>{new Date(application.createdAt).toLocaleDateString('da-DK')}</span>
               <StatusTag status={application.status} />
@@ -70,8 +71,8 @@ export default function CourierApplications() {
 
             <div className={styles.caseSection}>
               <div className={ui.sectionLabel}>LEVERINGSOPLYSNINGER</div>
-              <p className={styles.caseValue}>{selected.vehicle || 'Intet køretøj angivet'}</p>
-              <p className={styles.caseNote}>{selected.area || 'Intet område angivet'}</p>
+              <p className={styles.caseValue}>{vehicleLabels[selected.vehicle] || 'Intet køretøj angivet'}</p>
+              <p className={styles.caseNote}>{regionLabels[selected.region] || 'Intet område angivet'}</p>
             </div>
           </div>
         )}

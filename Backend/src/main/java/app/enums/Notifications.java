@@ -139,6 +139,15 @@ public enum Notifications {
     APPLICATION_DECISION_INVALID("The decision must be APPROVED, REJECTED or MORE_INFORMATION_NEEDED"),
     APPLICATION_MESSAGE_REQUIRED("You must write what information is missing"),
 
+    // DRIVER APPLICATIONS
+    DRIVER_APPLICATION_SUBMITTED("Your application as a delivery agent was submitted"),
+    DRIVER_APPLICATION_UPDATED("Your application as a delivery agent was sent in again"),
+    DRIVER_APPLICATION_NAME_REQUIRED("You must enter your first and last name"),
+    DRIVER_APPLICATION_VEHICLE_REQUIRED("You must choose a vehicle"),
+    DRIVER_APPLICATION_REGION_REQUIRED("You must choose a region"),
+    DRIVER_APPLICATION_HOURS_INVALID("The expected hours per week must be between 1 and 80"),
+    DRIVER_APPLICATION_TIMES_REQUIRED("You must choose at least one time of day"),
+
     // ADMIN
     ADMIN_LOCK_REASON_REQUIRED("You must write why it is locked and what must be changed"),
     ADMIN_RESTAURANT_LOCKED("The restaurant is locked by an administrator and cannot be changed"),

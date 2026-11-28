@@ -1,10 +1,15 @@
 package app.entities;
 
 import app.enums.ApplicationStatus;
+import app.enums.Region;
+import app.enums.TimeOfDay;
+import app.enums.Vehicle;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -31,14 +36,32 @@ public class DriverApplication {
 
     private String phoneNumber;
 
-    private String vehicle;
+    @Enumerated(EnumType.STRING)
+    private Vehicle vehicle;
 
-    private String area;
+    @Enumerated(EnumType.STRING)
+    private Region region;
+
+    private Integer weeklyHours;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "driver_application_times", joinColumns = @JoinColumn(name = "application_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "time_of_day")
+    private Set<TimeOfDay> timesOfDay = new HashSet<>();
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status = ApplicationStatus.PENDING;
 
+    private String adminMessage;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "applicant_id")
+    private User applicant;
+
 }

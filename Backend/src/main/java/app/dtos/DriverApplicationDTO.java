@@ -1,9 +1,13 @@
 package app.dtos;
 
 import app.enums.ApplicationStatus;
+import app.enums.Region;
+import app.enums.TimeOfDay;
+import app.enums.Vehicle;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -18,9 +22,12 @@ public class DriverApplicationDTO {
     private String lastname;
     private String email;
     private String phoneNumber;
-    private String vehicle;
-    private String area;
+    private Vehicle vehicle;
+    private Region region;
+    private Integer weeklyHours;
+    private Set<TimeOfDay> timesOfDay;
     private ApplicationStatus status;
+    private String adminMessage;
     private LocalDateTime createdAt;
 
 }

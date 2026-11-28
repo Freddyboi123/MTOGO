@@ -1,5 +1,6 @@
 package app.server;
 
+import app.controllers.DriverApplicationController;
 import app.controllers.RestaurantApplicationController;
 import app.controllers.FeatureFlagController;
 import app.controllers.DeliveryOverviewController;
@@ -22,6 +23,7 @@ public class Routing {
                 AdminController.registerRoutes().addEndpoints();
                 RestaurantController.registerRoutes().addEndpoints();
                 RestaurantApplicationController.registerRoutes().addEndpoints();
+                DriverApplicationController.registerRoutes().addEndpoints();
                 FeatureFlagController.registerRoutes().addEndpoints();
                 OrderController.registerRoutes().addEndpoints();
                 DeliveryOverviewController.registerRoutes().addEndpoints();
