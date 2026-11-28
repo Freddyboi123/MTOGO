@@ -5,9 +5,40 @@ import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Checkout.module.css';
-import { checkoutTexts, restaurantMenu } from '../data/mtogo';
 import { isLoggedIn, placeOrder } from '../utils/api';
 import useBasket from '../basket/useBasket';
+
+const checkoutTexts = {
+  back: '← Tilbage til menuen',
+  title: 'Lige om lidt er der mad.',
+  crumbs: 'Kurv   →   Levering   →   Betaling',
+  crumbsNote: 'Sikker betaling · Alle priser er inkl. moms',
+  deliveryTitle: '01  Levering',
+  street: 'Adresse',
+  postalCode: 'Postnummer',
+  city: 'By',
+  paymentTitle: '02  Betaling',
+  paymentNote: 'Betalingen er simuleret i denne version.',
+  summaryTitle: 'Din bestilling',
+  total: 'I alt',
+  pay: 'Betal og bestil',
+  sending: 'Bestiller…',
+  terms: 'Ved at bestille accepterer du handelsbetingelserne.',
+  hint: 'Inkl. levering og moms · Ingen ekstra gebyrer',
+  emptyTitle: 'Din kurv er tom.',
+  emptyLink: 'Find en restaurant →',
+  loginRequired: 'Du skal være logget ind for at bestille.',
+  login: 'Log ind',
+  signUp: 'Opret konto',
+  addressRequired: 'Udfyld adresse, postnummer og by.',
+  paymentFailed: 'Betalingen blev afvist. Der er ikke oprettet nogen ordre.',
+  failed: 'Ordren kunne ikke oprettes. Prøv igen om lidt.',
+  confirmedTitle: 'Tak for din bestilling.',
+  orderNumber: 'Ordrenummer',
+  confirmedTotal: 'Betalt',
+  confirmedNote: 'Restauranten har modtaget din ordre.',
+  more: 'Bestil mere →'
+};
 
 const paymentMethods = [
   { id: 'kort', title: 'Betalingskort', note: 'Visa / Mastercard' },
@@ -15,7 +46,7 @@ const paymentMethods = [
 ];
 
 function formatPrice(price) {
-  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
+  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} kr.`;
 }
 
 function errorMessage(error) {
@@ -191,7 +222,7 @@ export default function Checkout() {
             <h2 className={styles.summaryTitle}>{checkoutTexts.summaryTitle}</h2>
 
             <div className={styles.restaurant}>
-              <img className={styles.restaurantPhoto} src={restaurantMenu.cover} alt="" />
+              <img className={styles.restaurantPhoto} alt="" />
               <div>
                 <strong>{basket.restaurantName}</strong>
               </div>

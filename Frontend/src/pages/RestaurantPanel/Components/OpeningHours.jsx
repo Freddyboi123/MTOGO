@@ -1,7 +1,17 @@
-import { openingHours, restaurantPanelStats } from '../../../data/mtogo';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../RestaurantPanel.module.css';
+
+const openingHours = [
+  { days: 'Mandag – torsdag', hours: '11.00 – 22.00' },
+  { days: 'Fredag – lørdag', hours: '11.00 – 23.00' },
+  { days: 'Søndag', hours: '12.00 – 22.00' }
+];
+
+const restaurantPanelStats = {
+  minimumOrder: '99 kr.',
+  deliveryRadius: '4 km'
+};
 
 export default function OpeningHours() {
   return (

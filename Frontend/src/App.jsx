@@ -13,7 +13,7 @@ import ApplyCourier from './pages/ApplyCourier';
 import Profile from './pages/Profile/Profile';
 import FAQ from './pages/FAQ/FAQ';
 import RestaurantPanel from './pages/RestaurantPanel/RestaurantPanel';
-import CourierPanel from './pages/CourierPanel';
+import CourierPanel from './pages/CourierPanel/CourierPanel';
 import AdminPanel from './pages/AdminPanel/AdminPanel';
 
 function ApplyRestaurantRedirect() {

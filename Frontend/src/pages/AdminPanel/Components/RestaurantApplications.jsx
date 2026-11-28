@@ -3,6 +3,7 @@ import { decideRestaurantApplication, getRestaurantApplications } from '../../..
 import styles from '../AdminPanel.module.css';
 import ApplicationList from './ApplicationList';
 import ApplicationDetail from './ApplicationDetail';
+import DecisionFeedback from './DecisionFeedback';
 
 const statusLabels = {
   PENDING: 'Ny',
@@ -15,18 +16,6 @@ const decisionTexts = {
   APPROVED: 'er godkendt og oprettet som restaurant',
   REJECTED: 'er afvist',
   MORE_INFORMATION_NEEDED: 'er sendt tilbage til ansøgeren for flere oplysninger'
-};
-
-const feedbackIcons = {
-  APPROVED: '✓',
-  REJECTED: '✕',
-  MORE_INFORMATION_NEEDED: '?'
-};
-
-const feedbackClasses = {
-  APPROVED: styles.feedbackApproved,
-  REJECTED: styles.feedbackRejected,
-  MORE_INFORMATION_NEEDED: styles.feedbackInfo
 };
 
 const statusTagClasses = {
@@ -102,22 +91,7 @@ export default function RestaurantApplications({ onDecided }) {
   return (
     <>
       {error && <p className={styles.errorText}>{error}</p>}
-      {feedback && (
-        <div key={feedback.id} role="status" className={feedbackClasses[feedback.status]}>
-          <span className={styles.feedbackIcon}>{feedbackIcons[feedback.status]}</span>
-          <div>
-            <strong>{feedback.title}</strong>
-            <p>{feedback.mail}</p>
-          </div>
-          <button
-            className={styles.feedbackClose}
-            onClick={() => setFeedback(null)}
-            aria-label="Luk besked"
-          >
-            ×
-          </button>
-        </div>
-      )}
+      {feedback && <DecisionFeedback key={feedback.id} feedback={feedback} onClose={() => setFeedback(null)} />}
 
       <div className={styles.split}>
         <div>

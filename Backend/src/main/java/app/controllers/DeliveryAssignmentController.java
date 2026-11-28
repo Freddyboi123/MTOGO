@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.DeliveryAssignmentDTO;
 import app.dtos.UserDTO;
 import app.enums.Notifications;
 import app.enums.FeatureFlag;
@@ -8,6 +9,7 @@ import app.exceptions.ApiException;
 import app.server.Setup;
 import app.services.DeliveryAssignmentService;
 import app.services.FeatureFlagService;
+import app.utils.ErrorHandler;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 
@@ -16,19 +18,26 @@ import java.util.UUID;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.put;
 
 public class DeliveryAssignmentController {
     private final DeliveryAssignmentService service;
     private final FeatureFlagService featureFlags;
+
+    // ________________________________________________________
 
     private DeliveryAssignmentController(DeliveryAssignmentService service, FeatureFlagService featureFlags) {
         this.service = service;
         this.featureFlags = featureFlags;
     }
 
+    // ________________________________________________________
+
     public static EndpointGroup registerRoutes() {
         return registerRoutes(new DeliveryAssignmentService(Setup.em), new FeatureFlagService());
     }
+
+    // ________________________________________________________
 
     static EndpointGroup registerRoutes(DeliveryAssignmentService service, FeatureFlagService featureFlags) {
         DeliveryAssignmentController controller = new DeliveryAssignmentController(service, featureFlags);
@@ -43,24 +52,60 @@ public class DeliveryAssignmentController {
                 }
                 ctx.status(201).json(Map.of("data", controller.service.accept(orderId, userId(ctx))));
             }, Role.DELIVERY_AGENT);
-            post("/deliveries/{orderId}/pickup", ctx -> controller.updateStatus(ctx, false), Role.DELIVERY_AGENT);
-            post("/deliveries/{orderId}/deliver", ctx -> controller.updateStatus(ctx, true), Role.DELIVERY_AGENT);
+            post("/deliveries/{orderId}/start", controller::startPickup, Role.DELIVERY_AGENT);
+            post("/deliveries/{orderId}/pickup", controller::pickUp, Role.DELIVERY_AGENT);
+            post("/deliveries/{orderId}/deliver", controller::deliver, Role.DELIVERY_AGENT);
+            put("/deliveries/{orderId}/estimate", controller::setEstimate, Role.DELIVERY_AGENT);
         };
     }
 
-    private void updateStatus(Context ctx, boolean completed) {
+    // ________________________________________________________
+
+    private void startPickup(Context ctx) {
+        UUID orderId = statusOrderId(ctx);
+        UUID user = userId(ctx);
+        ctx.status(200).json(Map.of("data", service.startPickup(orderId, user)));
+    }
+
+    // ________________________________________________________
+
+    private void pickUp(Context ctx) {
+        UUID orderId = statusOrderId(ctx);
+        UUID user = userId(ctx);
+        ctx.status(200).json(Map.of("data", service.pickUp(orderId, user)));
+    }
+
+    // ________________________________________________________
+
+    private void deliver(Context ctx) {
+        UUID orderId = statusOrderId(ctx);
+        UUID user = userId(ctx);
+        ctx.status(200).json(Map.of("data", service.deliver(orderId, user)));
+    }
+
+    // ________________________________________________________
+
+    private void setEstimate(Context ctx) {
+        UUID orderId = statusOrderId(ctx);
+        UUID user = userId(ctx);
+        DeliveryAssignmentDTO body = ErrorHandler.tryBody(ctx, DeliveryAssignmentDTO.class, Notifications.BODY_EMPTY.getDisplayName());
+        ctx.status(200).json(Map.of("data", service.setEstimate(orderId, user, body.getMinutesToPickup(), body.getMinutesToDeliver())));
+    }
+
+    // ________________________________________________________
+
+    private UUID statusOrderId(Context ctx) {
         if (!featureFlags.isEnabled(FeatureFlag.DELIVERY_OVERVIEW)) {
             throw new ApiException(404, Notifications.DELIVERY_FEATURE_DISABLED.getDisplayName());
         }
-        UUID orderId;
         try {
-            orderId = UUID.fromString(ctx.pathParam("orderId"));
+            return UUID.fromString(ctx.pathParam("orderId"));
         } catch (IllegalArgumentException e) {
             throw new ApiException(400, Notifications.ORDER_ID_INVALID.getDisplayName());
         }
-        UUID user = userId(ctx);
-        ctx.status(200).json(Map.of("data", completed ? service.deliver(orderId, user) : service.pickUp(orderId, user)));
     }
+
+    // ________________________________________________________
 
     private static UUID userId(Context ctx) {
         UserDTO user = ctx.attribute("user");

@@ -3,7 +3,24 @@ import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './Apply.module.css';
-import { applyCourierSteps } from '../data/mtogo';
+
+const applyCourierSteps = [
+  {
+    number: '01',
+    title: 'Udfyld din ansøgning',
+    body: 'Fortæl om dig selv og dit køretøj.'
+  },
+  {
+    number: '02',
+    title: 'Få dine dokumenter godkendt',
+    body: 'Du skal være fyldt 18 år og have ret til at arbejde i Danmark.'
+  },
+  {
+    number: '03',
+    title: 'Tag din første levering',
+    body: 'Gå online, og vælg en ledig tur.'
+  }
+];
 
 const vehicles = ['Cykel', 'Elcykel', 'Scooter', 'Bil'];
 const areas = [

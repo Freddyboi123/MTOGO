@@ -2,19 +2,77 @@ import { useEffect, useState } from 'react';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../AdminPanel.module.css';
-import { getAdminCourierApplications } from '../../../utils/api';
+import { decideDriverApplication, getDriverApplications } from '../../../utils/api';
+import { regionLabels, vehicleLabels } from '../../DriverApplication/DriverApplication';
 import StatusTag from './StatusTag';
+import CourierApplicationDetail from './CourierApplicationDetail';
+import DecisionFeedback from './DecisionFeedback';
 
-export default function CourierApplications() {
+const decisionTexts = {
+  APPROVED: 'er godkendt og oprettet som chauffør',
+  REJECTED: 'er afvist',
+  MORE_INFORMATION_NEEDED: 'er sendt tilbage til ansøgeren for flere oplysninger'
+};
+
+export default function CourierApplications({ onDecided }) {
   const [applications, setApplications] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getAdminCourierApplications()
-      .then((res) => setApplications(res.data))
+    getDriverApplications()
+      .then((res) => setApplications(res.data?.data ?? []))
       .catch((err) => setError(err.message));
   }, []);
+
+  useEffect(() => {
+    if (!feedback) return undefined;
+    const timer = setTimeout(() => setFeedback(null), 6000);
+    return () => clearTimeout(timer);
+  }, [feedback]);
+
+  async function handleDecide(id, status, adminMessage) {
+    setError('');
+    setFeedback(null);
+    setSubmitting(true);
+
+    const previous = applications;
+    setSelectedId(id);
+    setApplications((current) =>
+      current.map((application) =>
+        application.id === id ? { ...application, status, adminMessage } : application
+      )
+    );
+
+    try {
+      const res = await decideDriverApplication(id, { status, adminMessage });
+      const decided = res.data;
+
+      setApplications((current) =>
+        current.map((application) =>
+          application.id === id ? { ...application, ...decided } : application
+        )
+      );
+
+      setFeedback({
+        id: Date.now(),
+        status,
+        title: `${decided.firstname} ${decided.lastname} ${decisionTexts[status]}`,
+        mail: decided.mailSent
+          ? 'Ansøgeren er blevet notificeret på mail.'
+          : 'Status er gemt, men mailen til ansøgeren kunne ikke sendes.'
+      });
+
+      onDecided();
+    } catch (err) {
+      setApplications(previous);
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   const selected = applications.find((application) => application.id === selectedId) ?? applications[0];
   const fullName = (application) => `${application.firstname} ${application.lastname}`;
@@ -22,6 +80,9 @@ export default function CourierApplications() {
   return (
     <>
       {error && <p className={styles.errorText}>{error}</p>}
+      {feedback && (
+        <DecisionFeedback key={feedback.id} feedback={feedback} onClose={() => setFeedback(null)} />
+      )}
 
       <div className={styles.split}>
         <div className={styles.listPanel}>
@@ -39,7 +100,11 @@ export default function CourierApplications() {
             >
               <div>
                 <strong>{fullName(application)}</strong>
-                <span>{[application.vehicle, application.area].filter(Boolean).join(' · ')}</span>
+                <span>
+                  {[vehicleLabels[application.vehicle], regionLabels[application.region]]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
               </div>
               <span>{new Date(application.createdAt).toLocaleDateString('da-DK')}</span>
               <StatusTag status={application.status} />
@@ -53,27 +118,12 @@ export default function CourierApplications() {
         </div>
 
         {selected && (
-          <div className={ui.block}>
-            <h2 className={styles.caseTitle}>{fullName(selected)}</h2>
-            <p className={styles.caseId}>Chauffør · {selected.id}</p>
-            <div>
-              <StatusTag status={selected.status} />
-            </div>
-
-            <div className={styles.caseSection}>
-              <div className={ui.sectionLabel}>ANSØGER</div>
-              <p className={styles.caseValue}>
-                {fullName(selected)} · {selected.email}
-              </p>
-              {selected.phoneNumber && <p className={styles.caseNote}>{selected.phoneNumber}</p>}
-            </div>
-
-            <div className={styles.caseSection}>
-              <div className={ui.sectionLabel}>LEVERINGSOPLYSNINGER</div>
-              <p className={styles.caseValue}>{selected.vehicle || 'Intet køretøj angivet'}</p>
-              <p className={styles.caseNote}>{selected.area || 'Intet område angivet'}</p>
-            </div>
-          </div>
+          <CourierApplicationDetail
+            key={selected.id}
+            application={selected}
+            submitting={submitting}
+            onDecide={handleDecide}
+          />
         )}
       </div>
     </>

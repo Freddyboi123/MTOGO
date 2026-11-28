@@ -5,9 +5,35 @@ import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import useBasket from '../basket/useBasket';
 import useLanguage from '../language/useLanguage';
 import useTexts from '../language/useTexts';
-import { headerTexts } from '../data/mtogo';
 import ui from '../styles/shared.module.css';
 import styles from './SiteHeader.module.css';
+
+const headerTexts = {
+  da: {
+    restaurants: 'Restauranter',
+    howItWorks: 'Sådan fungerer det',
+    partner: 'Bliv partner',
+    basket: 'Kurv',
+    profile: 'Profil',
+    admin: 'Admin',
+    login: 'Log ind',
+    signUp: 'Opret konto',
+    switchLanguage: 'EN',
+    switchLanguageLabel: 'Switch to English'
+  },
+  en: {
+    restaurants: 'Restaurants',
+    howItWorks: 'How it works',
+    partner: 'Become a partner',
+    basket: 'Basket',
+    profile: 'Profile',
+    admin: 'Admin',
+    login: 'Log in',
+    signUp: 'Sign up',
+    switchLanguage: 'DA',
+    switchLanguageLabel: 'Skift til dansk'
+  }
+};
 
 export default function SiteHeader() {
   const restaurantOverview = useFeatureFlag('restaurantOverview');

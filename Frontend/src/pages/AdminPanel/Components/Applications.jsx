@@ -34,7 +34,7 @@ export default function Applications({ type }) {
         <span className={styles.tabsRight}>{counts.total} ansøgninger afventer handling</span>
       </div>
 
-      {restaurants ? <RestaurantApplications onDecided={counts.reload} /> : <CourierApplications />}
+      {restaurants ? <RestaurantApplications onDecided={counts.reload} /> : <CourierApplications onDecided={counts.reload} />}
     </>
   );
 }

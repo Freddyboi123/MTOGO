@@ -55,6 +55,12 @@ public class PlaywrightServer {
             em.getTransaction().begin();
             String password = PasswordService.hashHelper(Populator.OWNER_PASSWORD);
             createUser(em, "delivery-customer@mtogo.dk", Role.CUSTOMER, password);
+            createUser(em, "admin@mtogo.dk", Role.ADMIN, password, "Admin", "Test");
+            createUser(em, "applicant-approve@mtogo.dk", Role.CUSTOMER, password, "Approve", "Applicant");
+            createUser(em, "applicant-reject@mtogo.dk", Role.CUSTOMER, password, "Reject", "Applicant");
+            createUser(em, "applicant-info@mtogo.dk", Role.CUSTOMER, password, "Info", "Applicant");
+            createUser(em, "applicant-resubmit@mtogo.dk", Role.CUSTOMER, password, "Resubmit", "Applicant");
+            createUser(em, "applicant-delivery@mtogo.dk", Role.CUSTOMER, password, "Delivery", "Applicant");
             User courier = createUser(em, "delivery-courier@mtogo.dk", Role.DELIVERY_AGENT, password);
             User otherCourier = createUser(em, "delivery-other@mtogo.dk", Role.DELIVERY_AGENT, password);
             em.persist(DeliveryAgent.builder().user(courier).build());
@@ -94,7 +100,11 @@ public class PlaywrightServer {
     }
 
     private static User createUser(EntityManager em, String email, Role role, String password) {
-        User user = User.builder().firstname("Delivery").lastname("Test")
+        return createUser(em, email, role, password, "Delivery", "Test");
+    }
+
+    private static User createUser(EntityManager em, String email, Role role, String password, String firstname, String lastname) {
+        User user = User.builder().firstname(firstname).lastname(lastname)
                 .email(email).password(password).roles(Set.of(role)).verified(true).build();
         em.persist(user);
         return user;

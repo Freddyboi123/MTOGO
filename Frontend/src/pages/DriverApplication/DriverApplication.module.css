@@ -1,0 +1,61 @@
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.save {
+  margin-top: 28px;
+}
+
+.times {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.times legend {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.timeOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.card h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.statusTag {
+  margin-top: 14px;
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+.body {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 14px;
+}
+
+.action {
+  margin-top: 20px;
+}

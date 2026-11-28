@@ -1,5 +1,6 @@
 package app.server;
 
+import app.configs.RequestScopedEntityManager;
 import app.enums.Role;
 import app.exceptions.ApiException;
 import app.services.MessageService;
@@ -19,6 +20,7 @@ import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import jakarta.persistence.EntityManager;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 import java.util.concurrent.TimeUnit;
@@ -34,15 +36,23 @@ public class Setup {
     private final AccessService accessService;
     private final MessageService messageService;
 
+    @Getter(AccessLevel.PUBLIC)
+    private final EntityManager baseEm;
+    @Getter(AccessLevel.PUBLIC)
+    private final RequestScopedEntityManager scopedEm;
+
     // ________________________________________________________
 
     public Setup(EntityManager em, int port) {
-        this.em = em;
+        this.baseEm = em;
+        this.scopedEm = new RequestScopedEntityManager(em.getEntityManagerFactory());
+        Setup.em = scopedEm.proxy();
         this.accessService = new AccessService();
         this.messageService = new MessageService();
 
         this.app = Javalin.create(Setup::configuration)
                 .beforeMatched(accessService::accessHandler)
+                .after(ctx -> scopedEm.release())
                 .start(port);
     }
 
@@ -129,7 +139,8 @@ public class Setup {
 
     // Should it ever end? It has been added to end the session!
     public void endSession() {
-        em.close();
+        scopedEm.release();
+        if (baseEm.isOpen()) baseEm.close();
         if (app != null) app.stop();
     }
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { restaurantPanelTexts } from '../../data/mtogo';
 import DashboardLayout from '../../components/DashboardLayout';
 import { getMyRestaurant } from '../../utils/api';
 import cx from '../../utils/cx';
@@ -96,7 +95,7 @@ export default function RestaurantPanel() {
         </div>
         <div className={dash.actions}>
           <Link to={`/restaurant/${id}`} className={cx(ui.btn, ui.btnOutline, ui.btnSmall)}>
-            {restaurantPanelTexts.publicPage}
+            Se offentlig side ↗
           </Link>
         </div>
       </div>

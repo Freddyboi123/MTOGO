@@ -1,12 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import DashboardLayout from '../components/DashboardLayout';
-import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, isLoggedIn, pickUpDelivery } from '../utils/api';
-import { courierDeliveryStatusTexts } from '../data/mtogo';
-import cx from '../utils/cx';
-import ui from '../styles/shared.module.css';
-import dash from '../components/DashboardLayout.module.css';
+import DashboardLayout from '../../components/DashboardLayout';
+import {
+  acceptDelivery,
+  completeDelivery,
+  getAvailableDeliveries,
+  getMyDeliveries,
+  isLoggedIn,
+  pickUpDelivery,
+  refreshUser,
+  setDeliveryEstimate,
+  startPickupDelivery
+} from '../../utils/api';
+import cx from '../../utils/cx';
+import ui from '../../styles/shared.module.css';
+import dash from '../../components/DashboardLayout.module.css';
 import styles from './CourierPanel.module.css';
+import DeliveryCard from './Components/DeliveryCard';
+import DeliveryDetails from './Components/DeliveryDetails';
+
+const courierDeliveryStatusTexts = {
+  labels: {
+    ASSIGNED: 'Tildelt',
+    EN_ROUTE_TO_PICKUP: 'På vej til afhentning',
+    PICKED_UP: 'På vej til kunden',
+    DELIVERED: 'Leveret'
+  },
+  estimateSaved: 'Estimatet er gemt.',
+  startPickup: 'Markér som på vej til afhentning',
+  startedPickup: 'Du er markeret som på vej til afhentning.',
+  pickUp: 'Markér som afhentet',
+  deliver: 'Markér som leveret',
+  updating: 'Opdaterer...',
+  pickedUp: 'Ordren er markeret som på vej.',
+  completed: 'Leveringen er gennemført.'
+};
 
 const items = [
   { to: '/chauffoerpanel', label: 'Leverancer' },
@@ -24,6 +52,10 @@ function getSessionUser() {
   }
 }
 
+function isDeliveryAgent(user) {
+  return Boolean(isLoggedIn() && user?.roles?.includes('DELIVERY_AGENT'));
+}
+
 function formatAddress(street, postalCode, city) {
   return [street, [postalCode, city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || 'Adresse ikke angivet';
 }
@@ -38,11 +70,45 @@ function formatPickupTime(value) {
   }).format(time);
 }
 
+function pickupTimeOf(delivery) {
+  return formatPickupTime(delivery.expectedPickupAt ?? delivery.expectedPickupTime);
+}
+
+const statusSteps = {
+  ASSIGNED: {
+    orderStatus: 'READY_FOR_PICKUP',
+    action: (orderId) => startPickupDelivery(orderId),
+    label: courierDeliveryStatusTexts.startPickup,
+    notice: courierDeliveryStatusTexts.startedPickup,
+    completes: false
+  },
+  EN_ROUTE_TO_PICKUP: {
+    orderStatus: 'READY_FOR_PICKUP',
+    action: (orderId) => pickUpDelivery(orderId),
+    label: courierDeliveryStatusTexts.pickUp,
+    notice: courierDeliveryStatusTexts.pickedUp,
+    completes: false
+  },
+  PICKED_UP: {
+    orderStatus: 'OUT_FOR_DELIVERY',
+    action: (orderId) => completeDelivery(orderId),
+    label: courierDeliveryStatusTexts.deliver,
+    notice: courierDeliveryStatusTexts.completed,
+    completes: true
+  }
+};
+
+function stepOf(delivery) {
+  const step = statusSteps[delivery.deliveryStatus];
+  return step && step.orderStatus === delivery.orderStatus ? step : null;
+}
+
 export default function CourierPanel() {
   const { pathname } = useLocation();
   const myDeliveries = pathname === '/chauffoerpanel/ture';
-  const user = getSessionUser();
-  const authorized = isLoggedIn() && user?.roles?.includes('DELIVERY_AGENT');
+  const [user, setUser] = useState(getSessionUser);
+  const [checkingAccess, setCheckingAccess] = useState(() => isLoggedIn() && !isDeliveryAgent(getSessionUser()));
+  const authorized = isDeliveryAgent(user);
   const [deliveries, setDeliveries] = useState([]);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -52,6 +118,21 @@ export default function CourierPanel() {
   const [notice, setNotice] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [statusError, setStatusError] = useState('');
+  const [savingEstimate, setSavingEstimate] = useState(null);
+
+  useEffect(() => {
+    if (!checkingAccess) return undefined;
+    let active = true;
+    refreshUser()
+      .then((fresh) => {
+        if (active) setUser(fresh);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setCheckingAccess(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!authorized) return;
@@ -100,17 +181,18 @@ export default function CourierPanel() {
   }
 
   async function handleStatusUpdate(delivery) {
-    const completing = delivery.deliveryStatus === 'PICKED_UP';
+    const step = stepOf(delivery);
+    if (!step) return;
     setUpdatingStatus(delivery.orderId);
     setStatusError('');
     setNotice('');
     try {
-      const response = await (completing ? completeDelivery(delivery.orderId) : pickUpDelivery(delivery.orderId));
-      setDeliveries((current) => completing
+      const response = await step.action(delivery.orderId);
+      setDeliveries((current) => step.completes
         ? current.filter((item) => item.orderId !== delivery.orderId)
         : current.map((item) => item.orderId === delivery.orderId ? response.data : item));
-      if (completing) setSelectedOrderId((current) => current === delivery.orderId ? null : current);
-      setNotice(completing ? courierDeliveryStatusTexts.completed : courierDeliveryStatusTexts.pickedUp);
+      if (step.completes) setSelectedOrderId((current) => current === delivery.orderId ? null : current);
+      setNotice(step.notice);
     } catch (err) {
       setStatusError(err.message);
     } finally {
@@ -118,7 +200,23 @@ export default function CourierPanel() {
     }
   }
 
+  async function handleEstimate(orderId, estimate) {
+    setSavingEstimate(orderId);
+    setStatusError('');
+    setNotice('');
+    try {
+      const response = await setDeliveryEstimate(orderId, estimate);
+      setDeliveries((current) => current.map((item) => item.orderId === orderId ? response.data : item));
+      setNotice(courierDeliveryStatusTexts.estimateSaved);
+    } catch (err) {
+      setStatusError(err.message);
+    } finally {
+      setSavingEstimate(null);
+    }
+  }
+
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (checkingAccess) return null;
   if (!authorized) {
     return <p className={cx(ui.page, styles.message)}>Kun chaufførpartnere har adgang til leveringsoversigten.</p>;
   }
@@ -127,6 +225,12 @@ export default function CourierPanel() {
     ? deliveries.find((delivery) => delivery.orderId === selectedOrderId)
     : null;
   const displayName = [user.name, user.lastName].filter(Boolean).join(' ');
+
+  function actionLabelOf(delivery) {
+    const step = delivery && stepOf(delivery);
+    if (!step) return null;
+    return updatingStatus === delivery.orderId ? courierDeliveryStatusTexts.updating : step.label;
+  }
 
   return (
     <DashboardLayout
@@ -171,68 +275,34 @@ export default function CourierPanel() {
           )}
 
           {!loading && !error && deliveries.map((delivery) => (
-            <article className={styles.delivery} key={delivery.orderId}>
-              <div>
-                <div className={styles.deliveryLabel}>{myDeliveries ? `STATUS: ${courierDeliveryStatusTexts.labels[delivery.deliveryStatus] ?? delivery.orderStatus}` : 'LEDIG'} · ORDRE {delivery.orderId}</div>
-                <h3 className={styles.deliveryName}>{delivery.restaurantName}</h3>
-                <p className={styles.deliveryRoute}>Forventet afhentning: {formatPickupTime(delivery.expectedPickupAt ?? delivery.expectedPickupTime)}</p>
-              </div>
-              <button
-                type="button"
-                className={cx(ui.btn, ui.btnDark, ui.btnSmall)}
-                aria-expanded={selectedOrderId === delivery.orderId}
-                onClick={() => setSelectedOrderId((current) =>
-                  current === delivery.orderId ? null : delivery.orderId
-                )}
-              >
-                {selectedOrderId === delivery.orderId ? 'Skjul detaljer' : 'Se detaljer'}
-              </button>
-            </article>
+            <DeliveryCard
+              key={delivery.orderId}
+              delivery={delivery}
+              label={myDeliveries ? `STATUS: ${courierDeliveryStatusTexts.labels[delivery.deliveryStatus] ?? delivery.orderStatus}` : 'LEDIG'}
+              pickupTime={pickupTimeOf(delivery)}
+              expanded={selectedOrderId === delivery.orderId}
+              onToggle={() => setSelectedOrderId((current) =>
+                current === delivery.orderId ? null : delivery.orderId
+              )}
+            />
           ))}
         </section>
 
-        <section aria-label="Ordredetaljer" className={ui.block}>
-          <h2 className={styles.detailsTitle}>Ordredetaljer</h2>
-          {!selected ? (
-            <p className={styles.message}>Vælg en levering for at se afhentnings- og leveringsadresse.</p>
-          ) : (
-            <>
-              <p className={styles.orderNumber}>Ordrenummer: {selected.orderId}</p>
-              <div className={styles.detail}>
-                <span className={ui.sectionLabel}>RESTAURANT / AFHENTNING</span>
-                <strong>{selected.restaurantName}</strong>
-                <p>{selected.pickupAddress || formatAddress(selected.pickupStreet, selected.pickupPostalCode, selected.pickupCity)}</p>
-              </div>
-              <div className={styles.detail}>
-                <span className={ui.sectionLabel}>KUNDE / LEVERING</span>
-                <p>{selected.deliveryAddress || formatAddress(selected.deliveryStreet, selected.deliveryPostalCode, selected.deliveryCity)}</p>
-              </div>
-              <div className={styles.detail}>
-                <span className={ui.sectionLabel}>FORVENTET AFHENTNING</span>
-                <p>{formatPickupTime(selected.expectedPickupAt ?? selected.expectedPickupTime)}</p>
-              </div>
-              {myDeliveries ? (
-                <div className={styles.detail}>
-                  <span className={ui.sectionLabel}>LEVERINGSSTATUS</span>
-                  <p>{courierDeliveryStatusTexts.labels[selected.deliveryStatus] ?? selected.orderStatus}</p>
-                  {((selected.deliveryStatus === 'ASSIGNED' && selected.orderStatus === 'READY_FOR_PICKUP') ||
-                    (selected.deliveryStatus === 'PICKED_UP' && selected.orderStatus === 'OUT_FOR_DELIVERY')) && (
-                    <button type="button" className={cx(ui.btn, ui.btnDark)}
-                      disabled={updatingStatus !== null} onClick={() => handleStatusUpdate(selected)}>
-                      {updatingStatus === selected.orderId ? courierDeliveryStatusTexts.updating :
-                        selected.deliveryStatus === 'ASSIGNED' ? courierDeliveryStatusTexts.pickUp : courierDeliveryStatusTexts.deliver}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <button type="button" className={cx(ui.btn, ui.btnDark)}
-                  disabled={accepting !== null} onClick={() => handleAccept(selected.orderId)}>
-                  {accepting === selected.orderId ? 'Accepterer...' : 'Accepter levering'}
-                </button>
-              )}
-            </>
-          )}
-        </section>
+        <DeliveryDetails
+          selected={selected}
+          myDeliveries={myDeliveries}
+          pickupAddress={selected && (selected.pickupAddress || formatAddress(selected.pickupStreet, selected.pickupPostalCode, selected.pickupCity))}
+          deliveryAddress={selected && (selected.deliveryAddress || formatAddress(selected.deliveryStreet, selected.deliveryPostalCode, selected.deliveryCity))}
+          pickupTime={selected && pickupTimeOf(selected)}
+          statusLabel={selected && (courierDeliveryStatusTexts.labels[selected.deliveryStatus] ?? selected.orderStatus)}
+          actionLabel={actionLabelOf(selected)}
+          updating={updatingStatus}
+          accepting={accepting}
+          savingEstimate={savingEstimate}
+          onSaveEstimate={handleEstimate}
+          onStatusUpdate={handleStatusUpdate}
+          onAccept={handleAccept}
+        />
       </div>
     </DashboardLayout>
   );

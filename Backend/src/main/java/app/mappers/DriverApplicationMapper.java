@@ -2,7 +2,12 @@ package app.mappers;
 
 import app.dtos.DriverApplicationDTO;
 import app.entities.DriverApplication;
+import app.enums.TimeOfDay;
 import app.mappers.generic.IMapper;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 public class DriverApplicationMapper implements IMapper<DriverApplication, DriverApplicationDTO> {
 
@@ -16,7 +21,9 @@ public class DriverApplicationMapper implements IMapper<DriverApplication, Drive
             .email(dto.getEmail())
             .phoneNumber(dto.getPhoneNumber())
             .vehicle(dto.getVehicle())
-            .area(dto.getArea())
+            .region(dto.getRegion())
+            .weeklyHours(dto.getWeeklyHours())
+            .timesOfDay(dto.getTimesOfDay() == null ? new HashSet<>() : new HashSet<>(dto.getTimesOfDay()))
             .build();
     }
 
@@ -31,8 +38,11 @@ public class DriverApplicationMapper implements IMapper<DriverApplication, Drive
             .email(entity.getEmail())
             .phoneNumber(entity.getPhoneNumber())
             .vehicle(entity.getVehicle())
-            .area(entity.getArea())
+            .region(entity.getRegion())
+            .weeklyHours(entity.getWeeklyHours())
+            .timesOfDay(entity.getTimesOfDay().stream().sorted().collect(Collectors.toCollection(LinkedHashSet<TimeOfDay>::new)))
             .status(entity.getStatus())
+            .adminMessage(entity.getAdminMessage())
             .createdAt(entity.getCreatedAt())
             .build();
     }

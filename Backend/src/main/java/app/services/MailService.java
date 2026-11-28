@@ -1,7 +1,9 @@
 package app.services;
 
+import app.entities.DriverApplication;
 import app.entities.RestaurantApplication;
 import app.entities.User;
+import app.enums.ApplicationStatus;
 import app.enums.Notifications;
 import app.exceptions.ApiException;
 import app.utils.ErrorHandler;
@@ -139,15 +141,43 @@ public class MailService {
     // ________________________________________________________
 
     public MailResult sendApplicationStatusEmail(RestaurantApplication application) {
+        return sendApplicationStatusEmail(
+            application.getApplicant(),
+            "for " + application.getRestaurantName(),
+            application.getStatus(),
+            application.getAdminMessage(),
+            "godkendt. Din restaurant er nu oprettet, og du kan begynde at oprette din menu."
+        );
+    }
+
+    // ________________________________________________________
+
+    public MailResult sendApplicationStatusEmail(DriverApplication application) {
+        return sendApplicationStatusEmail(
+            application.getApplicant(),
+            "som chauffør",
+            application.getStatus(),
+            application.getAdminMessage(),
+            "godkendt. Du er nu oprettet som chauffør, og du finder din leveringsside under din profil."
+        );
+    }
+
+    // ________________________________________________________
+
+    private MailResult sendApplicationStatusEmail(
+        User applicant,
+        String applicationFor,
+        ApplicationStatus status,
+        String adminMessage,
+        String approvedText
+    ) {
 
         String companyName = getCompanyName();
-        User applicant = application.getApplicant();
-        String adminMessage = application.getAdminMessage();
         String statusText;
         String details = "";
 
-        switch (application.getStatus()) {
-            case APPROVED -> statusText = "godkendt. Din restaurant er nu oprettet, og du kan begynde at oprette din menu.";
+        switch (status) {
+            case APPROVED -> statusText = approvedText;
             case REJECTED -> {
                 statusText = "afvist.";
 
@@ -161,13 +191,13 @@ public class MailService {
                 statusText = "sat på pause, fordi vi mangler yderligere oplysninger.";
 
                 details = String.format("""
-                \nVi har brug for følgende: %s 
+                \nVi har brug for følgende: %s
                 \n\nLog ind, ret din ansøgning og send den ind igen."""
                 , adminMessage);
 
             }
             default -> {
-                return new MailResult(false, "No mail for status " + application.getStatus());
+                return new MailResult(false, "No mail for status " + status);
             }
         }
 
@@ -175,14 +205,14 @@ public class MailService {
         String body = String.format("""
             Hej %s %s,
 
-            Din ansøgning for %s er blevet %s
+            Din ansøgning %s er blevet %s
             %s
             Venlig hilsen
             %s
             """,
             applicant.getFirstname(),
             applicant.getLastname(),
-            application.getRestaurantName(),
+            applicationFor,
             statusText,
             details,
             companyName

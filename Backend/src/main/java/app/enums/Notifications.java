@@ -99,6 +99,7 @@ public enum Notifications {
     DELIVERY_NOT_ASSIGNED("This order has no assigned delivery"),
     DELIVERY_NOT_OWNED("Only the assigned delivery agent can update this delivery"),
     DELIVERY_STATUS_INVALID("This delivery cannot be updated from its current status"),
+    DELIVERY_ESTIMATE_INVALID("The minutes to pick up and to deliver must be whole numbers between 1 and 240"),
     DELIVERY_FEATURE_DISABLED("Not found"),
 
     // RESTAURANTS AND MENUS
@@ -138,6 +139,16 @@ public enum Notifications {
     APPLICATION_NOT_PENDING("Only a new application can get a decision"),
     APPLICATION_DECISION_INVALID("The decision must be APPROVED, REJECTED or MORE_INFORMATION_NEEDED"),
     APPLICATION_MESSAGE_REQUIRED("You must write what information is missing"),
+
+    // DRIVER APPLICATIONS
+    DRIVER_APPLICATION_SUBMITTED("Your application as a delivery agent was submitted"),
+    DRIVER_APPLICATION_UPDATED("Your application as a delivery agent was sent in again"),
+    DRIVER_APPLICATION_DECIDED("The application of %s as a delivery agent is now %s"),
+    DRIVER_APPLICATION_NAME_REQUIRED("You must enter your first and last name"),
+    DRIVER_APPLICATION_VEHICLE_REQUIRED("You must choose a vehicle"),
+    DRIVER_APPLICATION_REGION_REQUIRED("You must choose a region"),
+    DRIVER_APPLICATION_HOURS_INVALID("The expected hours per week must be between 1 and 80"),
+    DRIVER_APPLICATION_TIMES_REQUIRED("You must choose at least one time of day"),
 
     // ADMIN
     ADMIN_LOCK_REASON_REQUIRED("You must write why it is locked and what must be changed"),

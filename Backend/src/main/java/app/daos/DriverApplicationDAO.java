@@ -6,6 +6,7 @@ import app.enums.ApplicationStatus;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
+import java.util.UUID;
 
 public class DriverApplicationDAO extends EntityManagerDAO<DriverApplication> {
 
@@ -21,6 +22,17 @@ public class DriverApplicationDAO extends EntityManagerDAO<DriverApplication> {
 
         return executeQuery(() -> em.createQuery(jpql, DriverApplication.class)
                 .getResultList());
+    }
+
+    // ________________________________________________________
+
+    public List<DriverApplication> getByApplicantId(UUID applicantId) {
+
+        String jpql = "SELECT a FROM DriverApplication a WHERE a.applicant.id = :applicantId ORDER BY a.createdAt DESC";
+
+        return executeQuery(() -> em.createQuery(jpql, DriverApplication.class)
+            .setParameter("applicantId", applicantId)
+            .getResultList());
     }
 
     // ________________________________________________________

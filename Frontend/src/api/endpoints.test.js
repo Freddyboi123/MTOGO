@@ -16,6 +16,7 @@ const CALLS = {
     resetPassword: (m) => m.resetPassword({ token: 't', password: 'x' }),
     getProfile: (m) => m.getProfile(),
     updateProfile: (m) => m.updateProfile({ first_name: 'A' }),
+    refreshUser: (m) => m.refreshUser(),
     fetchRestaurants: (m) => m.fetchRestaurants(),
     fetchRestaurant: (m) => m.fetchRestaurant('42'),
     fetchMenu: (m) => m.fetchMenu('42'),
@@ -29,6 +30,8 @@ const CALLS = {
     updateOrderStatus: (m) => m.updateOrderStatus('42', 'PREPARING'),
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
+    startPickupDelivery: (m) => m.startPickupDelivery('42'),
+    setDeliveryEstimate: (m) => m.setDeliveryEstimate('42', { minutesToPickup: 10, minutesToDeliver: 20 }),
     pickUpDelivery: (m) => m.pickUpDelivery('42'),
     completeDelivery: (m) => m.completeDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),
@@ -38,6 +41,12 @@ const CALLS = {
     submitRestaurantApplication: (m) => m.submitRestaurantApplication({ restaurantName: 'X' }),
     resubmitRestaurantApplication: (m) => m.resubmitRestaurantApplication('42', { restaurantName: 'X' }),
     decideRestaurantApplication: (m) => m.decideRestaurantApplication('42', { status: 'APPROVED' }),
+    getDriverApplications: (m) => m.getDriverApplications(),
+    getDriverApplication: (m) => m.getDriverApplication('42'),
+    getMyDriverApplications: (m) => m.getMyDriverApplications(),
+    decideDriverApplication: (m) => m.decideDriverApplication('42', { status: 'APPROVED' }),
+    submitDriverApplication: (m) => m.submitDriverApplication({ vehicle: 'BIKE' }),
+    resubmitDriverApplication: (m) => m.resubmitDriverApplication('42', { vehicle: 'BIKE' }),
     getAdminOverview: (m) => m.getAdminOverview(),
     getAdminRestaurants: (m) => m.getAdminRestaurants(),
     updateAdminRestaurant: (m) => m.updateAdminRestaurant('42', { name: 'X' }),
@@ -102,6 +111,7 @@ describe('frontend API calls match backend routes', () => {
   });
 
   it.each([
+    ['startPickupDelivery', 'start'],
     ['pickUpDelivery', 'pickup'],
     ['completeDelivery', 'deliver']
   ])('US-11 %s uses the matching status transition endpoint', async (fn, action) => {

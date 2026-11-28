@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { getMyOrders } from '../../../utils/api';
-import { orderHistoryTexts, restaurantMenu, restaurantOrderTexts } from '../../../data/mtogo';
 import useFeatureFlag from '../../../featureFlags/useFeatureFlag';
 import findStatusChanges from '../../../utils/statusChanges';
 import DataTable from '../../../components/DataTable';
@@ -8,15 +7,42 @@ import OrderDetailsModal from './OrderDetailsModal';
 import ui from '../../../styles/shared.module.css';
 import styles from '../Profile.module.css';
 
+const orderHistoryTexts = {
+  title: 'Ordrehistorik',
+  hint: 'Her kan du se dine tidligere ordrer.',
+  loading: 'Henter dine ordrer…',
+  error: 'Dine ordrer kunne ikke hentes.',
+  empty: 'Du har ikke bestilt noget endnu.',
+  statusChangedPrefix: 'Din ordre fra',
+  statusChangedMiddle: 'er nu:',
+  columns: {
+    date: 'Dato',
+    restaurant: 'Restaurant',
+    total: 'Beløb',
+    status: 'Status'
+  }
+};
+
+const orderStatusLabels = {
+  RECEIVED: 'Ny ordre',
+  PENDING: 'Afventer',
+  ACCEPTED: 'Accepteret',
+  PREPARING: 'Tilberedes',
+  READY_FOR_PICKUP: 'Klar til afhentning',
+  OUT_FOR_DELIVERY: 'På vej',
+  DELIVERED: 'Leveret',
+  CANCELLED: 'Annulleret'
+};
+
 const texts = orderHistoryTexts;
 const REFRESH_MS = 30000;
 
 function formatPrice(price) {
-  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
+  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} kr.`;
 }
 
 function statusText(status) {
-  return restaurantOrderTexts.statuses[status] ?? status;
+  return orderStatusLabels[status] ?? status;
 }
 
 const columns = [

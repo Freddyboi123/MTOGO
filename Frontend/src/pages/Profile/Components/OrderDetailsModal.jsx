@@ -15,6 +15,11 @@ export default function OrderDetailsModal({ order, formatPrice, statusText, onCl
     ? new Date(order.createdAt).toLocaleString('da-DK', { dateStyle: 'medium', timeStyle: 'short' })
     : '';
 
+  const active = order.status !== 'DELIVERED' && order.status !== 'CANCELLED';
+  const expectedDelivery = order.expectedDeliveryAt && active
+    ? new Date(order.expectedDeliveryAt).toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' })
+    : '';
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
@@ -40,6 +45,12 @@ export default function OrderDetailsModal({ order, formatPrice, statusText, onCl
             <dt>Status</dt>
             <dd>{statusText(order.status)}</dd>
           </div>
+          {expectedDelivery && (
+            <div>
+              <dt>Forventet levering</dt>
+              <dd>ca. kl. {expectedDelivery}</dd>
+            </div>
+          )}
         </dl>
 
         <ul className={styles.orderLines}>

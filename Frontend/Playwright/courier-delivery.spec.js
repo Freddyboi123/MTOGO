@@ -104,6 +104,24 @@ test('courier picks up and completes only their own delivery, with persisted sta
   await expect(card).toContainText('Tildelt');
   await card.getByRole('button', { name: 'Se detaljer' }).click();
   await expect(details.getByRole('button', { name: 'Markér som leveret' })).toHaveCount(0);
+  await expect(details.getByRole('button', { name: 'Markér som afhentet' })).toHaveCount(0);
+  await expectRejected(request, headers, orderId, 'pickup', 409, 'This delivery cannot be updated from its current status');
+
+  const startResponse = page.waitForResponse((response) =>
+    response.url() === `${API}/deliveries/${orderId}/start` && response.request().method() === 'POST');
+  await details.getByRole('button', { name: 'Markér som på vej til afhentning' }).click();
+  const start = await startResponse;
+  expect(start.status(), await start.text()).toBe(200);
+  expect((await start.json()).data).toMatchObject({ orderId, deliveryStatus: 'EN_ROUTE_TO_PICKUP', orderStatus: 'READY_FOR_PICKUP' });
+  await expect(card).toContainText('På vej til afhentning');
+  await expect(details.getByRole('button', { name: 'Markér som på vej til afhentning' })).toHaveCount(0);
+  await expect(details.getByRole('button', { name: 'Markér som leveret' })).toHaveCount(0);
+  await expectCustomerStatus(request, customerHeaders, orderId, 'READY_FOR_PICKUP');
+  await expectRejected(request, otherHeaders, orderId, 'start', 403, 'Only the assigned delivery agent can update this delivery');
+
+  await page.reload();
+  await expect(card).toContainText('På vej til afhentning');
+  await card.getByRole('button', { name: 'Se detaljer' }).click();
 
   const pickupResponse = page.waitForResponse((response) =>
     response.url() === `${API}/deliveries/${orderId}/pickup` && response.request().method() === 'POST');
@@ -111,7 +129,7 @@ test('courier picks up and completes only their own delivery, with persisted sta
   const pickup = await pickupResponse;
   expect(pickup.status(), await pickup.text()).toBe(200);
   expect((await pickup.json()).data).toMatchObject({ orderId, deliveryStatus: 'PICKED_UP', orderStatus: 'OUT_FOR_DELIVERY' });
-  await expect(card).toContainText('På vej');
+  await expect(card).toContainText('På vej til kunden');
   await expect(details.getByRole('button', { name: 'Markér som leveret' })).toBeVisible();
 
   await page.reload();

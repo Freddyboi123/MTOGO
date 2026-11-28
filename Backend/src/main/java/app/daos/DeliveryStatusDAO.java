@@ -1,5 +1,6 @@
 package app.daos;
 
+import app.daos.generic.EntityManagerDAO;
 import app.entities.Delivery;
 import app.entities.DeliveryAgent;
 import app.entities.Order;
@@ -7,15 +8,15 @@ import app.enums.DeliveryStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class DeliveryStatusDAO {
-    private final EntityManager em;
+public class DeliveryStatusDAO extends EntityManagerDAO<Delivery> {
 
     public DeliveryStatusDAO(EntityManager em) {
-        this.em = em;
+        super(em, Delivery.class);
     }
 
     public List<Delivery> findActiveByUser(UUID userId) {
@@ -51,5 +52,51 @@ public class DeliveryStatusDAO {
 
     public void refreshAgent(DeliveryAgent agent) {
         em.refresh(agent);
+    }
+
+    // ________________________________________________________
+
+    public Order findOrderById(UUID orderId) {
+        return executeQuery(() -> em.find(Order.class, orderId));
+    }
+
+    // ________________________________________________________
+
+    public Delivery findByOrderId(UUID orderId) {
+
+        String jpql = "SELECT d FROM Delivery d WHERE d.order.id = :orderId";
+
+        return executeQuery(() -> em.createQuery(jpql, Delivery.class)
+                .setParameter("orderId", orderId)
+                .setMaxResults(1)
+                .getResultStream().findFirst().orElse(null));
+    }
+
+    // ________________________________________________________
+
+    public Delivery saveEstimate(Delivery delivery, Integer minutesToPickup, Integer minutesToDeliver) {
+
+        String jpql = """
+                UPDATE Delivery d
+                SET d.minutesToPickup = :minutesToPickup,
+                    d.minutesToDeliver = :minutesToDeliver,
+                    d.estimatedAt = :estimatedAt
+                WHERE d.id = :id AND d.status <> :delivered
+                """;
+
+        return executeQuery(() -> {
+            int updated = em.createQuery(jpql)
+                    .setParameter("minutesToPickup", minutesToPickup)
+                    .setParameter("minutesToDeliver", minutesToDeliver)
+                    .setParameter("estimatedAt", LocalDateTime.now())
+                    .setParameter("id", delivery.getId())
+                    .setParameter("delivered", DeliveryStatus.DELIVERED)
+                    .executeUpdate();
+            if (updated == 0) {
+                return null;
+            }
+            em.refresh(delivery);
+            return delivery;
+        });
     }
 }

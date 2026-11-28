@@ -42,6 +42,12 @@ export const resetPassword = (body) => api('/users/auth/reset-password', { metho
 export const getProfile = () => api('/users/profile');
 export const updateProfile = (body) => api('/users/profile', { method: 'PATCH', body });
 
+export async function refreshUser() {
+  const res = await getProfile();
+  localStorage.setItem('user', JSON.stringify(res.data));
+  return res.data;
+}
+
 export async function fetchRestaurants({ cuisine, query, latitude, longitude } = {}) {
   const params = new URLSearchParams();
   if (cuisine) params.set('cuisine', cuisine);
@@ -89,6 +95,15 @@ export const resubmitRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}`, { method: 'PUT', body });
 export const decideRestaurantApplication = (id, body) =>
   api(`/restaurant-application/${id}/decision`, { method: 'PUT', body });
+export const getDriverApplications = () => api('/driver-applications');
+export const getDriverApplication = (id) => api(`/driver-application/${id}`);
+export const getMyDriverApplications = () => api('/my-driver-applications');
+export const decideDriverApplication = (id, body) =>
+  api(`/driver-application/${id}/decision`, { method: 'PUT', body });
+export const submitDriverApplication = (body) =>
+  api('/driver-applications', { method: 'POST', body });
+export const resubmitDriverApplication = (id, body) =>
+  api(`/driver-application/${id}`, { method: 'PUT', body });
 
 
 export const getAdminOverview = () => api('/admin/overview');
@@ -170,6 +185,12 @@ export function saveSession({ token, data }) {
 export const getMyDeliveries = () => api('/deliveries/mine');
 export const acceptDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/accept`, { method: 'POST' });
+
+export const startPickupDelivery = (orderId) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/start`, { method: 'POST' });
+
+export const setDeliveryEstimate = (orderId, body) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/estimate`, { method: 'PUT', body });
 
 export const pickUpDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/pickup`, { method: 'POST' });

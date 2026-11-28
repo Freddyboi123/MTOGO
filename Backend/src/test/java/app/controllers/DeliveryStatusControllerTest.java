@@ -100,6 +100,19 @@ class DeliveryStatusControllerTest {
         return response;
     }
 
+    private HttpResponse<String> putEstimate(String id, String body, UUID userId) throws Exception {
+        HttpRequest.Builder request = HttpRequest.newBuilder(URI.create("http://localhost:" + app.port()
+                + "/api/deliveries/" + id + "/estimate"))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(body));
+        if (userId != null) request.header("X-Test-User", userId.toString());
+        HttpResponse<String> response = CLIENT.send(request.build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals("true", response.headers().firstValue("X-Test-Delivery-Role").orElse("false"));
+        return response;
+    }
+
+    private static final String ESTIMATE = "{\"minutesToPickup\":10,\"minutesToDeliver\":25}";
+
     private void expectError(HttpResponse<String> response, int code, Notifications message) {
         assertEquals(code, response.statusCode());
         assertEquals(message.getDisplayName(), response.body());
@@ -113,7 +126,7 @@ class DeliveryStatusControllerTest {
 
     @Test
     void bothRoutesRejectMissingIdentityAndMalformedId() throws Exception {
-        for (String action : new String[]{"pickup", "deliver"}) {
+        for (String action : new String[]{"start", "pickup", "deliver"}) {
             expectError(post(orderId.toString(), action, null), 401, Notifications.LOGIN_REQUIRED);
             expectError(post("not-a-uuid", action, ownerId), 400, Notifications.ORDER_ID_INVALID);
         }
@@ -123,7 +136,7 @@ class DeliveryStatusControllerTest {
     @Test
     void featureFlagBlocksBothRoutesEvenForAssignedAgent() throws Exception {
         enabled.set(false);
-        for (String action : new String[]{"pickup", "deliver"}) {
+        for (String action : new String[]{"start", "pickup", "deliver"}) {
             expectError(post(orderId.toString(), action, ownerId), 404, Notifications.DELIVERY_FEATURE_DISABLED);
         }
         assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
@@ -133,6 +146,20 @@ class DeliveryStatusControllerTest {
     void routesEnforceOwnershipAndTransitionOrderAndReturnUpdatedStatus() throws Exception {
         String id = orderId.toString();
         expectError(post(id, "pickup", otherId), 403, Notifications.DELIVERY_NOT_OWNED);
+        expectError(post(id, "deliver", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
+        assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
+
+        expectError(post(id, "pickup", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
+        expectError(post(id, "start", otherId), 403, Notifications.DELIVERY_NOT_OWNED);
+        assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
+
+        HttpResponse<String> start = post(id, "start", ownerId);
+        assertEquals(200, start.statusCode());
+        var started = JSON.readTree(start.body()).get("data");
+        assertEquals(id, started.get("orderId").asText());
+        assertEquals("READY_FOR_PICKUP", started.get("orderStatus").asText());
+        assertEquals("EN_ROUTE_TO_PICKUP", started.get("deliveryStatus").asText());
+        expectError(post(id, "start", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
         expectError(post(id, "deliver", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
         assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
 
@@ -153,5 +180,35 @@ class DeliveryStatusControllerTest {
         assertEquals("DELIVERED", delivered.get("deliveryStatus").asText());
         expectError(post(id, "deliver", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
         assertEquals(OrderStatus.DELIVERED, persistedOrderStatus());
+    }
+
+    @Test
+    void estimateRouteRejectsMissingIdentityMalformedIdAndMissingFeature() throws Exception {
+        expectError(putEstimate(orderId.toString(), ESTIMATE, null), 401, Notifications.LOGIN_REQUIRED);
+        expectError(putEstimate("not-a-uuid", ESTIMATE, ownerId), 400, Notifications.ORDER_ID_INVALID);
+        enabled.set(false);
+        expectError(putEstimate(orderId.toString(), ESTIMATE, ownerId), 404, Notifications.DELIVERY_FEATURE_DISABLED);
+    }
+
+    @Test
+    void estimateRouteEnforcesOwnershipAndValidatesTheMinutes() throws Exception {
+        String id = orderId.toString();
+        expectError(putEstimate(id, ESTIMATE, otherId), 403, Notifications.DELIVERY_NOT_OWNED);
+        expectError(putEstimate(id, "{\"minutesToPickup\":0,\"minutesToDeliver\":25}", ownerId), 400, Notifications.DELIVERY_ESTIMATE_INVALID);
+        expectError(putEstimate(id, "{\"minutesToPickup\":10}", ownerId), 400, Notifications.DELIVERY_ESTIMATE_INVALID);
+        expectError(putEstimate(id, "{\"minutesToPickup\":10,\"minutesToDeliver\":241}", ownerId), 400, Notifications.DELIVERY_ESTIMATE_INVALID);
+    }
+
+    @Test
+    void estimateRouteSavesTheMinutesAndReturnsThem() throws Exception {
+        HttpResponse<String> response = putEstimate(orderId.toString(), ESTIMATE, ownerId);
+
+        assertEquals(200, response.statusCode());
+        var data = JSON.readTree(response.body()).get("data");
+        assertEquals(orderId.toString(), data.get("orderId").asText());
+        assertEquals(10, data.get("minutesToPickup").asInt());
+        assertEquals(25, data.get("minutesToDeliver").asInt());
+        assertEquals("ASSIGNED", data.get("deliveryStatus").asText());
+        assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
     }
 }

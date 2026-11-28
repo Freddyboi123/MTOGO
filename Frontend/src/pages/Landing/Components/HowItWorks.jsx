@@ -1,7 +1,24 @@
-import { howItWorks } from '../../../data/mtogo';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../Landing.module.css';
+
+const howItWorks = [
+  {
+    number: '01',
+    title: 'Find dit næste måltid',
+    body: 'Indtast din adresse, og udforsk de bedste køkkener i nærheden.'
+  },
+  {
+    number: '02',
+    title: 'Vælg dine favoritter',
+    body: 'Sammensæt din bestilling. Vi giver dine ønsker videre til køkkenet.'
+  },
+  {
+    number: '03',
+    title: 'Nyd den gode smag',
+    body: 'Få maden leveret til døren, eller hent den selv på vejen.'
+  }
+];
 
 export default function HowItWorks() {
   return (

@@ -26,6 +26,7 @@ public class OrderDTO {
     private PaymentStatus paymentStatus;
     private BigDecimal total;
     private LocalDateTime createdAt;
+    private LocalDateTime expectedDeliveryAt;
     private List<OrderLineDTO> lines;
 
     // Admin only

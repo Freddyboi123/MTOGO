@@ -1,6 +1,16 @@
-import { restaurantPanelTexts } from '../../../data/mtogo';
 import StatCard from '../../../components/StatCard';
 import dash from '../../../components/DashboardLayout.module.css';
+
+const restaurantPanelTexts = {
+  publicPage: 'Se offentlig side ↗',
+  logout: 'Log ud',
+  items: 'Varer på menuen',
+  itemsNote: 'Alle varer i dine kategorier',
+  unavailable: 'Udsolgte varer',
+  unavailableNote: 'Kan ikke bestilles lige nu',
+  categories: 'Kategorier',
+  categoriesNote: 'På din menu'
+};
 
 export default function PanelStats({ categories }) {
   const items = categories.flatMap((category) => category.items ?? []);
