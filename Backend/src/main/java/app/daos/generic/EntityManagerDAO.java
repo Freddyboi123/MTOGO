@@ -116,34 +116,32 @@ public class EntityManagerDAO<T> implements IDAO<T> {
     // ________________________________________________________
 
     protected <R> R executeQuery(Supplier<R> query) {
-        synchronized (em) {
-            boolean startedTransaction = false;
-            try {
-                if (!em.getTransaction().isActive()) {
-                    em.getTransaction().begin();
-                    startedTransaction = true;
-                }
-                R result = query.get();
-                if (startedTransaction) {
-                    em.getTransaction().commit();
-                }
-                return result;
-            } catch (NoResultException e){
-                if (startedTransaction && em.getTransaction().isActive()) {
-                    em.getTransaction().rollback();
-                }
-                return null;
-            } catch (RuntimeException e) {
-                if (startedTransaction && em.getTransaction().isActive()) {
-                    em.getTransaction().rollback();
-                }
-
-                if (e instanceof PersistenceException) {
-                    throw e;
-                }
-
-                throw new ApiException(500, e.getMessage());
+        boolean startedTransaction = false;
+        try {
+            if (!em.getTransaction().isActive()) {
+                em.getTransaction().begin();
+                startedTransaction = true;
             }
+            R result = query.get();
+            if (startedTransaction) {
+                em.getTransaction().commit();
+            }
+            return result;
+        } catch (NoResultException e){
+            if (startedTransaction && em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            return null;
+        } catch (RuntimeException e) {
+            if (startedTransaction && em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+
+            if (e instanceof PersistenceException) {
+                throw e;
+            }
+
+            throw new ApiException(500, e.getMessage());
         }
     }
 

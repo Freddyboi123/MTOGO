@@ -16,17 +16,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class DeliveryAssignmentService {
-    private final EntityManager em;
     private final EntityManagerFactory emf;
 
     public DeliveryAssignmentService(EntityManager em) {
-        this.em = em;
         this.emf = em.getEntityManagerFactory();
     }
 
     public List<DeliveryAssignmentDTO> available() {
-        synchronized (em) {
-            return em.createQuery("""
+        try (EntityManager reader = emf.createEntityManager()) {
+            return reader.createQuery("""
                     SELECT o FROM Order o
                     JOIN FETCH o.restaurant
                     WHERE o.status = :status AND NOT EXISTS
@@ -46,24 +44,24 @@ public class DeliveryAssignmentService {
     }
 
     public DeliveryAssignmentDTO accept(UUID orderId, UUID userId) {
-        synchronized (em) {
+        try (EntityManager transactionEm = emf.createEntityManager()) {
             try {
-                em.getTransaction().begin();
-                DeliveryAgent agent = em.createQuery(
+                transactionEm.getTransaction().begin();
+                DeliveryAgent agent = transactionEm.createQuery(
                                 "SELECT a FROM DeliveryAgent a WHERE a.user.id = :userId AND a.active = true",
                                 DeliveryAgent.class)
                         .setParameter("userId", userId)
                         .getResultStream().findFirst()
                         .orElseThrow(() -> new ApiException(403, Notifications.DELIVERY_AGENT_NOT_ACTIVE.getDisplayName()));
 
-                // The database row lock serializes competing claims across server instances.
-                Order order = em.find(Order.class, orderId, LockModeType.PESSIMISTIC_WRITE);
+                // The database row lock serializes competing claims across requests and server instances.
+                Order order = transactionEm.find(Order.class, orderId, LockModeType.PESSIMISTIC_WRITE);
                 if (order == null) {
                     throw new ApiException(404, Notifications.ORDER_NOT_FOUND.getDisplayName());
                 }
-                em.refresh(order, LockModeType.PESSIMISTIC_WRITE);
+                transactionEm.refresh(order, LockModeType.PESSIMISTIC_WRITE);
                 if (order.getStatus() != OrderStatus.READY_FOR_PICKUP ||
-                        !em.createQuery("SELECT d.id FROM Delivery d WHERE d.order.id = :id", UUID.class)
+                        !transactionEm.createQuery("SELECT d.id FROM Delivery d WHERE d.order.id = :id", UUID.class)
                                 .setParameter("id", orderId).setMaxResults(1).getResultList().isEmpty()) {
                     throw new ApiException(409, Notifications.DELIVERY_ALREADY_TAKEN.getDisplayName());
                 }
@@ -73,13 +71,13 @@ public class DeliveryAssignmentService {
                         .agent(agent)
                         .assignedAt(LocalDateTime.now())
                         .build();
-                em.persist(delivery);
-                em.flush();
+                transactionEm.persist(delivery);
+                transactionEm.flush();
                 DeliveryAssignmentDTO result = toDTO(order, delivery);
-                em.getTransaction().commit();
+                transactionEm.getTransaction().commit();
                 return result;
             } catch (RuntimeException exception) {
-                if (em.getTransaction().isActive()) em.getTransaction().rollback();
+                if (transactionEm.getTransaction().isActive()) transactionEm.getTransaction().rollback();
                 throw exception;
             }
         }
