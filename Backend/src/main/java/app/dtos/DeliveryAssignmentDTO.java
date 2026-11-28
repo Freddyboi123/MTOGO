@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
+@Setter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class DeliveryAssignmentDTO {
     private UUID orderId;
@@ -20,4 +22,6 @@ public class DeliveryAssignmentDTO {
     private LocalDateTime assignedAt;
     private OrderStatus orderStatus;
     private DeliveryStatus deliveryStatus;
+    private Integer minutesToPickup;
+    private Integer minutesToDeliver;
 }

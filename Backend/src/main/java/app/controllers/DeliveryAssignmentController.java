@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.DeliveryAssignmentDTO;
 import app.dtos.UserDTO;
 import app.enums.Notifications;
 import app.enums.FeatureFlag;
@@ -8,6 +9,7 @@ import app.exceptions.ApiException;
 import app.server.Setup;
 import app.services.DeliveryAssignmentService;
 import app.services.FeatureFlagService;
+import app.utils.ErrorHandler;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 
@@ -16,6 +18,7 @@ import java.util.UUID;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.put;
 
 public class DeliveryAssignmentController {
     private final DeliveryAssignmentService service;
@@ -52,6 +55,7 @@ public class DeliveryAssignmentController {
             post("/deliveries/{orderId}/start", controller::startPickup, Role.DELIVERY_AGENT);
             post("/deliveries/{orderId}/pickup", controller::pickUp, Role.DELIVERY_AGENT);
             post("/deliveries/{orderId}/deliver", controller::deliver, Role.DELIVERY_AGENT);
+            put("/deliveries/{orderId}/estimate", controller::setEstimate, Role.DELIVERY_AGENT);
         };
     }
 
@@ -77,6 +81,15 @@ public class DeliveryAssignmentController {
         UUID orderId = statusOrderId(ctx);
         UUID user = userId(ctx);
         ctx.status(200).json(Map.of("data", service.deliver(orderId, user)));
+    }
+
+    // ________________________________________________________
+
+    private void setEstimate(Context ctx) {
+        UUID orderId = statusOrderId(ctx);
+        UUID user = userId(ctx);
+        DeliveryAssignmentDTO body = ErrorHandler.tryBody(ctx, DeliveryAssignmentDTO.class, Notifications.BODY_EMPTY.getDisplayName());
+        ctx.status(200).json(Map.of("data", service.setEstimate(orderId, user, body.getMinutesToPickup(), body.getMinutesToDeliver())));
     }
 
     // ________________________________________________________

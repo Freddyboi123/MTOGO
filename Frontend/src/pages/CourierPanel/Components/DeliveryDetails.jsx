@@ -2,6 +2,7 @@ import React from 'react';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../CourierPanel.module.css';
+import DeliveryEstimate from './DeliveryEstimate';
 
 export default function DeliveryDetails({
   selected,
@@ -13,6 +14,8 @@ export default function DeliveryDetails({
   actionLabel,
   updating,
   accepting,
+  savingEstimate,
+  onSaveEstimate,
   onStatusUpdate,
   onAccept
 }) {
@@ -37,6 +40,14 @@ export default function DeliveryDetails({
             <span className={ui.sectionLabel}>FORVENTET AFHENTNING</span>
             <p>{pickupTime}</p>
           </div>
+          {myDeliveries && selected.orderStatus !== 'CANCELLED' && (
+            <DeliveryEstimate
+              key={selected.orderId}
+              delivery={selected}
+              saving={savingEstimate === selected.orderId}
+              onSave={onSaveEstimate}
+            />
+          )}
           {myDeliveries ? (
             <div className={styles.detail}>
               <span className={ui.sectionLabel}>LEVERINGSSTATUS</span>

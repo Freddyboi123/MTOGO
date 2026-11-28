@@ -189,6 +189,9 @@ export const acceptDelivery = (orderId) =>
 export const startPickupDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/start`, { method: 'POST' });
 
+export const setDeliveryEstimate = (orderId, body) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/estimate`, { method: 'PUT', body });
+
 export const pickUpDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/pickup`, { method: 'POST' });
 export const completeDelivery = (orderId) =>

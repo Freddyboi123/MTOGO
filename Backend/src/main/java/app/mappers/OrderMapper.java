@@ -2,8 +2,11 @@ package app.mappers;
 
 import app.dtos.OrderDTO;
 import app.entities.Address;
+import app.entities.Delivery;
 import app.entities.Order;
 import app.mappers.generic.IMapper;
+
+import java.time.LocalDateTime;
 
 public class OrderMapper implements IMapper<Order, OrderDTO> {
 
@@ -40,8 +43,20 @@ public class OrderMapper implements IMapper<Order, OrderDTO> {
             .paymentStatus(entity.getPayment() == null ? null : entity.getPayment().getStatus())
             .total(entity.getTotalInclVat())
             .createdAt(entity.getCreatedAt())
+            .expectedDeliveryAt(expectedDeliveryAt(entity.getDelivery()))
             .lines(entity.getLines().stream().map(lineMapper::toDTO).toList())
             .build();
+    }
+
+    // ________________________________________________________
+
+    private LocalDateTime expectedDeliveryAt(Delivery delivery) {
+        if (delivery == null || delivery.getEstimatedAt() == null
+            || delivery.getMinutesToPickup() == null || delivery.getMinutesToDeliver() == null) {
+            return null;
+        }
+
+        return delivery.getEstimatedAt().plusMinutes(delivery.getMinutesToPickup() + delivery.getMinutesToDeliver());
     }
 
     // ________________________________________________________

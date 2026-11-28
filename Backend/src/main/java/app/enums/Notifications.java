@@ -99,6 +99,7 @@ public enum Notifications {
     DELIVERY_NOT_ASSIGNED("This order has no assigned delivery"),
     DELIVERY_NOT_OWNED("Only the assigned delivery agent can update this delivery"),
     DELIVERY_STATUS_INVALID("This delivery cannot be updated from its current status"),
+    DELIVERY_ESTIMATE_INVALID("The minutes to pick up and to deliver must be whole numbers between 1 and 240"),
     DELIVERY_FEATURE_DISABLED("Not found"),
 
     // RESTAURANTS AND MENUS

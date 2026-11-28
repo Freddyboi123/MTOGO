@@ -31,6 +31,7 @@ const CALLS = {
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
     startPickupDelivery: (m) => m.startPickupDelivery('42'),
+    setDeliveryEstimate: (m) => m.setDeliveryEstimate('42', { minutesToPickup: 10, minutesToDeliver: 20 }),
     pickUpDelivery: (m) => m.pickUpDelivery('42'),
     completeDelivery: (m) => m.completeDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),

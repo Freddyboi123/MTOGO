@@ -9,6 +9,7 @@ import {
   isLoggedIn,
   pickUpDelivery,
   refreshUser,
+  setDeliveryEstimate,
   startPickupDelivery
 } from '../../utils/api';
 import cx from '../../utils/cx';
@@ -25,6 +26,7 @@ const courierDeliveryStatusTexts = {
     PICKED_UP: 'På vej til kunden',
     DELIVERED: 'Leveret'
   },
+  estimateSaved: 'Estimatet er gemt.',
   startPickup: 'Markér som på vej til afhentning',
   startedPickup: 'Du er markeret som på vej til afhentning.',
   pickUp: 'Markér som afhentet',
@@ -116,6 +118,7 @@ export default function CourierPanel() {
   const [notice, setNotice] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [statusError, setStatusError] = useState('');
+  const [savingEstimate, setSavingEstimate] = useState(null);
 
   useEffect(() => {
     if (!checkingAccess) return undefined;
@@ -194,6 +197,21 @@ export default function CourierPanel() {
       setStatusError(err.message);
     } finally {
       setUpdatingStatus(null);
+    }
+  }
+
+  async function handleEstimate(orderId, estimate) {
+    setSavingEstimate(orderId);
+    setStatusError('');
+    setNotice('');
+    try {
+      const response = await setDeliveryEstimate(orderId, estimate);
+      setDeliveries((current) => current.map((item) => item.orderId === orderId ? response.data : item));
+      setNotice(courierDeliveryStatusTexts.estimateSaved);
+    } catch (err) {
+      setStatusError(err.message);
+    } finally {
+      setSavingEstimate(null);
     }
   }
 
@@ -280,6 +298,8 @@ export default function CourierPanel() {
           actionLabel={actionLabelOf(selected)}
           updating={updatingStatus}
           accepting={accepting}
+          savingEstimate={savingEstimate}
+          onSaveEstimate={handleEstimate}
           onStatusUpdate={handleStatusUpdate}
           onAccept={handleAccept}
         />

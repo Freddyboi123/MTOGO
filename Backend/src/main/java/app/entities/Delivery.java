@@ -38,4 +38,10 @@ public class Delivery {
     private LocalDateTime pickedUpAt;
 
     private LocalDateTime deliveredAt;
+
+    private Integer minutesToPickup;
+
+    private Integer minutesToDeliver;
+
+    private LocalDateTime estimatedAt;
 }
