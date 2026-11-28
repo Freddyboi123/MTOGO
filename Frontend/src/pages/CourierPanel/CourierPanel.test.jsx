@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CourierPanel from './CourierPanel';
-import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, pickUpDelivery } from '../utils/api';
+import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, pickUpDelivery } from '../../utils/api';
 
-vi.mock('../components/DashboardLayout', () => ({
+vi.mock('../../components/DashboardLayout', () => ({
   default: ({ children }) => children
 }));
-vi.mock('../utils/api', () => ({
+vi.mock('../../utils/api', () => ({
   acceptDelivery: vi.fn(),
   completeDelivery: vi.fn(),
   getAvailableDeliveries: vi.fn(),

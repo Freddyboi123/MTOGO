@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { logout } from '../../utils/api';
+import { getUser, logout, refreshUser } from '../../utils/api';
 import SiteHeader from '../../components/SiteHeader';
 import SiteFooter from '../../components/SiteFooter';
 import cx from '../../utils/cx';
@@ -11,24 +11,41 @@ import PersonalInfo from './Components/PersonalInfo';
 import DeliveryAddress from './Components/DeliveryAddress';
 import MyApplications from './Components/MyApplications';
 import MyRestaurants from './Components/MyRestaurants';
+import DeliveryPage from './Components/DeliveryPage';
 import OrderHistory from './Components/OrderHistory';
 import useFeatureFlag from '../../featureFlags/useFeatureFlag';
+
+const DELIVERY_PAGE = 'Delivery page';
 
 const profileSections = [
   'Personlige oplysninger',
   'Leveringsadresse',
   'Mine ansøgninger',
   'Mine restauranter',
+  DELIVERY_PAGE,
   'Ordrehistorik'
 ];
 
 export default function Profile() {
   const location = useLocation();
   const ordering = useFeatureFlag('ordering');
-  const sections = ordering ? profileSections : profileSections.filter((name) => name !== 'Ordrehistorik');
+  const deliveryOverview = useFeatureFlag('deliveryOverview');
+  const [roles, setRoles] = useState(() => getUser().roles ?? []);
+  const deliveryAgent = deliveryOverview && roles.includes('DELIVERY_AGENT');
+  const sections = profileSections.filter((name) => {
+    if (name === 'Ordrehistorik') return ordering;
+    if (name === DELIVERY_PAGE) return deliveryAgent;
+    return true;
+  });
   const [section, setSection] = useState(location.state?.section ?? profileSections[0]);
   const [, setVersion] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshUser()
+      .then((user) => setRoles(user.roles ?? []))
+      .catch(() => {});
+  }, []);
 
   function handleLogout() {
     logout();
@@ -60,6 +77,7 @@ export default function Profile() {
           {section === 'Leveringsadresse' && <DeliveryAddress onSaved={() => setVersion((version) => version + 1)} />}
           {section === 'Mine ansøgninger' && <MyApplications />}
           {section === 'Mine restauranter' && <MyRestaurants />}
+          {deliveryAgent && section === DELIVERY_PAGE && <DeliveryPage />}
           {ordering && section === 'Ordrehistorik' && <OrderHistory />}
         </div>
       </section>

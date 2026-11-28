@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import DashboardLayout from '../components/DashboardLayout';
-import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, isLoggedIn, pickUpDelivery } from '../utils/api';
-import { courierDeliveryStatusTexts } from '../data/mtogo';
-import cx from '../utils/cx';
-import ui from '../styles/shared.module.css';
-import dash from '../components/DashboardLayout.module.css';
+import DashboardLayout from '../../components/DashboardLayout';
+import {
+  acceptDelivery,
+  completeDelivery,
+  getAvailableDeliveries,
+  getMyDeliveries,
+  isLoggedIn,
+  pickUpDelivery,
+  refreshUser
+} from '../../utils/api';
+import { courierDeliveryStatusTexts } from '../../data/mtogo';
+import cx from '../../utils/cx';
+import ui from '../../styles/shared.module.css';
+import dash from '../../components/DashboardLayout.module.css';
 import styles from './CourierPanel.module.css';
+import DeliveryCard from './Components/DeliveryCard';
+import DeliveryDetails from './Components/DeliveryDetails';
 
 const items = [
   { to: '/chauffoerpanel', label: 'Leverancer' },
@@ -24,6 +34,10 @@ function getSessionUser() {
   }
 }
 
+function isDeliveryAgent(user) {
+  return Boolean(isLoggedIn() && user?.roles?.includes('DELIVERY_AGENT'));
+}
+
 function formatAddress(street, postalCode, city) {
   return [street, [postalCode, city].filter(Boolean).join(' ')].filter(Boolean).join(', ') || 'Adresse ikke angivet';
 }
@@ -38,11 +52,23 @@ function formatPickupTime(value) {
   }).format(time);
 }
 
+function pickupTimeOf(delivery) {
+  return formatPickupTime(delivery.expectedPickupAt ?? delivery.expectedPickupTime);
+}
+
+function canUpdateStatus(delivery) {
+  return (
+    (delivery.deliveryStatus === 'ASSIGNED' && delivery.orderStatus === 'READY_FOR_PICKUP') ||
+    (delivery.deliveryStatus === 'PICKED_UP' && delivery.orderStatus === 'OUT_FOR_DELIVERY')
+  );
+}
+
 export default function CourierPanel() {
   const { pathname } = useLocation();
   const myDeliveries = pathname === '/chauffoerpanel/ture';
-  const user = getSessionUser();
-  const authorized = isLoggedIn() && user?.roles?.includes('DELIVERY_AGENT');
+  const [user, setUser] = useState(getSessionUser);
+  const [checkingAccess, setCheckingAccess] = useState(() => isLoggedIn() && !isDeliveryAgent(getSessionUser()));
+  const authorized = isDeliveryAgent(user);
   const [deliveries, setDeliveries] = useState([]);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -52,6 +78,20 @@ export default function CourierPanel() {
   const [notice, setNotice] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(null);
   const [statusError, setStatusError] = useState('');
+
+  useEffect(() => {
+    if (!checkingAccess) return undefined;
+    let active = true;
+    refreshUser()
+      .then((fresh) => {
+        if (active) setUser(fresh);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setCheckingAccess(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!authorized) return;
@@ -119,6 +159,7 @@ export default function CourierPanel() {
   }
 
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (checkingAccess) return null;
   if (!authorized) {
     return <p className={cx(ui.page, styles.message)}>Kun chaufførpartnere har adgang til leveringsoversigten.</p>;
   }
@@ -127,6 +168,12 @@ export default function CourierPanel() {
     ? deliveries.find((delivery) => delivery.orderId === selectedOrderId)
     : null;
   const displayName = [user.name, user.lastName].filter(Boolean).join(' ');
+
+  function actionLabelOf(delivery) {
+    if (!delivery || !canUpdateStatus(delivery)) return null;
+    if (updatingStatus === delivery.orderId) return courierDeliveryStatusTexts.updating;
+    return delivery.deliveryStatus === 'ASSIGNED' ? courierDeliveryStatusTexts.pickUp : courierDeliveryStatusTexts.deliver;
+  }
 
   return (
     <DashboardLayout
@@ -171,68 +218,32 @@ export default function CourierPanel() {
           )}
 
           {!loading && !error && deliveries.map((delivery) => (
-            <article className={styles.delivery} key={delivery.orderId}>
-              <div>
-                <div className={styles.deliveryLabel}>{myDeliveries ? `STATUS: ${courierDeliveryStatusTexts.labels[delivery.deliveryStatus] ?? delivery.orderStatus}` : 'LEDIG'} · ORDRE {delivery.orderId}</div>
-                <h3 className={styles.deliveryName}>{delivery.restaurantName}</h3>
-                <p className={styles.deliveryRoute}>Forventet afhentning: {formatPickupTime(delivery.expectedPickupAt ?? delivery.expectedPickupTime)}</p>
-              </div>
-              <button
-                type="button"
-                className={cx(ui.btn, ui.btnDark, ui.btnSmall)}
-                aria-expanded={selectedOrderId === delivery.orderId}
-                onClick={() => setSelectedOrderId((current) =>
-                  current === delivery.orderId ? null : delivery.orderId
-                )}
-              >
-                {selectedOrderId === delivery.orderId ? 'Skjul detaljer' : 'Se detaljer'}
-              </button>
-            </article>
+            <DeliveryCard
+              key={delivery.orderId}
+              delivery={delivery}
+              label={myDeliveries ? `STATUS: ${courierDeliveryStatusTexts.labels[delivery.deliveryStatus] ?? delivery.orderStatus}` : 'LEDIG'}
+              pickupTime={pickupTimeOf(delivery)}
+              expanded={selectedOrderId === delivery.orderId}
+              onToggle={() => setSelectedOrderId((current) =>
+                current === delivery.orderId ? null : delivery.orderId
+              )}
+            />
           ))}
         </section>
 
-        <section aria-label="Ordredetaljer" className={ui.block}>
-          <h2 className={styles.detailsTitle}>Ordredetaljer</h2>
-          {!selected ? (
-            <p className={styles.message}>Vælg en levering for at se afhentnings- og leveringsadresse.</p>
-          ) : (
-            <>
-              <p className={styles.orderNumber}>Ordrenummer: {selected.orderId}</p>
-              <div className={styles.detail}>
-                <span className={ui.sectionLabel}>RESTAURANT / AFHENTNING</span>
-                <strong>{selected.restaurantName}</strong>
-                <p>{selected.pickupAddress || formatAddress(selected.pickupStreet, selected.pickupPostalCode, selected.pickupCity)}</p>
-              </div>
-              <div className={styles.detail}>
-                <span className={ui.sectionLabel}>KUNDE / LEVERING</span>
-                <p>{selected.deliveryAddress || formatAddress(selected.deliveryStreet, selected.deliveryPostalCode, selected.deliveryCity)}</p>
-              </div>
-              <div className={styles.detail}>
-                <span className={ui.sectionLabel}>FORVENTET AFHENTNING</span>
-                <p>{formatPickupTime(selected.expectedPickupAt ?? selected.expectedPickupTime)}</p>
-              </div>
-              {myDeliveries ? (
-                <div className={styles.detail}>
-                  <span className={ui.sectionLabel}>LEVERINGSSTATUS</span>
-                  <p>{courierDeliveryStatusTexts.labels[selected.deliveryStatus] ?? selected.orderStatus}</p>
-                  {((selected.deliveryStatus === 'ASSIGNED' && selected.orderStatus === 'READY_FOR_PICKUP') ||
-                    (selected.deliveryStatus === 'PICKED_UP' && selected.orderStatus === 'OUT_FOR_DELIVERY')) && (
-                    <button type="button" className={cx(ui.btn, ui.btnDark)}
-                      disabled={updatingStatus !== null} onClick={() => handleStatusUpdate(selected)}>
-                      {updatingStatus === selected.orderId ? courierDeliveryStatusTexts.updating :
-                        selected.deliveryStatus === 'ASSIGNED' ? courierDeliveryStatusTexts.pickUp : courierDeliveryStatusTexts.deliver}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <button type="button" className={cx(ui.btn, ui.btnDark)}
-                  disabled={accepting !== null} onClick={() => handleAccept(selected.orderId)}>
-                  {accepting === selected.orderId ? 'Accepterer...' : 'Accepter levering'}
-                </button>
-              )}
-            </>
-          )}
-        </section>
+        <DeliveryDetails
+          selected={selected}
+          myDeliveries={myDeliveries}
+          pickupAddress={selected && (selected.pickupAddress || formatAddress(selected.pickupStreet, selected.pickupPostalCode, selected.pickupCity))}
+          deliveryAddress={selected && (selected.deliveryAddress || formatAddress(selected.deliveryStreet, selected.deliveryPostalCode, selected.deliveryCity))}
+          pickupTime={selected && pickupTimeOf(selected)}
+          statusLabel={selected && (courierDeliveryStatusTexts.labels[selected.deliveryStatus] ?? selected.orderStatus)}
+          actionLabel={actionLabelOf(selected)}
+          updating={updatingStatus}
+          accepting={accepting}
+          onStatusUpdate={handleStatusUpdate}
+          onAccept={handleAccept}
+        />
       </div>
     </DashboardLayout>
   );

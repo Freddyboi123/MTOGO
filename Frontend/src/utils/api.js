@@ -42,6 +42,12 @@ export const resetPassword = (body) => api('/users/auth/reset-password', { metho
 export const getProfile = () => api('/users/profile');
 export const updateProfile = (body) => api('/users/profile', { method: 'PATCH', body });
 
+export async function refreshUser() {
+  const res = await getProfile();
+  localStorage.setItem('user', JSON.stringify(res.data));
+  return res.data;
+}
+
 export async function fetchRestaurants({ cuisine, query, latitude, longitude } = {}) {
   const params = new URLSearchParams();
   if (cuisine) params.set('cuisine', cuisine);

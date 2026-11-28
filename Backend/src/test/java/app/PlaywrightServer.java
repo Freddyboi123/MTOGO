@@ -60,6 +60,7 @@ public class PlaywrightServer {
             createUser(em, "applicant-reject@mtogo.dk", Role.CUSTOMER, password, "Reject", "Applicant");
             createUser(em, "applicant-info@mtogo.dk", Role.CUSTOMER, password, "Info", "Applicant");
             createUser(em, "applicant-resubmit@mtogo.dk", Role.CUSTOMER, password, "Resubmit", "Applicant");
+            createUser(em, "applicant-delivery@mtogo.dk", Role.CUSTOMER, password, "Delivery", "Applicant");
             User courier = createUser(em, "delivery-courier@mtogo.dk", Role.DELIVERY_AGENT, password);
             User otherCourier = createUser(em, "delivery-other@mtogo.dk", Role.DELIVERY_AGENT, password);
             em.persist(DeliveryAgent.builder().user(courier).build());

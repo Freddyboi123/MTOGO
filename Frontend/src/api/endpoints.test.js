@@ -16,6 +16,7 @@ const CALLS = {
     resetPassword: (m) => m.resetPassword({ token: 't', password: 'x' }),
     getProfile: (m) => m.getProfile(),
     updateProfile: (m) => m.updateProfile({ first_name: 'A' }),
+    refreshUser: (m) => m.refreshUser(),
     fetchRestaurants: (m) => m.fetchRestaurants(),
     fetchRestaurant: (m) => m.fetchRestaurant('42'),
     fetchMenu: (m) => m.fetchMenu('42'),
