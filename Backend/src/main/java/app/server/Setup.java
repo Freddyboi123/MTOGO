@@ -4,8 +4,12 @@ import app.enums.Role;
 import app.exceptions.ApiException;
 import app.services.MessageService;
 import app.security.AccessService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
+import io.javalin.json.JavalinJackson;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -46,6 +50,13 @@ public class Setup {
 
     public static void configuration(JavalinConfig config) {
         config.showJavalinBanner = false;
+
+        ObjectMapper objectMapper = new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        config.jsonMapper(new JavalinJackson(objectMapper, false));
+
         config.bundledPlugins.enableRouteOverview("/routes", Role.ANYONE);
 
         config.bundledPlugins.enableCors(cors ->

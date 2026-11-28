@@ -8,6 +8,8 @@ import app.server.Setup;
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
 import io.javalin.security.RouteRole;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.util.Set;
 
@@ -18,7 +20,7 @@ import java.util.Set;
 
 public class AccessService implements IAccessService {
 
-    UserDAO userDAO = new UserDAO(Setup.em);
+    private final EntityManagerFactory emf = Setup.em.getEntityManagerFactory();
     SecurityService securityController = SecurityService.getInstance();
 
     // ________________________________________________________
@@ -46,10 +48,12 @@ public class AccessService implements IAccessService {
         // Check if the user has the necessary roles to access the route
         UserDTO userDTO = ctx.attribute("user");
         assert userDTO != null;
-        User user = userDAO.getById(userDTO.getId());
-        Set<RouteRole> allowedRoles = ctx.routeRoles(); // roles allowed for the current route
-        if (!securityController.authorize(user, allowedRoles)) {
-            throw new UnauthorizedResponse("Unauthorized with roles: " + user.getRoles() + ". Needed roles are: " + allowedRoles);
+        try (EntityManager reader = emf.createEntityManager()) {
+            User user = new UserDAO(reader).getById(userDTO.getId());
+            Set<RouteRole> allowedRoles = ctx.routeRoles(); // roles allowed for the current route
+            if (!securityController.authorize(user, allowedRoles)) {
+                throw new UnauthorizedResponse("Unauthorized with roles: " + user.getRoles() + ". Needed roles are: " + allowedRoles);
+            }
         }
     }
 }

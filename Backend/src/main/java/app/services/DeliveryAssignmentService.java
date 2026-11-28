@@ -1,23 +1,27 @@
 package app.services;
 
+import app.daos.DeliveryStatusDAO;
 import app.dtos.DeliveryAssignmentDTO;
 import app.entities.*;
+import app.enums.DeliveryStatus;
 import app.enums.Notifications;
 import app.enums.OrderStatus;
 import app.exceptions.ApiException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.LockModeType;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/** US-10: assigning orders; pickup/delivery status updates belong to US-11. */
 public class DeliveryAssignmentService {
     private final EntityManager em;
+    private final EntityManagerFactory emf;
 
     public DeliveryAssignmentService(EntityManager em) {
         this.em = em;
+        this.emf = em.getEntityManagerFactory();
     }
 
     public List<DeliveryAssignmentDTO> available() {
@@ -35,17 +39,9 @@ public class DeliveryAssignmentService {
     }
 
     public List<DeliveryAssignmentDTO> mine(UUID userId) {
-        synchronized (em) {
-            return em.createQuery("""
-                    SELECT d FROM Delivery d
-                    JOIN FETCH d.order o
-                    JOIN FETCH o.restaurant
-                    WHERE d.agent.user.id = :userId AND d.status <> :delivered
-                    ORDER BY d.assignedAt DESC
-                    """, Delivery.class)
-                    .setParameter("userId", userId)
-                    .setParameter("delivered", app.enums.DeliveryStatus.DELIVERED)
-                    .getResultList().stream().map(d -> toDTO(d.getOrder(), d)).toList();
+        try (EntityManager reader = emf.createEntityManager()) {
+            return new DeliveryStatusDAO(reader).findActiveByUser(userId).stream()
+                    .map(delivery -> toDTO(delivery.getOrder(), delivery)).toList();
         }
     }
 
@@ -84,6 +80,61 @@ public class DeliveryAssignmentService {
                 return result;
             } catch (RuntimeException exception) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
+                throw exception;
+            }
+        }
+    }
+
+    public DeliveryAssignmentDTO pickUp(UUID orderId, UUID userId) {
+        return transition(orderId, userId, DeliveryStatus.ASSIGNED, OrderStatus.READY_FOR_PICKUP,
+                DeliveryStatus.PICKED_UP, OrderStatus.OUT_FOR_DELIVERY);
+    }
+
+    public DeliveryAssignmentDTO deliver(UUID orderId, UUID userId) {
+        return transition(orderId, userId, DeliveryStatus.PICKED_UP, OrderStatus.OUT_FOR_DELIVERY,
+                DeliveryStatus.DELIVERED, OrderStatus.DELIVERED);
+    }
+
+    private DeliveryAssignmentDTO transition(UUID orderId, UUID userId,
+            DeliveryStatus expectedDelivery, OrderStatus expectedOrder,
+            DeliveryStatus nextDelivery, OrderStatus nextOrder) {
+        try (EntityManager transactionEm = emf.createEntityManager()) {
+            try {
+                transactionEm.getTransaction().begin();
+                DeliveryStatusDAO dao = new DeliveryStatusDAO(transactionEm);
+                Order order = dao.findLockedOrder(orderId);
+                if (order == null) {
+                    throw new ApiException(404, Notifications.ORDER_NOT_FOUND.getDisplayName());
+                }
+                Delivery delivery = dao.findLockedDelivery(orderId)
+                        .orElseThrow(() -> new ApiException(409, Notifications.DELIVERY_NOT_ASSIGNED.getDisplayName()));
+                DeliveryAgent agent = delivery.getAgent();
+                if (!agent.getUser().getId().equals(userId)) {
+                    throw new ApiException(403, Notifications.DELIVERY_NOT_OWNED.getDisplayName());
+                }
+                dao.refreshAgent(agent);
+                if (!agent.isActive()) {
+                    throw new ApiException(403, Notifications.DELIVERY_AGENT_NOT_ACTIVE.getDisplayName());
+                }
+                if (delivery.getStatus() != expectedDelivery || order.getStatus() != expectedOrder) {
+                    throw new ApiException(409, Notifications.DELIVERY_STATUS_INVALID.getDisplayName());
+                }
+
+                LocalDateTime now = LocalDateTime.now();
+                delivery.setStatus(nextDelivery);
+                if (nextDelivery == DeliveryStatus.PICKED_UP) {
+                    delivery.setPickedUpAt(now);
+                } else {
+                    delivery.setDeliveredAt(now);
+                }
+                order.setStatus(nextOrder);
+                order.addStatusHistory(OrderStatusHistory.builder().status(nextOrder).changedAt(now).build());
+                transactionEm.flush();
+                DeliveryAssignmentDTO result = toDTO(order, delivery);
+                transactionEm.getTransaction().commit();
+                return result;
+            } catch (RuntimeException exception) {
+                if (transactionEm.getTransaction().isActive()) transactionEm.getTransaction().rollback();
                 throw exception;
             }
         }

@@ -17,6 +17,8 @@ import app.services.OrderService;
 import app.utils.ErrorHandler;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +29,7 @@ import static io.javalin.apibuilder.ApiBuilder.put;
 
 public class OrderController extends BaseController<Order, OrderDTO> {
 
+    private final EntityManagerFactory emf = Setup.em.getEntityManagerFactory();
     private final OrderDAO orderDAO = new OrderDAO(Setup.em);
     private final OrderService orderService = new OrderService(
             orderDAO,
@@ -86,9 +89,12 @@ public class OrderController extends BaseController<Order, OrderDTO> {
         UserDTO user = ctx.attribute("user");
         UUID restaurantId = ErrorHandler.tryParseUUID(ctx.pathParam("id"), Notifications.RESTAURANT_NOT_FOUND.getDisplayName());
 
-        List<OrderDTO> orders = orderService.getRestaurantOrders(user.getId(), restaurantId).stream()
-                .map(mapper::toDTO)
-                .toList();
+        List<OrderDTO> orders;
+        try (EntityManager reader = emf.createEntityManager()) {
+            orders = readService(reader).getRestaurantOrders(user.getId(), restaurantId).stream()
+                    .map(mapper::toDTO)
+                    .toList();
+        }
 
         String message = messageService.buildMessage(Notifications.ORDERS_FETCHED, String.valueOf(orders.size()));
         respond(ctx, 200, message, orders);
@@ -112,11 +118,19 @@ public class OrderController extends BaseController<Order, OrderDTO> {
     private void getMyOrders(Context ctx) {
         UserDTO user = ctx.attribute("user");
 
-        List<OrderDTO> orders = orderService.getMyOrders(user.getId()).stream()
-                .map(mapper::toDTO)
-                .toList();
+        List<OrderDTO> orders;
+        try (EntityManager reader = emf.createEntityManager()) {
+            orders = readService(reader).getMyOrders(user.getId()).stream()
+                    .map(mapper::toDTO)
+                    .toList();
+        }
 
         String message = messageService.buildMessage(Notifications.ORDERS_FETCHED, String.valueOf(orders.size()));
         respond(ctx, 200, message, orders);
+    }
+
+    private static OrderService readService(EntityManager reader) {
+        return new OrderService(new OrderDAO(reader), new RestaurantDAO(reader),
+                new MenuItemDAO(reader), new UserDAO(reader), new MockPaymentService());
     }
 }

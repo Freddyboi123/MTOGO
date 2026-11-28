@@ -398,3 +398,16 @@ export const restaurantPanelTexts = {
   categories: 'Kategorier',
   categoriesNote: 'På din menu'
 };
+
+export const courierDeliveryStatusTexts = {
+  labels: {
+    ASSIGNED: 'Tildelt',
+    PICKED_UP: 'På vej',
+    DELIVERED: 'Leveret'
+  },
+  pickUp: 'Markér som afhentet',
+  deliver: 'Markér som leveret',
+  updating: 'Opdaterer...',
+  pickedUp: 'Ordren er markeret som på vej.',
+  completed: 'Leveringen er gennemført.'
+};

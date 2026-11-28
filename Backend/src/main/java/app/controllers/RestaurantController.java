@@ -23,6 +23,8 @@ import app.services.RestaurantService;
 import app.utils.ErrorHandler;
 import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,7 @@ import static io.javalin.apibuilder.ApiBuilder.put;
 
 public class RestaurantController extends BaseController<Restaurant, RestaurantDTO> {
 
+    private final EntityManagerFactory emf = Setup.em.getEntityManagerFactory();
     private final RestaurantDAO restaurantDAO = new RestaurantDAO(Setup.em);
     private final RestaurantService restaurantService = new RestaurantService(
             restaurantDAO,
@@ -89,12 +92,17 @@ public class RestaurantController extends BaseController<Restaurant, RestaurantD
 
     private void getAllVisible(Context ctx) {
 
-        List<RestaurantDTO> list = restaurantService.searchActiveRestaurants(
-            ctx.queryParam("cuisine"),
-            ctx.queryParam("q"),
-            parseCoordinate(ctx.queryParam("lat")),
-            parseCoordinate(ctx.queryParam("lon"))
-        );
+        List<RestaurantDTO> list;
+        try (EntityManager reader = emf.createEntityManager()) {
+            RestaurantService readService = new RestaurantService(new RestaurantDAO(reader),
+                    new MenuCategoryDAO(reader), new MenuItemDAO(reader), new UserDAO(reader));
+            list = readService.searchActiveRestaurants(
+                ctx.queryParam("cuisine"),
+                ctx.queryParam("q"),
+                parseCoordinate(ctx.queryParam("lat")),
+                parseCoordinate(ctx.queryParam("lon"))
+            );
+        }
 
         String message = messageService.buildMessage(
             Notifications.GET_ALL,
