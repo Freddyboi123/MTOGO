@@ -5,11 +5,35 @@ import SiteFooter from '../components/SiteFooter';
 import cx from '../utils/cx';
 import ui from '../styles/shared.module.css';
 import styles from './RestaurantMenu.module.css';
-import { basketTexts, restaurantMenu } from '../data/mtogo';
 import { fetchMenu, fetchRestaurant } from '../utils/api';
 import useFeatureFlag from '../featureFlags/useFeatureFlag';
 import restaurantImage from '../utils/restaurantImage';
 import useBasket from '../basket/useBasket';
+
+const basketTexts = {
+  title: 'Din bestilling',
+  empty: 'Din kurv er tom. Tilføj en ret fra menuen.',
+  from: 'Fra',
+  otherRestaurant: 'Din kurv har retter fra en anden restaurant. Du kan kun bestille fra én restaurant ad gangen.',
+  emptyAndAdd: 'Tøm kurven og tilføj',
+  keep: 'Behold min bestilling',
+  fewer: 'Færre',
+  more: 'Flere',
+  total: 'I alt',
+  checkout: 'Gå til betaling',
+  fine: 'Alle priser er inkl. levering og moms.'
+};
+
+const restaurantMenu = {
+  back: '← Alle restauranter',
+  loading: 'Henter menuen…',
+  error: 'Restauranten kunne ikke findes. Prøv igen om lidt.',
+  emptyMenu: 'Restauranten har ikke tilføjet en menu endnu.',
+  emptyCategory: 'Der er ingen retter i denne kategori endnu.',
+  unavailable: 'Udsolgt',
+  currency: 'kr.',
+  phone: 'Tlf.'
+};
 
 function formatPrice(price) {
   return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;

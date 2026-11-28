@@ -1,8 +1,52 @@
-import { restaurant } from '../../../data/mtogo';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../RestaurantPanel.module.css';
 import VisibilityToggle from './VisibilityToggle';
+
+const restaurant = {
+  name: 'Osteria Nørrebro',
+  eyebrow: 'Italiensk håndværk · København N',
+  description: 'Napolitansk pizza, gode råvarer og lidt italiensk kærlighed.',
+  meta: '★ 4,8 (240+)     ·     20–30 min     ·     Min. 99 kr.',
+  openUntil: 'Åbent til 22.00',
+  cover: '/images/restaurant-cover.png',
+  categories: ['Populært', 'Pizza', 'Pasta', 'Tilbehør', 'Drikkevarer'],
+  menuTitle: 'Pizza, som den skal være',
+  menuIntro: 'Langtidshævet dej. Bagt ved 450°. Altid frisk fra ovnen.',
+  items: [
+    {
+      name: 'Margherita',
+      description: 'Tomat, fior di latte, frisk basilikum og ekstra jomfruolivenolie.',
+      price: 119,
+      flag: 'Gæsternes favorit'
+    },
+    {
+      name: 'Burrata',
+      description: 'Tomat, cremet burrata, cherrytomat og frisk basilikum.',
+      price: 129,
+      flag: null
+    },
+    {
+      name: 'Diavola',
+      description: 'Tomat, mozzarella, stærk salami og et strejf af chili.',
+      price: 139,
+      flag: null
+    },
+    {
+      name: 'Funghi',
+      description: 'Mozzarella, blandede svampe, timian og parmesan.',
+      price: 129,
+      flag: 'Vegetarisk'
+    }
+  ],
+  drinks: [
+    {
+      name: 'San Pellegrino · 33 cl',
+      description: 'Danskvand fra Italien',
+      price: 29
+    }
+  ]
+};
 
 export default function RestaurantInfo({ myRestaurant, onRestaurantChanged }) {
   return (

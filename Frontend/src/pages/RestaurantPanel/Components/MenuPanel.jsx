@@ -1,11 +1,35 @@
 import { useState } from 'react';
 import { addMenuItem, updateMenuItem } from '../../../utils/api';
-import { menuPanelTexts } from '../../../data/mtogo';
 import Panel from '../../../components/Panel';
 import DataTable from '../../../components/DataTable';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
 import styles from '../RestaurantPanel.module.css';
+
+const menuPanelTexts = {
+  title: 'Menu & varer',
+  add: '+ Tilføj vare',
+  columns: {
+    name: 'Vare',
+    price: 'Pris',
+    available: 'Tilgængelig',
+    actions: 'Handling'
+  },
+  available: 'Aktiv',
+  unavailable: 'Udsolgt',
+  markUnavailable: 'Marker udsolgt',
+  markAvailable: 'Gør aktiv',
+  edit: 'Rediger',
+  name: 'Navn',
+  description: 'Beskrivelse',
+  price: 'Pris (kr.)',
+  saveNew: 'Gem vare',
+  saveChanges: 'Gem ændringer',
+  cancel: 'Annuller',
+  saved: 'er gemt',
+  categoryCount: 'kategorier',
+  itemCount: 'varer'
+};
 
 const emptyForm = { name: '', description: '', price: '' };
 

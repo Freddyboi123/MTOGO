@@ -1,9 +1,31 @@
 import { Link } from 'react-router-dom';
 import cx from '../utils/cx';
 import useTexts from '../language/useTexts';
-import { footerTexts } from '../data/mtogo';
 import ui from '../styles/shared.module.css';
 import styles from './SiteFooter.module.css';
+
+const footerTexts = {
+  da: {
+    tagline: 'Gode måltider. Tættere på.',
+    rights: '© 2026 MTOGO Alle rettigheder forbeholdes.',
+    about: 'Om MTOGO',
+    help: 'Hjælp & kontakt',
+    partner: 'Bliv partner',
+    privacy: 'Privatliv',
+    terms: 'Handelsbetingelser',
+    cookies: 'Cookies'
+  },
+  en: {
+    tagline: 'Good meals. Closer to you.',
+    rights: '© 2026 MTOGO All rights reserved.',
+    about: 'About MTOGO',
+    help: 'Help & contact',
+    partner: 'Become a partner',
+    privacy: 'Privacy',
+    terms: 'Terms of sale',
+    cookies: 'Cookies'
+  }
+};
 
 export default function SiteFooter({ variant = 'full' }) {
   const texts = useTexts(footerTexts);

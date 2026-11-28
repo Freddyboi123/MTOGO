@@ -1,11 +1,39 @@
 import { useEffect, useState } from 'react';
-import { restaurantMenu, restaurantOrderTexts } from '../../../data/mtogo';
 import { getRestaurantOrders, updateOrderStatus } from '../../../utils/api';
 import useFeatureFlag from '../../../featureFlags/useFeatureFlag';
 import Panel from '../../../components/Panel';
 import DataTable from '../../../components/DataTable';
 import cx from '../../../utils/cx';
 import ui from '../../../styles/shared.module.css';
+
+const restaurantOrderTexts = {
+  title: 'Aktive ordrer',
+  count: 'ordrer',
+  loading: 'Henter ordrer…',
+  error: 'Ordrerne kunne ikke hentes.',
+  empty: 'Der er ingen ordrer endnu.',
+  columns: {
+    received: 'Modtaget',
+    items: 'Indhold',
+    address: 'Leveringsadresse',
+    total: 'Beløb',
+    status: 'Status',
+    action: 'Handling'
+  },
+  startPreparing: 'Start tilberedning',
+  markReady: 'Klar til afhentning',
+  statusError: 'Status kunne ikke opdateres.',
+  statuses: {
+    RECEIVED: 'Ny ordre',
+    PENDING: 'Afventer',
+    ACCEPTED: 'Accepteret',
+    PREPARING: 'Tilberedes',
+    READY_FOR_PICKUP: 'Klar til afhentning',
+    OUT_FOR_DELIVERY: 'På vej',
+    DELIVERED: 'Leveret',
+    CANCELLED: 'Annulleret'
+  }
+};
 
 const texts = restaurantOrderTexts;
 
@@ -16,7 +44,7 @@ const nextStep = {
 };
 
 function formatPrice(price) {
-  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} ${restaurantMenu.currency}`;
+  return `${Number(price).toLocaleString('da-DK', { maximumFractionDigits: 2 })} kr.`;
 }
 
 function formatTime(createdAt) {

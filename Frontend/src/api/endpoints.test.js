@@ -30,6 +30,7 @@ const CALLS = {
     updateOrderStatus: (m) => m.updateOrderStatus('42', 'PREPARING'),
     getMyDeliveries: (m) => m.getMyDeliveries(),
     acceptDelivery: (m) => m.acceptDelivery('42'),
+    startPickupDelivery: (m) => m.startPickupDelivery('42'),
     pickUpDelivery: (m) => m.pickUpDelivery('42'),
     completeDelivery: (m) => m.completeDelivery('42'),
     addMenuItem: (m) => m.addMenuItem('42', { name: 'Burger', price: 50 }),
@@ -109,6 +110,7 @@ describe('frontend API calls match backend routes', () => {
   });
 
   it.each([
+    ['startPickupDelivery', 'start'],
     ['pickUpDelivery', 'pickup'],
     ['completeDelivery', 'deliver']
   ])('US-11 %s uses the matching status transition endpoint', async (fn, action) => {

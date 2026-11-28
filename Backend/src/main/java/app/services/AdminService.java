@@ -362,7 +362,7 @@ public class AdminService {
 
     public static String courierStatus(DeliveryAgent agent, DeliveryStatus currentDelivery) {
         if (agent.isLocked()) return FROZEN;
-        if (currentDelivery == DeliveryStatus.ASSIGNED) return COURIER_EN_ROUTE;
+        if (currentDelivery == DeliveryStatus.ASSIGNED || currentDelivery == DeliveryStatus.EN_ROUTE_TO_PICKUP) return COURIER_EN_ROUTE;
         if (currentDelivery == DeliveryStatus.PICKED_UP) return COURIER_DELIVERING;
         return agent.isActive() ? COURIER_AVAILABLE : COURIER_OFFLINE;
     }

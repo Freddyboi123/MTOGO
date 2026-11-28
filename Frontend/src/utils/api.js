@@ -186,6 +186,9 @@ export const getMyDeliveries = () => api('/deliveries/mine');
 export const acceptDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/accept`, { method: 'POST' });
 
+export const startPickupDelivery = (orderId) =>
+  api(`/deliveries/${encodeURIComponent(orderId)}/start`, { method: 'POST' });
+
 export const pickUpDelivery = (orderId) =>
   api(`/deliveries/${encodeURIComponent(orderId)}/pickup`, { method: 'POST' });
 export const completeDelivery = (orderId) =>

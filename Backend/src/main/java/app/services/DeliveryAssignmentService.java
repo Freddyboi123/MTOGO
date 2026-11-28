@@ -83,8 +83,12 @@ public class DeliveryAssignmentService {
         }
     }
 
+    public DeliveryAssignmentDTO startPickup(UUID orderId, UUID userId) {
+        return transition(orderId, userId, DeliveryStatus.ASSIGNED, OrderStatus.READY_FOR_PICKUP, DeliveryStatus.EN_ROUTE_TO_PICKUP, OrderStatus.READY_FOR_PICKUP);
+    }
+
     public DeliveryAssignmentDTO pickUp(UUID orderId, UUID userId) {
-        return transition(orderId, userId, DeliveryStatus.ASSIGNED, OrderStatus.READY_FOR_PICKUP,
+        return transition(orderId, userId, DeliveryStatus.EN_ROUTE_TO_PICKUP, OrderStatus.READY_FOR_PICKUP,
                 DeliveryStatus.PICKED_UP, OrderStatus.OUT_FOR_DELIVERY);
     }
 
@@ -122,11 +126,13 @@ public class DeliveryAssignmentService {
                 delivery.setStatus(nextDelivery);
                 if (nextDelivery == DeliveryStatus.PICKED_UP) {
                     delivery.setPickedUpAt(now);
-                } else {
+                } else if (nextDelivery == DeliveryStatus.DELIVERED) {
                     delivery.setDeliveredAt(now);
                 }
-                order.setStatus(nextOrder);
-                order.addStatusHistory(OrderStatusHistory.builder().status(nextOrder).changedAt(now).build());
+                if (order.getStatus() != nextOrder) {
+                    order.setStatus(nextOrder);
+                    order.addStatusHistory(OrderStatusHistory.builder().status(nextOrder).changedAt(now).build());
+                }
                 transactionEm.flush();
                 DeliveryAssignmentDTO result = toDTO(order, delivery);
                 transactionEm.getTransaction().commit();

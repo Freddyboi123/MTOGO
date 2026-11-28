@@ -113,7 +113,7 @@ class DeliveryStatusControllerTest {
 
     @Test
     void bothRoutesRejectMissingIdentityAndMalformedId() throws Exception {
-        for (String action : new String[]{"pickup", "deliver"}) {
+        for (String action : new String[]{"start", "pickup", "deliver"}) {
             expectError(post(orderId.toString(), action, null), 401, Notifications.LOGIN_REQUIRED);
             expectError(post("not-a-uuid", action, ownerId), 400, Notifications.ORDER_ID_INVALID);
         }
@@ -123,7 +123,7 @@ class DeliveryStatusControllerTest {
     @Test
     void featureFlagBlocksBothRoutesEvenForAssignedAgent() throws Exception {
         enabled.set(false);
-        for (String action : new String[]{"pickup", "deliver"}) {
+        for (String action : new String[]{"start", "pickup", "deliver"}) {
             expectError(post(orderId.toString(), action, ownerId), 404, Notifications.DELIVERY_FEATURE_DISABLED);
         }
         assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
@@ -133,6 +133,20 @@ class DeliveryStatusControllerTest {
     void routesEnforceOwnershipAndTransitionOrderAndReturnUpdatedStatus() throws Exception {
         String id = orderId.toString();
         expectError(post(id, "pickup", otherId), 403, Notifications.DELIVERY_NOT_OWNED);
+        expectError(post(id, "deliver", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
+        assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
+
+        expectError(post(id, "pickup", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
+        expectError(post(id, "start", otherId), 403, Notifications.DELIVERY_NOT_OWNED);
+        assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
+
+        HttpResponse<String> start = post(id, "start", ownerId);
+        assertEquals(200, start.statusCode());
+        var started = JSON.readTree(start.body()).get("data");
+        assertEquals(id, started.get("orderId").asText());
+        assertEquals("READY_FOR_PICKUP", started.get("orderStatus").asText());
+        assertEquals("EN_ROUTE_TO_PICKUP", started.get("deliveryStatus").asText());
+        expectError(post(id, "start", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
         expectError(post(id, "deliver", ownerId), 409, Notifications.DELIVERY_STATUS_INVALID);
         assertEquals(OrderStatus.READY_FOR_PICKUP, persistedOrderStatus());
 

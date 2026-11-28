@@ -8,15 +8,31 @@ import {
   getMyDeliveries,
   isLoggedIn,
   pickUpDelivery,
-  refreshUser
+  refreshUser,
+  startPickupDelivery
 } from '../../utils/api';
-import { courierDeliveryStatusTexts } from '../../data/mtogo';
 import cx from '../../utils/cx';
 import ui from '../../styles/shared.module.css';
 import dash from '../../components/DashboardLayout.module.css';
 import styles from './CourierPanel.module.css';
 import DeliveryCard from './Components/DeliveryCard';
 import DeliveryDetails from './Components/DeliveryDetails';
+
+const courierDeliveryStatusTexts = {
+  labels: {
+    ASSIGNED: 'Tildelt',
+    EN_ROUTE_TO_PICKUP: 'På vej til afhentning',
+    PICKED_UP: 'På vej til kunden',
+    DELIVERED: 'Leveret'
+  },
+  startPickup: 'Markér som på vej til afhentning',
+  startedPickup: 'Du er markeret som på vej til afhentning.',
+  pickUp: 'Markér som afhentet',
+  deliver: 'Markér som leveret',
+  updating: 'Opdaterer...',
+  pickedUp: 'Ordren er markeret som på vej.',
+  completed: 'Leveringen er gennemført.'
+};
 
 const items = [
   { to: '/chauffoerpanel', label: 'Leverancer' },
@@ -56,11 +72,33 @@ function pickupTimeOf(delivery) {
   return formatPickupTime(delivery.expectedPickupAt ?? delivery.expectedPickupTime);
 }
 
-function canUpdateStatus(delivery) {
-  return (
-    (delivery.deliveryStatus === 'ASSIGNED' && delivery.orderStatus === 'READY_FOR_PICKUP') ||
-    (delivery.deliveryStatus === 'PICKED_UP' && delivery.orderStatus === 'OUT_FOR_DELIVERY')
-  );
+const statusSteps = {
+  ASSIGNED: {
+    orderStatus: 'READY_FOR_PICKUP',
+    action: (orderId) => startPickupDelivery(orderId),
+    label: courierDeliveryStatusTexts.startPickup,
+    notice: courierDeliveryStatusTexts.startedPickup,
+    completes: false
+  },
+  EN_ROUTE_TO_PICKUP: {
+    orderStatus: 'READY_FOR_PICKUP',
+    action: (orderId) => pickUpDelivery(orderId),
+    label: courierDeliveryStatusTexts.pickUp,
+    notice: courierDeliveryStatusTexts.pickedUp,
+    completes: false
+  },
+  PICKED_UP: {
+    orderStatus: 'OUT_FOR_DELIVERY',
+    action: (orderId) => completeDelivery(orderId),
+    label: courierDeliveryStatusTexts.deliver,
+    notice: courierDeliveryStatusTexts.completed,
+    completes: true
+  }
+};
+
+function stepOf(delivery) {
+  const step = statusSteps[delivery.deliveryStatus];
+  return step && step.orderStatus === delivery.orderStatus ? step : null;
 }
 
 export default function CourierPanel() {
@@ -140,17 +178,18 @@ export default function CourierPanel() {
   }
 
   async function handleStatusUpdate(delivery) {
-    const completing = delivery.deliveryStatus === 'PICKED_UP';
+    const step = stepOf(delivery);
+    if (!step) return;
     setUpdatingStatus(delivery.orderId);
     setStatusError('');
     setNotice('');
     try {
-      const response = await (completing ? completeDelivery(delivery.orderId) : pickUpDelivery(delivery.orderId));
-      setDeliveries((current) => completing
+      const response = await step.action(delivery.orderId);
+      setDeliveries((current) => step.completes
         ? current.filter((item) => item.orderId !== delivery.orderId)
         : current.map((item) => item.orderId === delivery.orderId ? response.data : item));
-      if (completing) setSelectedOrderId((current) => current === delivery.orderId ? null : current);
-      setNotice(completing ? courierDeliveryStatusTexts.completed : courierDeliveryStatusTexts.pickedUp);
+      if (step.completes) setSelectedOrderId((current) => current === delivery.orderId ? null : current);
+      setNotice(step.notice);
     } catch (err) {
       setStatusError(err.message);
     } finally {
@@ -170,9 +209,9 @@ export default function CourierPanel() {
   const displayName = [user.name, user.lastName].filter(Boolean).join(' ');
 
   function actionLabelOf(delivery) {
-    if (!delivery || !canUpdateStatus(delivery)) return null;
-    if (updatingStatus === delivery.orderId) return courierDeliveryStatusTexts.updating;
-    return delivery.deliveryStatus === 'ASSIGNED' ? courierDeliveryStatusTexts.pickUp : courierDeliveryStatusTexts.deliver;
+    const step = delivery && stepOf(delivery);
+    if (!step) return null;
+    return updatingStatus === delivery.orderId ? courierDeliveryStatusTexts.updating : step.label;
   }
 
   return (

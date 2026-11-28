@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import CourierPanel from './CourierPanel';
-import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, pickUpDelivery } from '../../utils/api';
+import { acceptDelivery, completeDelivery, getAvailableDeliveries, getMyDeliveries, pickUpDelivery, startPickupDelivery } from '../../utils/api';
 
 vi.mock('../../components/DashboardLayout', () => ({
   default: ({ children }) => children
@@ -14,13 +14,16 @@ vi.mock('../../utils/api', () => ({
   getAvailableDeliveries: vi.fn(),
   getMyDeliveries: vi.fn(),
   isLoggedIn: () => Boolean(localStorage.getItem('token')),
-  pickUpDelivery: vi.fn()
+  pickUpDelivery: vi.fn(),
+  refreshUser: vi.fn(),
+  startPickupDelivery: vi.fn()
 }));
 
 const assigned = {
   orderId: 'order-1', deliveryId: 'delivery-1', restaurantName: 'Test Pizza',
   deliveryStatus: 'ASSIGNED', orderStatus: 'READY_FOR_PICKUP'
 };
+const enRoute = { ...assigned, deliveryStatus: 'EN_ROUTE_TO_PICKUP' };
 const pickedUp = { ...assigned, deliveryStatus: 'PICKED_UP', orderStatus: 'OUT_FOR_DELIVERY' };
 const delivered = { ...pickedUp, deliveryStatus: 'DELIVERED', orderStatus: 'DELIVERED' };
 
@@ -55,13 +58,21 @@ async function render(path = '/chauffoerpanel/ture') {
 }
 
 describe('US-11 courier status actions', () => {
-  it('shows pickup first, then delivery, and removes only the completed trip', async () => {
+  it('shows on the way to pick up first, then pickup, then delivery, and removes only the completed trip', async () => {
     const other = { ...assigned, orderId: 'order-2', deliveryId: 'delivery-2' };
     getMyDeliveries.mockResolvedValue({ data: [assigned, other] });
+    startPickupDelivery.mockResolvedValue({ data: enRoute });
     pickUpDelivery.mockResolvedValue({ data: pickedUp });
     completeDelivery.mockResolvedValue({ data: delivered });
     await render();
     await click('Se detaljer');
+    expect(button('Markér som afhentet')).toBeUndefined();
+    expect(button('Markér som leveret')).toBeUndefined();
+    await click('Markér som på vej til afhentning');
+    expect(startPickupDelivery).toHaveBeenCalledTimes(1);
+    expect(startPickupDelivery).toHaveBeenCalledWith('order-1');
+    expect(button('Markér som på vej til afhentning')).toBeUndefined();
+    expect(container.textContent).toContain('På vej til afhentning');
     expect(button('Markér som leveret')).toBeUndefined();
     await click('Markér som afhentet');
     expect(pickUpDelivery).toHaveBeenCalledTimes(1);
@@ -78,9 +89,11 @@ describe('US-11 courier status actions', () => {
 
   it('shows the backend notification and keeps the original state after rejected pickup', async () => {
     getMyDeliveries.mockResolvedValue({ data: [assigned] });
+    startPickupDelivery.mockResolvedValue({ data: enRoute });
     pickUpDelivery.mockRejectedValue(Object.assign(new Error('Only the assigned delivery agent can update this delivery'), { status: 403 }));
     await render();
     await click('Se detaljer');
+    await click('Markér som på vej til afhentning');
     await click('Markér som afhentet');
     expect(container.querySelector('[role="alert"]').textContent).toContain('Only the assigned delivery agent');
     expect(button('Markér som afhentet')).toBeDefined();
@@ -114,8 +127,10 @@ describe('US-11 courier status actions', () => {
     getMyDeliveries.mockResolvedValue({ data: [delivery] });
     await render();
     await click('Se detaljer');
+    expect(button('Markér som på vej til afhentning')).toBeUndefined();
     expect(button('Markér som afhentet')).toBeUndefined();
     expect(button('Markér som leveret')).toBeUndefined();
+    expect(startPickupDelivery).not.toHaveBeenCalled();
     expect(pickUpDelivery).not.toHaveBeenCalled();
     expect(completeDelivery).not.toHaveBeenCalled();
   });
@@ -125,6 +140,7 @@ describe('US-11 courier status actions', () => {
     await render('/chauffoerpanel');
     await click('Se detaljer');
     expect(button('Accepter levering')).toBeDefined();
+    expect(button('Markér som på vej til afhentning')).toBeUndefined();
     expect(button('Markér som afhentet')).toBeUndefined();
     expect(button('Markér som leveret')).toBeUndefined();
     expect(acceptDelivery).not.toHaveBeenCalled();

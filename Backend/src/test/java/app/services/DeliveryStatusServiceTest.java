@@ -99,6 +99,7 @@ class DeliveryStatusServiceTest {
 
     @Test
     void pickupUpdatesBothStatusesAndHistory() {
+        service.startPickup(orderId, ownerId);
         DeliveryAssignmentDTO result = service.pickUp(orderId, ownerId);
         State actual = state();
         assertEquals(orderId, result.getOrderId());
@@ -116,6 +117,7 @@ class DeliveryStatusServiceTest {
 
     @Test
     void completionPersistsOneCompletedTaskForBonusAndRemovesActiveDelivery() {
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         State pickedUp = state();
         DeliveryAssignmentDTO result = service.deliver(orderId, ownerId);
@@ -149,6 +151,7 @@ class DeliveryStatusServiceTest {
         assertEquals(OrderStatus.READY_FOR_PICKUP, em.find(Order.class, orderId).getStatus());
         try (EntityManager worker = emf.createEntityManager()) {
             DeliveryAssignmentService otherServer = new DeliveryAssignmentService(worker);
+            otherServer.startPickup(orderId, ownerId);
             otherServer.pickUp(orderId, ownerId);
             DeliveryAssignmentDTO current = service.mine(ownerId).getFirst();
             assertEquals(DeliveryStatus.PICKED_UP, current.getDeliveryStatus());
@@ -161,6 +164,7 @@ class DeliveryStatusServiceTest {
     @Test
     void anotherAgentCannotPickUpOrDeliver() {
         rejected(403, Notifications.DELIVERY_NOT_OWNED, () -> service.pickUp(orderId, otherId));
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         rejected(403, Notifications.DELIVERY_NOT_OWNED, () -> service.deliver(orderId, otherId));
         service.deliver(orderId, ownerId);
@@ -180,6 +184,8 @@ class DeliveryStatusServiceTest {
             assertTrue(em.getTransaction().isActive());
             assertTrue(em.contains(unrelated));
             assertEquals(DeliveryStatus.ASSIGNED, state().delivery());
+
+            service.startPickup(orderId, ownerId);
 
             service.pickUp(orderId, ownerId);
             service.deliver(orderId, ownerId);
@@ -202,6 +208,7 @@ class DeliveryStatusServiceTest {
     @Test
     void cannotSkipPickupOrRepeatPickup() {
         rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.deliver(orderId, ownerId));
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.pickUp(orderId, ownerId));
     }
@@ -218,6 +225,7 @@ class DeliveryStatusServiceTest {
         setAgentActive(false);
         rejected(403, Notifications.DELIVERY_AGENT_NOT_ACTIVE, () -> service.pickUp(orderId, ownerId));
         setAgentActive(true);
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         setAgentActive(false);
         rejected(403, Notifications.DELIVERY_AGENT_NOT_ACTIVE, () -> service.deliver(orderId, ownerId));
@@ -261,6 +269,7 @@ class DeliveryStatusServiceTest {
     @ParameterizedTest
     @EnumSource(value = OrderStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "OUT_FOR_DELIVERY")
     void completionRejectsEveryOtherOrderStatus(OrderStatus status) {
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         setOrderStatus(status);
         rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.deliver(orderId, ownerId));
@@ -268,6 +277,7 @@ class DeliveryStatusServiceTest {
 
     @Test
     void completionRollsBackWhenStatusHistoryCannotBePersisted() {
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         State before = state();
         executeSchemaChange("ALTER TABLE order_status_history ADD CONSTRAINT test_reject_completion CHECK (status <> 'DELIVERED')");
@@ -292,6 +302,7 @@ class DeliveryStatusServiceTest {
 
     @Test
     void completionWaitsForOrderLockAndRechecksStatusAfterRelease() throws Exception {
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         CyclicBarrier start = new CyclicBarrier(2);
@@ -321,6 +332,7 @@ class DeliveryStatusServiceTest {
 
     @RepeatedTest(3)
     void competingCompletionRequestsRecordOnlyOneCompletion() throws Exception {
+        service.startPickup(orderId, ownerId);
         service.pickUp(orderId, ownerId);
         CyclicBarrier start = new CyclicBarrier(2);
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -338,6 +350,91 @@ class DeliveryStatusServiceTest {
         assertEquals(DeliveryStatus.DELIVERED, actual.delivery());
         assertNotNull(actual.deliveredAt());
         assertEquals(List.of(OrderStatus.READY_FOR_PICKUP, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED), actual.history());
+    }
+
+    @Test
+    void startingPickupOnlyChangesTheDeliveryStatus() {
+        DeliveryAssignmentDTO result = service.startPickup(orderId, ownerId);
+        State actual = state();
+        assertEquals(orderId, result.getOrderId());
+        assertEquals(DeliveryStatus.EN_ROUTE_TO_PICKUP, result.getDeliveryStatus());
+        assertEquals(OrderStatus.READY_FOR_PICKUP, result.getOrderStatus());
+        assertEquals(DeliveryStatus.EN_ROUTE_TO_PICKUP, actual.delivery());
+        assertEquals(OrderStatus.READY_FOR_PICKUP, actual.order());
+        assertNull(actual.pickedUpAt());
+        assertNull(actual.deliveredAt());
+        assertEquals(List.of(OrderStatus.READY_FOR_PICKUP), actual.history());
+        assertEquals(DeliveryStatus.EN_ROUTE_TO_PICKUP, service.mine(ownerId).getFirst().getDeliveryStatus());
+    }
+
+    @Test
+    void theThreeStepsRunInOrderAndRecordEachStatus() {
+        assertEquals(DeliveryStatus.EN_ROUTE_TO_PICKUP, service.startPickup(orderId, ownerId).getDeliveryStatus());
+        assertEquals(DeliveryStatus.PICKED_UP, service.pickUp(orderId, ownerId).getDeliveryStatus());
+        assertEquals(DeliveryStatus.DELIVERED, service.deliver(orderId, ownerId).getDeliveryStatus());
+        State actual = state();
+        assertNotNull(actual.pickedUpAt());
+        assertNotNull(actual.deliveredAt());
+        assertEquals(List.of(OrderStatus.READY_FOR_PICKUP, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED), actual.history());
+    }
+
+    @Test
+    void pickupCannotBeSkippedPastTheStartStep() {
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.pickUp(orderId, ownerId));
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.deliver(orderId, ownerId));
+        assertEquals(DeliveryStatus.ASSIGNED, state().delivery());
+    }
+
+    @Test
+    void startingPickupCannotBeRepeatedOrDoneAfterPickup() {
+        service.startPickup(orderId, ownerId);
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.startPickup(orderId, ownerId));
+        service.pickUp(orderId, ownerId);
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.startPickup(orderId, ownerId));
+        service.deliver(orderId, ownerId);
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.startPickup(orderId, ownerId));
+    }
+
+    @Test
+    void anotherAgentCannotStartPickup() {
+        rejected(403, Notifications.DELIVERY_NOT_OWNED, () -> service.startPickup(orderId, otherId));
+        assertEquals(DeliveryStatus.ASSIGNED, state().delivery());
+    }
+
+    @Test
+    void inactiveAgentCannotStartPickup() {
+        setAgentActive(false);
+        rejected(403, Notifications.DELIVERY_AGENT_NOT_ACTIVE, () -> service.startPickup(orderId, ownerId));
+        setAgentActive(true);
+        service.startPickup(orderId, ownerId);
+        assertEquals(DeliveryStatus.EN_ROUTE_TO_PICKUP, state().delivery());
+    }
+
+    @Test
+    void startingPickupRejectsUnknownAndUnassignedOrders() {
+        rejected(404, Notifications.ORDER_NOT_FOUND, () -> service.startPickup(UUID.randomUUID(), ownerId));
+        em.getTransaction().begin();
+        Order original = em.find(Order.class, orderId);
+        Order unassigned = Order.builder().customer(original.getCustomer()).restaurant(original.getRestaurant())
+                .status(OrderStatus.READY_FOR_PICKUP).build();
+        em.persist(unassigned);
+        em.getTransaction().commit();
+        UUID id = unassigned.getId();
+        rejected(409, Notifications.DELIVERY_NOT_ASSIGNED, () -> service.startPickup(id, ownerId));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = OrderStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "READY_FOR_PICKUP")
+    void startingPickupRejectsEveryOtherOrderStatus(OrderStatus status) {
+        setOrderStatus(status);
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.startPickup(orderId, ownerId));
+    }
+
+    @Test
+    void pickupRejectsAnOrderThatWasCancelledAfterTheStartStep() {
+        service.startPickup(orderId, ownerId);
+        setOrderStatus(OrderStatus.CANCELLED);
+        rejected(409, Notifications.DELIVERY_STATUS_INVALID, () -> service.pickUp(orderId, ownerId));
     }
 
     private int complete(CyclicBarrier start) throws Exception {

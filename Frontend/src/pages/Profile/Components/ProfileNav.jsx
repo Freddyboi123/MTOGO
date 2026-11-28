@@ -1,6 +1,13 @@
 import { getUser } from '../../../utils/api';
-import { roleLabels } from '../../../data/mtogo';
 import styles from '../Profile.module.css';
+
+const roleLabels = {
+  CUSTOMER: 'Kunde',
+  RESTAURANT_OWNER: 'Restaurantejer',
+  DELIVERY_AGENT: 'Bud',
+  ADMIN: 'Administrator',
+  OWNER: 'Ejer'
+};
 
 export default function ProfileNav({ sections, section, onSelect, onLogout }) {
   const user = getUser();
